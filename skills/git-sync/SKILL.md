@@ -1,0 +1,23 @@
+---
+name: git-sync
+description: Generate git command for pull + add + commit + push
+disable-model-invocation: true
+allowed-tools: Bash(git *)
+model: sonnet
+context: fork
+---
+
+Analyze changes and generate git command:
+
+1. Run `git status` to see unstaged/staged files
+2. Run `git diff` to understand changes
+3. Generate SHORT commit message (3-5 words in English) based on changes
+4. Output ONLY the command in copyable code block:
+
+```bash
+git pull && git add -A && git commit -m "short message" && git push
+```
+
+**Rules:**
+- Message reflects change type: fix/add/update/refactor/remove
+- NO explanations before/after

@@ -1,0 +1,29 @@
+# Credentials & secrets
+.credentials.json
+
+# Caches
+cache/
+stats-cache.json
+mcp-needs-auth-cache.json
+
+# Auto-generated runtime data
+projects/
+file-history/
+plugins/
+shell-snapshots/
+debug/
+todos/
+plans/
+backups/
+downloads/
+commands/
+scripts/
+ide/
+history.jsonl
+
+# Telemetry
+statsig/
+telemetry/
+
+# Old skills .git (if leftover)
+skills/.git/
