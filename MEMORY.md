@@ -41,7 +41,7 @@
 ## Global Paths
 | What | Path |
 |------|------|
-| Claude Skills (git repo) | `%USERPROFILE%\.claude\skills\` |
+| Claude Config (git repo: skills, agents, settings, memory) | `%USERPROFILE%\.claude\` → `github.com/ssv555/claude` |
 | AHK Scripts (git repo) | `%USERPROFILE%\Scripts\` |
 | Windows Startup | `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\` |
 
