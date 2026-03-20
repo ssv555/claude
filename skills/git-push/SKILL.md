@@ -2,7 +2,7 @@
 name: git-push
 description: Generate git command for add + commit + push
 disable-model-invocation: false
-allowed-tools: Bash(git *), Read, Edit, AskUserQuestion, WebFetch
+allowed-tools: Bash(git *), Read, Edit, AskUserQuestion, ToolSearch, WebFetch
 model: sonnet
 ---
 
@@ -19,7 +19,7 @@ Generate a `git add -A && git commit -m "msg" && git push` command.
    - `server/routes/codes.ts`
 3. If ANY match found:
    a. Read `server/shared/version.ts` to get current APP_VERSION
-   b. Fetch production version: `WebFetch` URL `https://iamrich.it-joy.ru/api/version`. Extract `version` field from JSON response. If fetch fails or times out — use `"недоступен"`
+   b. Fetch production version: first run `ToolSearch` with query `select:WebFetch` to load the tool schema, then call `WebFetch` with URL `https://iamrich.it-joy.ru/api/version` and prompt `extract version`. Extract `version` field from JSON response. If fetch fails or times out — use `"недоступен"`
    c. Call the AskUserQuestion tool:
 
 ```json
