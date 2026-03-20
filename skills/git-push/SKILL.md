@@ -2,7 +2,7 @@
 name: git-push
 description: Generate git command for add + commit + push
 disable-model-invocation: false
-allowed-tools: Bash(git *), Read, Edit, AskUserQuestion
+allowed-tools: Bash(git *), Read, Edit, AskUserQuestion, WebFetch
 model: sonnet
 ---
 
@@ -17,12 +17,15 @@ Generate a `git add -A && git commit -m "msg" && git push` command.
    - `server/db/schema/categories.ts`
    - `server/routes/categories.ts`
    - `server/routes/codes.ts`
-3. If ANY match found: first read `server/shared/version.ts` to get current APP_VERSION, then call the AskUserQuestion tool:
+3. If ANY match found:
+   a. Read `server/shared/version.ts` to get current APP_VERSION
+   b. Fetch production version: `WebFetch` URL `https://iamrich.it-joy.ru/api/version`. Extract `version` field from JSON response. If fetch fails or times out — use `"недоступен"`
+   c. Call the AskUserQuestion tool:
 
 ```json
 {
   "questions": [{
-    "question": "Обновить версию? (текущая: <VERSION>). Изменены кэшируемые файлы: <FILES>",
+    "question": "Обновить версию? (локальная: <VERSION>, прод: <PROD_VERSION>). Изменены кэшируемые файлы: <FILES>",
     "header": "Version",
     "options": [
       {"label": "Да (+0.001)", "description": "Инкремент patch версии"},
@@ -34,7 +37,8 @@ Generate a `git add -A && git commit -m "msg" && git push` command.
 ```
 
 Replace `<FILES>` with matched filenames, comma-separated (e.g. `locales/en/translation.json, locales/ru/translation.json`).
-Replace `<VERSION>` with the actual APP_VERSION value (e.g. `1.0.015`).
+Replace `<VERSION>` with the actual APP_VERSION value from version.ts (e.g. `1.0.015`).
+Replace `<PROD_VERSION>` with the version from production API response, or `недоступен` if fetch failed.
 
 Do NOT edit any files until user responds.
 
