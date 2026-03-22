@@ -6,7 +6,10 @@ allowed-tools: Bash(git *), Read, Edit, AskUserQuestion, Agent(code-reviewer), W
 model: sonnet
 ---
 
-Generate a `git add -A && git commit -m "msg" && git push` command.
+Generate a `git add -A && git commit -m "msg" && git pull --rebase && git push` command.
+
+<!-- pull --rebase added for safe parallel work: when multiple developers push to the same branch,
+     rebase pulls remote changes before push. For solo work it's a no-op (nothing to rebase). -->
 
 ## Execution
 
@@ -63,7 +66,7 @@ Do NOT edit any files until user responds.
 6. Output SHORT commit message (3-5 words, english, prefix: fix/add/update/refactor/remove) as:
 
 ```bash
-git add -A && git commit -m "message" && git push
+git add -A && git commit -m "message" && git pull --rebase && git push
 ```
 
 No text before or after the code block.
