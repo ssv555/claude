@@ -10,6 +10,11 @@ model: sonnet
 
 Run project-specific test suites with standardized progress output, pre-flight checks, and error handling.
 
+<!-- Project-specific configuration: ./tests/skills/pre-deploy-autotests.md
+     This is a global skill — the actual steps, commands, pre-flight checks,
+     and paths are defined per-project in the local file above.
+     See existing projects for format examples. -->
+
 ## Execution
 
 ### Step 1: Read local prompt

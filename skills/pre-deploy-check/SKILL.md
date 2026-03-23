@@ -10,6 +10,11 @@ model: sonnet
 
 Run project-specific quality checks with standardized progress output and error handling.
 
+<!-- Project-specific configuration: ./tests/skills/pre-deploy-check.md
+     This is a global skill — the actual steps, commands, and paths
+     are defined per-project in the local file above.
+     See existing projects for format examples. -->
+
 ## Execution
 
 ### Step 1: Read local prompt
