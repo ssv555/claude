@@ -42,8 +42,7 @@ Manage the prompt optimizer hook settings.
 
 ## Rules
 
-- State file path: use `$env:USERPROFILE` on Windows, `~` on other OS
-- Full path: `C:\Users\Developer\.claude\prompt-optimizer-state.json`
+- State file path: `~/.claude/prompt-optimizer-state.json`
 - Only modify the state file, nothing else
 - Do NOT modify settings.json or hook scripts
 - Keep responses concise

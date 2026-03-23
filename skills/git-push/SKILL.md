@@ -2,7 +2,7 @@
 name: git-push
 description: Generate git command for add + commit + push
 disable-model-invocation: false
-allowed-tools: Bash(git *), Read, Edit, AskUserQuestion, ToolSearch, WebFetch
+allowed-tools: Bash(git *), Read, Edit, Write, Glob, AskUserQuestion, ToolSearch, WebFetch
 model: sonnet
 ---
 
@@ -53,7 +53,33 @@ Replace `<PROD_VERSION>` with the version from production API response, or `не
 Do NOT edit any files until user responds.
 
    d. If user chose "Да": read the `versionFile`, increment patch (e.g. 1.0.014 → 1.0.015), edit file, append `(v1.0.015)` to commit message
-5. Output SHORT commit message (3-5 words, english, prefix: fix/add/update/refactor/remove) as:
+5. Check if `.claude/skills/session-archive/SKILL.md` exists in the project root (use Glob). If it exists:
+
+   **Skip condition**: If there was no meaningful dialog in this session — i.e., the conversation contains only skill/command invocations (like `/git-push`, `/version-up`, etc.) without any real discussion, code changes, debugging, or decision-making — skip the archive prompt silently and go to step 6. There is nothing worth archiving when no actual work happened.
+
+   Otherwise, call AskUserQuestion:
+   ```json
+   {
+     "questions": [{
+       "question": "Архивировать сессию перед коммитом?",
+       "header": "Archive",
+       "options": [
+         {"label": "Да", "description": "Создать архив сессии в docs/archive/"},
+         {"label": "Пропустить", "description": "Продолжить без архивации"},
+         {"label": "Отмена", "description": "Прервать git-push полностью"}
+       ],
+       "multiSelect": false
+     }]
+   }
+   ```
+
+   - **Да**: Read `.claude/skills/session-archive/SKILL.md` and follow its instructions to create the archive file. After the file is created, continue to step 6.
+   - **Пропустить**: Continue to step 6.
+   - **Отмена**: Stop immediately. Output nothing. Exit the skill.
+
+   If `.claude/skills/session-archive/SKILL.md` does not exist — skip this step silently.
+
+6. Output SHORT commit message (3-5 words, english, prefix: fix/add/update/refactor/remove) as:
 
 ```bash
 git add -A && git commit -m "message" && git pull --rebase && git push
