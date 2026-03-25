@@ -1,90 +1,58 @@
 ---
 name: session-archive
-description: Archive current session work to docs/archive/ with prompt, changes summary, and TODOs
+description: Archive current session work to docs/archive/sessions/ with prompt, changes summary, and TODOs
 disable-model-invocation: false
-allowed-tools: AskUserQuestion,Bash(git *),Bash(date *),Bash(mkdir *),Bash(head *),Bash(tail *),Bash(python3 *),Bash(ls *),Bash(find *),Read,Write,Glob,Grep
-model: sonnet
+allowed-tools: AskUserQuestion,Bash(git *),Bash(mkdir *),Bash(head *),Bash(tail *),Bash(grep *),Bash(powershell *),Bash(ls *),Read,Write,Glob,Grep
+model: opus
 ---
 
-Archive the current conversation session into a compact summary file in `docs/archive/`.
+Archive the current conversation session into a compact summary file in `docs/archive/sessions/`.
 
-## Input
+## Step 1: Gather all metadata (single batch)
 
-No arguments required. Everything is auto-determined:
-- **Topic**: auto-generated from the session prompt (2-3 words in English)
-- **Developer**: from `git config user.name`
-- **Date + time**: now
-- **Session metadata**: from JSONL session file
+Run **all commands in parallel** to collect metadata in one round-trip:
 
-## Step 1: Determine Developer Alias
+**Command A — Developer alias:**
+`git config user.name 2>/dev/null || git config user.email 2>/dev/null | sed 's/@.*//'`
 
-Run `git config user.name` and apply mapping:
-- `ssv555` → `ssv`
-- `ssv` → `ssv`
-- `Kirill` → `kirill`
-- `WhiteDullahan` → `kirill`
+Apply mapping: `ssv555`/`ssv` → `ssv`, `Kirill`/`WhiteDullahan` → `kirill`.
+Cyrillic → transliterate to Latin lowercase. No match → use lowercased as-is.
+Empty → ask via AskUserQuestion: "Не удалось определить разработчика. Укажите алиас (например: ssv, kirill):"
 
-If the name is in Cyrillic, transliterate to Latin lowercase (e.g. `Сергей` → `sergey`).
-If no mapping match, use the git name lowercased as-is.
-If git name is empty, ask via AskUserQuestion: "Не удалось определить разработчика. Укажите алиас (например: ssv, kirill):"
+**Command B — Session JSONL path:**
+`ls -t ~/.claude/projects/*$(basename "$(pwd)")/*.jsonl 2>/dev/null | head -1`
 
-## Step 2: Get Date and Time
+**Command C — Git status:**
+`git diff --stat HEAD 2>/dev/null; echo "---STATUS---"; git status --short 2>/dev/null`
 
-Run: `date "+%Y.%m.%d_%H.%M"`
+**After resolving**: print `Developer: <alias> (from <source>)`.
 
-This produces date and time for the filename, e.g. `2026.03.22_14.35`.
+## Step 2: Extract session data from JSONL
 
-## Step 3: Extract Session Metadata from JSONL
-
-Session JSONL files are stored at:
-`~/.claude/projects/<project-hash>/<session-id>.jsonl`
-
-To find the current session file:
+Using the JSONL path from Step 1, run **one combined command**:
 
 ```bash
-# Find the project dir (matches current working directory path with dashes)
-PROJECT_DIR=$(ls -d ~/.claude/projects/*VDole 2>/dev/null | head -1)
-
-# Find the most recently modified JSONL file (= current session)
-SESSION_FILE=$(ls -t "$PROJECT_DIR"/*.jsonl 2>/dev/null | head -1)
+F="<jsonl_path>" && \
+head -1 "$F" | sed 's/.*"timestamp":"\([^"]*\)".*/\1/' && echo "---SEP---" && \
+tail -1 "$F" | sed 's/.*"timestamp":"\([^"]*\)".*/\1/' && echo "---SEP---" && \
+grep -m1 '"model":"' "$F" | sed 's/.*"model":"\([^"]*\)".*/\1/' && echo "---SEP---" && \
+grep -m1 '"gitBranch"' "$F" | sed 's/.*"gitBranch":"\([^"]*\)".*/\1/'
 ```
 
-Extract metadata from the JSONL:
+This yields 4 values separated by `---SEP---`: start timestamp, end timestamp, model, gitBranch.
 
-```bash
-# First line → session start timestamp
-START_TS=$(head -1 "$SESSION_FILE" | python3 -c "import sys,json; print(json.loads(sys.stdin.read()).get('timestamp','?'))")
-
-# Last line → session end timestamp + model
-END_DATA=$(tail -1 "$SESSION_FILE" | python3 -c "
-import sys,json
-d=json.loads(sys.stdin.read())
-model=d.get('message',{}).get('model','?')
-ts=d.get('timestamp', '?')
-print(f'{model}|{ts}')
-")
-
-# Current branch
-BRANCH=$(git branch --show-current)
+Then **one powershell call** for date formatting and duration:
+```
+powershell -Command "$s=[DateTime]::Parse('START'); $e=[DateTime]::Parse('END'); $d=$e-$s; $s.ToLocalTime().ToString('yyyy.MM.dd_HH.mm') + '|' + $s.ToLocalTime().ToString('dd.MM HH:mm') + '|' + $e.ToLocalTime().ToString('dd.MM HH:mm') + '|' + ('{0}h {1}m' -f [int][Math]::Floor($d.TotalHours), $d.Minutes)"
 ```
 
-Then compute:
-- **Model**: from END_DATA (e.g. `claude-opus-4-6`)
-- **Branch**: from git
-- **Start time**: parse START_TS to local time `DD.MM HH:MM`
-- **End time**: current time `DD.MM HH:MM`
-- **Duration**: difference between end and start (e.g. `2h 15m`)
-
-Format as a single metadata line:
-```
-**Model**: <model> | **Branch**: <branch> | **Начало**: <start> | **Конец**: <end> | **Длительность**: <duration>
-```
+Result: `2026.03.23_10.47|23.03 10:47|24.03 11:02|24h 15m` — split by `|` into: filename date, start display, end display, duration.
 
 If JSONL extraction fails — still write the archive, just skip the metadata line.
 
-## Step 4: Detect Repeated Invocation
+## Step 3: Detect Repeated Invocation
 
-Check if `/session-archive` was already called earlier in this conversation by searching conversation history for a previously written archive file path in `docs/archive/`.
+Check if `/session-archive` was already called earlier in this conversation by searching conversation history for a previously written archive file path in `docs/archive/sessions/`.
 
 **If this is a repeated call:**
 - This is a **continuation archive** — only cover what happened AFTER the previous archive call
@@ -96,37 +64,27 @@ Check if `/session-archive` was already called earlier in this conversation by s
 
 **If this is the first call:** proceed normally.
 
-## Step 5: Analyze Session
+## Step 4: Analyze session & prepare content
 
-Review the conversation history (full if first call, or since last archive if repeated) to extract:
+From **conversation history** (already in context, no tool calls needed):
 
-### 5a. Original Prompt
-Find the first substantive task/request in the relevant scope.
-- If short (<15 lines): quote as-is
-- If long: summarize key points compactly, preserving the intent
+1. **Original prompt** — first substantive user request (or post-previous-archive if repeated). Short (<15 lines) → quote as-is. Long → summarize compactly.
+2. **Spell-check prompt** — fix only typos/spelling/punctuation, never rephrase. If corrections found → show original vs corrected, list each change, ask via AskUserQuestion. No corrections → skip silently.
+3. **Topic** — 2-3 words in English from the prompt (for filename).
 
-### 5b. Auto-generate Topic
-From the prompt, derive a **short topic** (2-3 words in English) that captures the main subject. This becomes part of the filename.
-Examples: "Home page", "OAuth auth", "SEO optimization", "Deploy scripts"
+**⛔ WAIT**: Steps 4-5 MUST NOT start until spell-check (step 2) is fully resolved — user approved or declined, or no corrections needed.
 
-### 5c. What Was Done
-From the conversation context AND `git diff --stat` / `git status`, compile:
-- Key features/changes implemented
-- Architectural decisions made
-- Group by logical areas, NOT by individual files
-- For repeated calls: only include changes made after the previous archive
+4. **What was done** — group by areas, not files. Use git status from Step 1. For repeated calls: only changes after previous archive.
+5. **TODOs** — discussed but not completed.
 
-### 5d. Remaining TODOs
-From the conversation — items discussed but not completed, known issues, next steps.
+## Step 5: Write archive file
 
-## Step 6: Write Archive File
-
-Path: `docs/archive/<date>_<time>_<dev>_<topic>.md`
-Example: `docs/archive/2026.03.22_14.35_ssv_Home_page.md`
+Path: `docs/archive/sessions/<filename_date>_<dev>_<topic>.md`
+Example: `docs/archive/sessions/2026.03.23_10.47_ssv_Home_pages.md`
 
 Topic words separated by underscores (e.g. `Audit_columns_rules`).
 If file already exists, append suffix: `_2`, `_3`, etc.
-Ensure `docs/archive/` directory exists (`mkdir -p`).
+Ensure `docs/archive/sessions/` directory exists (`mkdir -p docs/archive/sessions`).
 
 ### Template
 
@@ -158,12 +116,13 @@ Ensure `docs/archive/` directory exists (`mkdir -p`).
 
 ## Rules
 
-- **Компактность**: каждый пункт — 1 строка. Без деталей реализации. Сухо, по делу.
+- **Компактность**: 1 строка на пункт. Сухо, по делу.
 - **Группировка**: по фичам/областям, НЕ по файлам.
 - **Русский язык** в содержимом файла.
 - **Не спрашивать подтверждения** — сразу писать файл.
-- **Промт**: сохранять максимально близко к оригиналу, но компактно.
-- **Тема файла**: генерировать автоматически из промта, 2-3 слова, коротко и ёмко.
+- **Промт**: близко к оригиналу, но компактно.
+- **Тема файла**: 2-3 слова English, из промта.
 - **Метаданные сессии**: всегда извлекать из JSONL и вставлять после промта.
+- **Токены**: максимум параллельных вызовов, минимум раундтрипов. Данные из контекста — без лишних tool calls.
 - After writing, print the full file path and a 1-line confirmation.
-- Do NOT read files from `docs/archive/` — only write to it.
+- Do NOT read files from `docs/archive/sessions/` — only write to it.
