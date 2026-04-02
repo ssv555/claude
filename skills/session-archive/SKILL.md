@@ -2,7 +2,7 @@
 name: session-archive
 description: Archive current session work to docs/archive/sessions/ with prompt, changes summary, and TODOs
 disable-model-invocation: false
-allowed-tools: AskUserQuestion,Bash(git *),Bash(mkdir *),Bash(head *),Bash(tail *),Bash(grep *),Bash(powershell *),Bash(ls *),Read,Write,Glob,Grep
+allowed-tools: AskUserQuestion,Bash(git *),Bash(mkdir *),Bash(head *),Bash(tail *),Bash(grep *),Bash(bun *),Bash(ls *),Read,Write,Glob,Grep
 model: opus
 ---
 
@@ -41,9 +41,9 @@ grep -m1 '"gitBranch"' "$F" | sed 's/.*"gitBranch":"\([^"]*\)".*/\1/'
 
 This yields 4 values separated by `---SEP---`: start timestamp, end timestamp, model, gitBranch.
 
-Then **one powershell call** for date formatting and duration:
+Then **one bun call** for date formatting and duration:
 ```
-powershell -Command "$s=[DateTime]::Parse('START'); $e=[DateTime]::Parse('END'); $d=$e-$s; $s.ToLocalTime().ToString('yyyy.MM.dd_HH.mm') + '|' + $s.ToLocalTime().ToString('dd.MM HH:mm') + '|' + $e.ToLocalTime().ToString('dd.MM HH:mm') + '|' + ('{0}h {1}m' -f [int][Math]::Floor($d.TotalHours), $d.Minutes)"
+bun -e "const s=new Date('START'),e=new Date('END'),t=e-s;const h=Math.floor(t/36e5),m=Math.floor(t%36e5/6e4);const pad=n=>String(n).padStart(2,'0');const fmt=dt=>pad(dt.getDate())+'.'+pad(dt.getMonth()+1)+' '+pad(dt.getHours())+':'+pad(dt.getMinutes());const fn=s.getFullYear()+'.'+pad(s.getMonth()+1)+'.'+pad(s.getDate())+'_'+pad(s.getHours())+'.'+pad(s.getMinutes());console.log(fn+'|'+fmt(s)+'|'+fmt(e)+'|'+h+'h '+m+'m')"
 ```
 
 Result: `2026.03.23_10.47|23.03 10:47|24.03 11:02|24h 15m` — split by `|` into: filename date, start display, end display, duration.

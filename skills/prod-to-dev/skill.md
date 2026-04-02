@@ -15,9 +15,9 @@ Backup production database via SSH MCP (moscow) and restore to local dev Postgre
 
 Run via `mcp__moscow__execute-command`:
 ```
-cd /var/www/server_bun/scripts/deploy && bash 01-backup-db.sh
+cd /var/www/iamrich.it-joy.ru/scripts/deploy && bash 01-backup-db.sh
 ```
-Parse output to extract backup filename and path (e.g. `/var/backups/serverbun/backup_YYYY-MM-DD_HH-MM-SS.dump`).
+Parse output to extract backup filename and path (e.g. `/var/backups/iamrich/backup_YYYY-MM-DD_HH-MM-SS.dump`).
 
 ## Step 2 — Download dump to local .tmp/
 

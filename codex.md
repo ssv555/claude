@@ -1,49 +1,58 @@
-# Codex — Code Quality Rules
+# Codex — Engineering Principles
 
-- SOLID (S, O, L, I, D)
-- DRY after 3 occurrences
-- Composition > inheritance (max depth 2)
-- Separation: DB in services, validation in schemas, routing in routes, UI in components
-- KISS, YAGNI, Boy Scout, Least Surprise
-- Function ~30 lines, component ~150 lines, route file ~300 lines
-- Max nesting 3 — early return
-- Naming: var = "what", func = "what does", bool = `is/has/can/should`
-- Command-Query Separation
-- Law of Demeter — no `a.b.c.d`
-- No magic numbers — constants
-- `const` > `let`, immutability, pure functions, side effects at edges
-- async/await, Promise.all
+## SOLID
+- **S** — Single Responsibility: one module/class/function = one reason to change
+- **O** — Open/Closed: extend via composition, not modification of existing code
+- **L** — Liskov Substitution: subtypes must be substitutable for their base types
+- **I** — Interface Segregation: small focused interfaces over fat ones
+- **D** — Dependency Inversion: depend on abstractions, not concrete implementations
 
-## Errors
+## DRY & Decomposition
+- **DRY**: Do not repeat logic. Extract shared code into reusable modules. But avoid premature abstraction — 3 occurrences before extracting
+- **Decomposition**: Break complex logic into small, testable, single-purpose functions. Max function length ~30 lines. If a function needs a comment explaining "what" — it should be a separate function with a descriptive name
+- **Separation of concerns**: DB logic in services/repositories, validation in schemas, routing in routes, UI in components
 
-- Every `catch` → `console.error('action', { context })`. Silent only with `// silent: <reason>`
-- Structured logging objects, not strings
-- Dev: fail fast. Prod: graceful + server logs
+## OOP & Inheritance
+- Prefer **composition over inheritance** — avoid deep class hierarchies
+- Inheritance max depth: 2 levels. If deeper — refactor to composition
+- Use **interfaces** for contracts, **abstract classes** only when sharing implementation
 
-## Security
+## Core Principles
+- **KISS** — Keep It Simple. Simple solution > clever solution. If it needs a long explanation — simplify
+- **YAGNI** — You Ain't Gonna Need It. Don't write code for hypothetical future requirements
+- **Boy Scout Rule** — Leave code cleaner than you found it. Small improvements on every touch
+- **Principle of Least Surprise** — Code should behave as the reader expects. No hidden side effects, no surprising defaults
 
-- OWASP Top 10
-- Validate inputs server-side, sanitize output
-- Rate limiting on mutations/auth/AI
-- No `dangerouslySetInnerHTML`, no `eval`
-- `timingSafeEqual` for secrets
-- Cookies: HttpOnly, SameSite, Secure, expiration
+## Clean Code
+- **Guard Clauses / Early Return** — exit early instead of deep nesting. Max nesting: 3 levels
+- **Naming** — variable answers "what", function answers "what it does", boolean starts with `is`/`has`/`can`/`should`
+- **Command-Query Separation** — function either performs an action OR returns data, never both
+- **Law of Demeter** — don't chain: `user.address.city.name` → bad. Access through direct dependency only
+- **No Magic Numbers/Strings** — all literals into named constants
+
+## Functional Patterns
+- **Immutability** — prefer `const`, use spread/destructuring instead of mutation, avoid `let` where possible
+- **Pure Functions** — same input → same output, no side effects. Isolate side effects to the edges
+- **Pipe/Compose** — chain transformations instead of nested calls. Use async/await, Promise.all for parallel work
+
+## Debug & Error Handling
+- Every error must be **traceable**: include context (userId, entityId, action) in error logs
+- Use structured logging with context objects, not string concatenation
+- Never swallow errors silently. Fail fast, fail loud in development
+- Production: graceful degradation with user-friendly messages, detailed server-side logs
+
+## Security by Design
+- **OWASP Top 10** awareness: XSS, SQL injection, CSRF, broken auth — consider on every endpoint
+- **Input validation at boundaries** — validate all API inputs, sanitize before output
+- **Least Privilege** — minimum permissions by default. Users get access explicitly, not implicitly
+- **Never trust client data** — validate and sanitize everything server-side, even if validated on frontend
 
 ## Testing
-
-- Pyramid: unit > integration > e2e
-- AAA pattern
-- Test behavior, not implementation
+- **Testing Pyramid** — many unit tests, fewer integration, minimal e2e
+- **AAA Pattern** — Arrange (setup), Act (execute), Assert (verify) in every test
+- **Test behavior, not implementation** — test "what it does", not "how it's built". Tests survive refactoring
 
 ## Performance
-
-- Dynamic imports for heavy stuff
-- Pagination everywhere
-- N+1: joins, not loops
-- `useMemo`/`useCallback` only when measured
-
-## UI
-
-- Semantic HTML + keyboard accessible
-- Messages → toast
-- `p-4` on popover/card/dialog
+- **Lazy Loading** — load only when needed. Dynamic imports for heavy modules
+- **Pagination everywhere** — never return unbounded result sets. Always limit + offset or cursor
+- **N+1 Query Prevention** — use joins/includes instead of loops with queries

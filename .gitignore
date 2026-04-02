@@ -6,6 +6,8 @@ cache/
 stats-cache.json
 mcp-needs-auth-cache.json
 
+sessions/
+
 # Auto-generated runtime data
 projects/
 file-history/
