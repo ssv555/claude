@@ -30,7 +30,8 @@ If the file does not exist — skip steps 3–4, go directly to step 5.
 4. If ANY match found:
    a. Read the file at `versionFile` path to get current APP_VERSION
    b. Fetch production version: first run `ToolSearch` with query `select:WebFetch` to load the tool schema, then call `WebFetch` with URL from `prodVersionUrl` and prompt `extract version`. Extract `version` field from JSON response. If fetch fails or times out — use `"недоступен"`
-   c. Call the AskUserQuestion tool:
+   c. **Compare local vs prod version.** Parse both as dot-separated integers (e.g. `0.0.004` → `[0, 0, 4]`). If local > prod (any segment higher, left-to-right) — the bump is ALREADY done, cached files will be re-fetched by clients anyway. **Skip the question entirely, do NOT edit version file, go directly to step 5.** Only ask the user if local == prod, or if prod version is `"недоступен"` (can't compare safely).
+   d. Call the AskUserQuestion tool:
 
 ```json
 {
@@ -52,7 +53,7 @@ Replace `<PROD_VERSION>` with the version from production API response, or `не
 
 Do NOT edit any files until user responds.
 
-   d. If user chose "Да": read the `versionFile`, increment patch (e.g. 1.0.014 → 1.0.015), edit file, append `(v1.0.015)` to commit message
+   e. If user chose "Да": read the `versionFile`, increment patch (e.g. 1.0.014 → 1.0.015), edit file, append `(v1.0.015)` to commit message
 5. Check if `.claude/skills/session-archive/SKILL.md` exists in the project root (use Glob). If it exists:
 
    **Skip condition**: If there was no meaningful dialog in this session — i.e., the conversation contains only skill/command invocations (like `/git-push`, `/version-up`, etc.) without any real discussion, code changes, debugging, or decision-making — skip the archive prompt silently and go to step 6. There is nothing worth archiving when no actual work happened.

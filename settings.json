@@ -1,14 +1,20 @@
 {
   "permissions": {
     "allow": [
-      "Bash(bunx playwright test:*)",
+      "Bash",
+      "Edit",
+      "Write",
+      "Read",
+      "WebSearch",
+      "WebFetch",
+      "Skill",
       "mcp__mcp-dev-tg-chat-agent__notify_via_telegram",
-      "Read(//d/Data/Documents/Programming/Projects/AI/Claude/**)",
-      "Read(//c/Users/ssv55/.claude/plugins/marketplaces/claude-plugins-official/plugins/hookify/hooks/**)",
-      "Read(//d/Data/Documents/Programming/Projects/AI/Claude/plugins/marketplaces/claude-plugins-official/plugins/hookify/hooks/**)",
-      "Read(//c/Users/ssv55/Scripts/hooks/**)",
-      "Read(//d/Data/Documents/Programming/Projects/MCP/mcp-dev-tg-chat-agent/**)",
-      "Bash(node -e 'const p=require\\(\"\"os\"\"\\).homedir\\(\\)+\"\"/.claude/settings.json\"\";const c=JSON.parse\\(require\\(\"\"fs\"\"\\).readFileSync\\(p,\"\"utf8\"\"\\)\\);if\\(c.hooks===undefined\\)c.hooks={};if\\(c.hooks.PostToolUse===undefined\\)c.hooks.PostToolUse=[];const cmd=\"\"powershell -ExecutionPolicy Bypass -Command \\\\\"\"& \\(Join-Path $env:USERPROFILE '\"''\"'Scripts/hooks/check-tg-inbox.ps1'\"''\"'\\); exit $LASTEXITCODE\\\\\"\"\"\";const exists=c.hooks.PostToolUse.some\\(e=>e.hooks&&e.hooks.some\\(h=>h.command&&h.command.includes\\(\"\"check-tg-inbox\"\"\\)\\)\\);if\\(exists\\){console.log\\(\"\"already exists\"\"\\)}else{c.hooks.PostToolUse.push\\({hooks:[{type:\"\"command\"\",command:cmd,timeout:5}]}\\);require\\(\"\"fs\"\"\\).writeFileSync\\(p,JSON.stringify\\(c,null,2\\)\\);console.log\\(\"\"PostToolUse hook added\"\"\\)}')"
+      "mcp__amsterdam_grey__*",
+      "mcp__amsterdam_grey_root__*",
+      "mcp__amsterdam_my__*",
+      "mcp__moscow_my__*",
+      "mcp__playwright__*",
+      "mcp__desktop__*"
     ],
     "deny": [
       "Read(**/.env)",
