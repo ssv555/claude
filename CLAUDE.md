@@ -127,6 +127,12 @@ When referencing files outside the current project, ALWAYS:
 
 `~/.claude` → `D:\Data\Documents\Programming\Projects\AI\Claude\`. All projects are on D:, relative paths work. Never claim "cross-drive, impossible" without checking symlinks first.
 
+## AskUserQuestion — not available in subagents/hooks
+
+`AskUserQuestion` works ONLY in the main session. Subagents (Agent tool), background agents, and hook-triggered agents CANNOT use it — it is blocked at system level.
+
+**Replacement:** `~/.claude/scripts/dialog.ps1` — PowerShell GUI dialog that works from any context. When writing or editing a skill that may run outside main session, use `dialog.ps1` instead of `AskUserQuestion`. Add `Bash(powershell *)` to `allowed-tools`.
+
 ## Codex — Code Quality Rules
 
 See [codex.md](./codex.md) — SOLID, DRY, KISS, YAGNI, Clean Code, Security, Testing, Performance.

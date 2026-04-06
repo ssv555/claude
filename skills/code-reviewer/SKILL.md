@@ -2,12 +2,16 @@
 name: code-reviewer
 description: "Code review of changed files against Codex rules (SOLID, DRY, Security, Performance, Correctness). Use when the user wants a code review, quality check, or asks to review changes."
 disable-model-invocation: false
-allowed-tools: Bash(git *), Read, Grep, Glob
+allowed-tools: Bash(git *), Bash(bun test *), Bash(powershell *), Read, Grep, Glob, Edit, Write
 model: opus
 effort: max
 ---
 
 # Code Reviewer (ultrathink)
+
+<!-- AskUserQuestion does NOT work in subagents/hooks/background agents.
+     This skill uses ~/.claude/scripts/dialog.ps1 for interactive prompts instead.
+     See dialog.ps1 header for details. -->
 
 Review changed code against **Codex** (`~/.claude/codex.md`) — the single source of engineering rules.
 
@@ -73,13 +77,15 @@ Review the diff against ALL codex rules. Classify each finding:
 - **Code hygiene** — redundant state, stringly-typed, leaky abstractions, comments
 - **Clean code** — naming, guard clauses, CQS, Law of Demeter, magic values
 
-## Step 6: Output
+## Step 6: Output review
 
 If no issues found:
 
 ```
 Замечаний нет
 ```
+
+Then STOP. Skip steps 7–8.
 
 If issues found, output in Russian:
 
@@ -108,9 +114,38 @@ code suggestion
 ```
 
 **Rules:**
-- `APPROVE` — no P0/P1 findings
-- `NEEDS FIX` — has P0 or P1
-- `DISCUSS` — ambiguous, needs author context
+- `APPROVE` — no P0/P1 findings → skip steps 7–8
+- `NEEDS FIX` — has P0 or P1 → continue to step 7
+- `DISCUSS` — ambiguous → continue to step 7
 - P0/P1 — always include detailed write-up + suggested fix
 - P2/P3 — table entry only, detail section only if code suggestion helps
 - Keep it concise — no praise, no filler
+
+## Step 7: Confirm edits
+
+If verdict is `NEEDS FIX` or `DISCUSS`, ask via dialog:
+
+```bash
+powershell -nop -f ~/.claude/scripts/dialog.ps1 -Mode custom -Title "Code Review" -Agent "Code Reviewer" -Message "Найдены P0/P1 замечания. Применить исправления?" -Options "fix:Применить исправления,skip:Пропустить"
+```
+
+- Result `fix` → apply all P0/P1 fixes using Edit tool. Follow Logic Preservation rule — fix only the flagged issue, do not change surrounding code. After applying, continue to step 8.
+- Result `skip` → STOP.
+
+## Step 8: Test decision
+
+After edits were applied, assess whether tests are needed:
+
+- **Tests needed if:** logic changed, new branches added, error handling modified, API contracts affected
+- **Tests NOT needed if:** only naming/formatting/comments changed, only imports reordered, only constants moved
+
+If tests are needed, ask via dialog:
+
+```bash
+powershell -nop -f ~/.claude/scripts/dialog.ps1 -Mode custom -Title "Tests" -Agent "Code Reviewer" -Message "Правки затронули логику. Запустить тесты?" -Options "run:Запустить тесты,skip:Пропустить"
+```
+
+- Result `run` → run `bun test` (or project-specific test command from `package.json`). Report results.
+- Result `skip` → STOP.
+
+If tests are NOT needed — STOP silently, do not ask.
