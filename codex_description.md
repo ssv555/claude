@@ -94,6 +94,27 @@ The cardinal rule of refactoring and code review: **the observable behavior of t
 - **Side effects are part of behavior** — logging, metrics, event emission, cache writes are observable. Moving, reordering, or removing them during refactoring changes behavior even if the return value stays the same
 - **Verify after refactoring** — after any structural change, the existing tests must still pass without modification. If tests need updating, that's a signal the behavior changed (exception: tests that tested implementation details, not behavior)
 
+## Adaptive Review Depth
+
+Review depth must match **semantic complexity**, not line count. A 1-line change in auth middleware is more critical than 200 lines of i18n translations.
+
+- **Assess before reviewing** — before diving into the diff, determine: what areas are affected (auth, payments, data integrity, UI cosmetics)? What's the blast radius if this code is wrong? The answer sets the depth
+- **High-risk signals** (go deep, plan before conclusions):
+  - Authentication, authorization, session handling
+  - Money, payments, financial calculations
+  - Data mutations (INSERT/UPDATE/DELETE), schema changes
+  - Cryptography, secrets, tokens
+  - Concurrency, shared state, race-prone code
+  - Public API contracts (breaking changes)
+- **Low-risk signals** (single pass is enough):
+  - Translations, copy text, comments
+  - CSS/styling, purely visual changes
+  - Adding/removing log lines
+  - Dependency version bumps (unless major)
+  - Test-only changes that don't touch production code
+- **When in doubt, go deeper** — a false alarm costs minutes, a missed bug in auth costs days
+- **No rigid thresholds** — never use line count, file count, or diff size as the primary factor. They are hints at best. A 3-line regex change can be far more dangerous than a 500-line generated migration
+
 ## Testing
 
 - **Testing Pyramid** — many unit tests, fewer integration, minimal e2e

@@ -43,7 +43,16 @@ Read the full files (not just diff hunks) to understand surrounding context.
 
 Read `~/.claude/codex.md` to load the current rule set. Apply every rule from the list to the diff.
 
-## Step 4: Analyze
+## Step 4: Assess complexity
+
+Before analyzing, evaluate semantic risk of the changes:
+- **What areas are affected?** Auth, payments, data mutations, crypto, concurrency, public API → go deep, think through edge cases
+- **What's the blast radius?** Translations, styling, logs, test-only → single pass is enough
+- **Never judge by line count** — 1 line in auth > 200 lines of i18n
+
+Adapt your analysis depth accordingly. When in doubt, go deeper.
+
+## Step 5: Analyze
 
 Review the diff against ALL codex rules. Classify each finding:
 
@@ -64,7 +73,7 @@ Review the diff against ALL codex rules. Classify each finding:
 - **Code hygiene** — redundant state, stringly-typed, leaky abstractions, comments
 - **Clean code** — naming, guard clauses, CQS, Law of Demeter, magic values
 
-## Step 5: Output
+## Step 6: Output
 
 If no issues found:
 
