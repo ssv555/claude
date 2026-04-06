@@ -1,6 +1,6 @@
 ---
 name: git-push-all
-description: "Scan multiple repos for changes and generate git push commands. Checks: current project, .docs (secret), global Claude, global AHK."
+description: "Scan multiple repos for changes and generate git push commands. Checks: current project, .docs (secret), global Claude."
 disable-model-invocation: false
 allowed-tools: Bash(git *), Glob
 model: sonnet
@@ -24,8 +24,7 @@ All paths use `$HOME` (bash) / `%USERPROFILE%` (CMD) — no hardcoded usernames.
 |-------|-----------|----------|-------|
 | **Project** | `$PWD` | current dir | Current working directory |
 | **.docs** | `$PWD/.docs` | — | Secret folder with own git. **If absent or not a git repo — skip silently, NEVER mention** |
-| **Claude** | `$HOME/.claude` | `%USERPROFILE%\.claude` | Global Claude config repo (symlink to D: drive) |
-| **AHK** | `$HOME/Scripts` | `%USERPROFILE%\Scripts` | Global scripts & AutoHotKey repo |
+| **Claude** | `$HOME/.claude` | `%USERPROFILE%\.claude` | Global Claude config repo (includes AHK in `ahk/` subfolder) |
 
 ## Execution
 
@@ -41,9 +40,6 @@ git -C "$PWD/.docs" status --short 2>/dev/null
 ```
 ```bash
 git -C "$HOME/.claude" status --short
-```
-```bash
-git -C "$HOME/Scripts" status --short
 ```
 
 For `.docs`: if the command fails or returns nothing — ignore silently. Do NOT mention `.docs` in output.
@@ -70,12 +66,6 @@ For each repo with changes:
 
     ```cmd
     cd /d %USERPROFILE%\.claude && git add -A && git commit -m "update: memory and settings" && git pull --rebase && git push
-    ```
-
-    ### AHK
-
-    ```cmd
-    cd /d %USERPROFILE%\Scripts && git add -A && git commit -m "update: hook scripts" && git pull --rebase && git push
     ```
 
 **Rules:**

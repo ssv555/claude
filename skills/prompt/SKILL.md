@@ -23,8 +23,8 @@ Manage the prompt optimizer hook settings.
 3. If user chose "Edit prompts":
    - Ask which prompt to edit via AskUserQuestion: "Which prompt to edit?" Options: "Optimize", "Echo", "Both"
    - Open selected file(s) in Cursor via Bash:
-     - Optimize: `"$LOCALAPPDATA/Programs/Cursor/resources/app/bin/cursor.cmd" "$USERPROFILE/Scripts/hooks/prompt-optimize.txt"`
-     - Echo: `"$LOCALAPPDATA/Programs/Cursor/resources/app/bin/cursor.cmd" "$USERPROFILE/Scripts/hooks/prompt-echo.txt"`
+     - Optimize: `"$LOCALAPPDATA/Programs/Cursor/resources/app/bin/cursor.cmd" "$USERPROFILE/.claude/hooks/prompt-optimize.txt"`
+     - Echo: `"$LOCALAPPDATA/Programs/Cursor/resources/app/bin/cursor.cmd" "$USERPROFILE/.claude/hooks/prompt-echo.txt"`
      - Both: open both files in one command
    - Tell user: "File opened in editor. Changes take effect on next prompt."
    - Done (no state file changes needed)

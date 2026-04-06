@@ -1,0 +1,3 @@
+Repeat the user message exactly as written, character by character.
+Add a single period at the very end.
+No other changes, no commentary.

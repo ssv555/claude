@@ -24,7 +24,7 @@
     ],
     "additionalDirectories": [
       "d:\\Data\\Documents\\Programming\\Projects\\MCP\\mcp-dev-tg-chat-agent",
-      "C:\\Users\\ssv55\\Scripts\\hooks"
+      "C:\\Users\\ssv55\\.claude\\hooks"
     ]
   },
   "hooks": {
@@ -34,12 +34,23 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -Command \"& (Join-Path $env:USERPROFILE 'Scripts/hooks/block-dangerous.ps1'); exit $LASTEXITCODE\""
+            "command": "powershell -ExecutionPolicy Bypass -Command \"& (Join-Path $env:USERPROFILE '.claude/hooks/block-dangerous.ps1'); exit $LASTEXITCODE\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "if": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/pre-commit-review.sh",
+            "timeout": 600000
           }
         ]
       }
     ]
   },
   "autoUpdatesChannel": "latest",
-  "effortLevel": "high"
+  "effortLevel": "max"
 }
