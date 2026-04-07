@@ -39,7 +39,7 @@ If while working on a task you notice other things that "should" be changed — 
 ### Does NOT apply to
 
 - Changes strictly inside the explicit request (obviously).
-- Typecheck/lint/build errors caused BY your own changes — fix them (per feedback_fix_all_errors rule).
+- **ALL typecheck/lint/build errors — fix regardless of origin.** Never classify errors as "not my changes" or "pre-existing". **Small fix** (< ~20 lines, no architectural impact) → fix silently. **Large fix** (refactor, new dependency, architectural change) → describe the problem and proposed fix, ask before doing.
 - Adding imports/dependencies required for the explicit request to compile.
 - Updating tests that break BECAUSE of your explicit changes (the test is now wrong by definition).
 
