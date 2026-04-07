@@ -37,20 +37,9 @@
             "command": "powershell -ExecutionPolicy Bypass -Command \"& (Join-Path $env:USERPROFILE '.claude/hooks/block-dangerous.ps1'); exit $LASTEXITCODE\""
           }
         ]
-      },
-      {
-        "matcher": "Bash",
-        "if": "Bash(git commit*)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/pre-commit-review.sh",
-            "timeout": 600000
-          }
-        ]
       }
     ]
   },
   "autoUpdatesChannel": "latest",
-  "effortLevel": "max"
+  "effortLevel": "high"
 }

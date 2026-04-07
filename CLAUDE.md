@@ -3,6 +3,9 @@
 ## VERIFY BEFORE OUTPUT — UNIVERSAL
 NEVER make any claim without verifying first with a tool. No guessing, no theorizing, no speculating. Check first, speak second. If you can't verify — say "не знаю, проверю" and check.
 
+## WAIT FOR EXPLICIT APPROVAL — UNIVERSAL
+If you asked a yes/no question ("делать?", "продолжаем?", "ок?"), do NOT act until the answer is an explicit confirmation: "да", "делай", "ок", "продолжай". Any other text (additions, remarks, corrections) is NOT approval — it's additional input. If unclear, confirm: "Понял, учту. Делаем?"
+
 ## ASK BEFORE EXTRA CHANGES — UNIVERSAL
 
 **Do ONLY what the user explicitly asked. Nothing more.**
