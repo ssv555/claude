@@ -114,7 +114,7 @@ if [ "$CHOICE" = "cancel" ] || [ -z "$CHOICE" ]; then
 fi
 
 if [ "$CHOICE" = "commit" ]; then
-  toast "info" "Code Review" "Коммит без ревью" || true
+  toast "success" "Code Review" "Коммит выполнен без ревью" || true
   exit 0
 fi
 
@@ -208,7 +208,7 @@ FIRST_LINE=$(echo "$RESULT" | head -1)
 
 # --- APPROVE: clean, commit proceeds ---
 if echo "$FIRST_LINE" | grep -qi "APPROVE"; then
-  toast "success" "Code Review" "APPROVE — $FILE_COUNT файлов, ${ELAPSED}s"
+  toast "success" "Code Review" "APPROVE. Коммит выполнен. $FILE_COUNT файлов, ${ELAPSED}s" 5
   exit 0
 fi
 
@@ -228,11 +228,11 @@ if echo "$FIRST_LINE" | grep -qi "WARN"; then
     -Footer "При отмене в буфер скопируется: $FIX_PROMPT")
 
   if [ "$CHOICE" = "commit" ]; then
-    toast "info" "Code Review" "Коммит с замечаниями P2/P3"
+    toast "success" "Code Review" "Коммит выполнен с замечаниями P2/P3"
     exit 0
   else
     copy_fix_prompt
-    toast "info" "Code Review" "Коммит отменён. Промпт скопирован — Ctrl+V в Claude Code"
+    toast "warning" "Code Review" "КОММИТ ОТМЕНЁН. Pull/push не выполнены. Промпт в буфере — Ctrl+V" 6
     exit 1
   fi
 fi
@@ -242,7 +242,7 @@ if echo "$FIRST_LINE" | grep -qi "DENY\|ERROR"; then
   P0_COUNT=$(echo "$RESULT" | grep -ci "P0" || true)
   P1_COUNT=$(echo "$RESULT" | grep -ci "P1" || true)
 
-  toast "error" "Code Review" "DENY — P0:$P0_COUNT P1:$P1_COUNT, ${ELAPSED}s"
+  toast "error" "Code Review" "КОММИТ ЗАБЛОКИРОВАН. P0:$P0_COUNT P1:$P1_COUNT. Pull/push не выполнены. Промпт в буфере" 6
 
   copy_fix_prompt
 
