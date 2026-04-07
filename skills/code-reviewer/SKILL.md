@@ -121,15 +121,37 @@ code suggestion
 - P2/P3 — table entry only, detail section only if code suggestion helps
 - Keep it concise — no praise, no filler
 
-## Step 7: Confirm edits
+## Step 7: Fix plan (Adaptive)
 
-If verdict is `NEEDS FIX` or `DISCUSS`, ask via dialog:
+If verdict is `NEEDS FIX` or `DISCUSS`:
 
-```bash
-powershell -nop -f ~/.claude/scripts/dialog.ps1 -Mode custom -Title "Code Review" -Agent "Code Reviewer" -Message "Найдены P0/P1 замечания. Применить исправления?" -Options "fix:Применить исправления,skip:Пропустить"
+Assess whether a plan is needed before fixing (Adaptive Review Depth):
+- **Plan needed:** multiple P0/P1 findings, changes in auth/payments/data, cross-file fixes, non-obvious refactoring
+- **Plan NOT needed:** single obvious fix (typo, missing null check, forgotten import)
+
+**If plan needed** — output the plan in Russian before asking:
+
+```
+### План исправлений
+
+1. `file.ts:45` — заменить inline query на usersDb.findById()
+2. `file.ts:80` — добавить Zod-валидацию входных параметров
+3. `auth.ts:12` — обернуть в try/catch, добавить контекст в ошибку
 ```
 
-- Result `fix` → apply all P0/P1 fixes using Edit tool. Follow Logic Preservation rule — fix only the flagged issue, do not change surrounding code. After applying, continue to step 8.
+Then ask via dialog:
+
+```bash
+powershell -nop -f ~/.claude/scripts/dialog.ps1 -Mode custom -Title "Code Review" -Agent "Code Reviewer" -Message "План исправлений выше. Применить?" -Options "fix:Применить по плану,skip:Пропустить"
+```
+
+**If plan NOT needed** — ask directly:
+
+```bash
+powershell -nop -f ~/.claude/scripts/dialog.ps1 -Mode custom -Title "Code Review" -Agent "Code Reviewer" -Message "Найдено замечание P0/P1. Применить исправление?" -Options "fix:Применить,skip:Пропустить"
+```
+
+- Result `fix` → apply fixes (strictly per plan if plan was shown). Follow Logic Preservation rule — fix only the flagged issue, do not change surrounding code. After applying, continue to step 8.
 - Result `skip` → STOP.
 
 ## Step 8: Test decision
