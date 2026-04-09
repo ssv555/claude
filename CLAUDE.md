@@ -136,9 +136,21 @@ When referencing files outside the current project, ALWAYS:
 
 **Replacement:** `~/.claude/scripts/dialog.ps1` — PowerShell GUI dialog that works from any context. When writing or editing a skill that may run outside main session, use `dialog.ps1` instead of `AskUserQuestion`. Add `Bash(powershell *)` to `allowed-tools`.
 
-## Git operations — only through Claude Code Bash tool
+## Git — UNIVERSAL
 
-All git commands (commit, push, pull, etc.) must be executed ONLY through Claude Code's Bash tool — never from external terminals (CMD, PowerShell, Total Commander). This ensures PreToolUse hooks fire correctly (auto code review on commit, etc.). When giving git commands to the user, always format them for execution inside Claude Code, not for copy-paste into external terminal.
+- **NEVER run `git commit` or `git push`**. User executes manually. Claude outputs the command in chat only.
+- All other git commands (`status`, `diff`, `log`, `pull`, etc.) — through Claude Code Bash tool only, never external terminals. Ensures PreToolUse hooks fire correctly.
+
+### Command format for user
+
+```
+cd /d <project_path> && git add -A && git commit -m "msg" && git pull --rebase && git push
+```
+
+- `cd /d <path>` — Windows CMD syntax
+- `git add -A` — all files
+- `git pull --rebase` before push — multiple devs on same branch
+- Full Windows paths, never `~/` or Unix
 
 ## Codex — Code Quality Rules
 
