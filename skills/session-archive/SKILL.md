@@ -124,5 +124,5 @@ Ensure `docs/archive/sessions/` directory exists (`mkdir -p docs/archive/session
 - **Тема файла**: 2-3 слова English, из промта.
 - **Метаданные сессии**: всегда извлекать из JSONL и вставлять после промта.
 - **Токены**: максимум параллельных вызовов, минимум раундтрипов. Данные из контекста — без лишних tool calls.
-- After writing, print the full file path and a 1-line confirmation.
+- After writing, print the file path as a clickable markdown link: `[filename.md](relative/path/filename.md)` and a 1-line confirmation.
 - Do NOT read files from `docs/archive/sessions/` — only write to it.

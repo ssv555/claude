@@ -16,4 +16,4 @@
 - Logic preservation: refactoring and review must never change observable behavior 👤 [description](./codex_description.md#logic-preservation)
 - Review depth proportional to semantic complexity, not line count 👤 [description](./codex_description.md#adaptive-review-depth)
 - Testing pyramid, AAA, test behavior not implementation 👤 [description](./codex_description.md#testing)
-- Lazy loading, pagination, N+1 prevention, no blocking in async, sequential→parallel, bounded data structures 👤 [description](./codex_description.md#performance)
+- Lazy loading, pagination, N+1 prevention, no blocking in async, sequential→parallel, bounded data structures, fire-and-forget for non-critical side effects 👤 [description](./codex_description.md#performance)

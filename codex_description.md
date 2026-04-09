@@ -129,4 +129,5 @@ Review depth must match **semantic complexity**, not line count. A 1-line change
 - **No blocking in async** — never block the event loop with synchronous heavy computation. Use workers, streams, or chunked processing
 - **Sequential → parallel** — independent async operations must run concurrently (`Promise.all`), not sequentially (`await` in a loop)
 - **Bounded data structures** — arrays, maps, caches, queues must have explicit size limits. Unbounded growth = memory leak in disguise
+- **Fire-and-forget for non-critical side effects** — non-critical async operations (logging to file/DB, analytics, metrics, audit trails) must NOT block the main flow. Use `void promise` pattern — call without `await`, handle errors inside via `.catch()`. The user/caller should not wait for a log write to complete before getting a response. Always add `.catch()` to avoid unhandled promise rejections. Example: `void writeAuditLog(ctx).catch(err => console.error('audit log failed', err))`
 - **Change-detection guards** — skip no-op updates in loops/handlers. Don't re-render, re-write, or re-send if nothing changed
