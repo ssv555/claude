@@ -7,8 +7,8 @@
 ```
 MODEL:   [actual model ID]
 VERSION: [actual version]
-EFFORT:  [actual effort level]
-THINK:   [enabled/disabled]
+EFFORT:  [if available]
+THINK:   [if detectable]
 CONTEXT: [actual context window size]
 ```
 
@@ -17,8 +17,8 @@ Rules:
 - **ALL values MUST come from the actual system context injected by Claude Code into the current session.** NEVER copy values from this file or any other file. Each field has a specific real source:
   - **MODEL** — from the system prompt line "You are powered by the model named ..." (e.g. `claude-opus-4-6`)
   - **VERSION** — from the same line (e.g. `4.6`)
-  - **EFFORT** — from the `<reasoning_effort>` tag in the system context. Mapping: `0-33` → `low`, `34-66` → `medium`, `67-99` → `high`, `100` or absent → `max`. If the tag is missing, output `unknown (tag not found)`
-  - **THINK** — `enabled` if you are actually generating extended-thinking blocks (visible as &lt;thinking&gt; in the raw response), `disabled` otherwise
+  - **EFFORT** — from the `<reasoning_effort>` tag in the system context. Mapping: `0-33` → `low`, `34-66` → `medium`, `67-99` → `high`, `100` → `max`. **If the tag is absent — omit the EFFORT line entirely** (don't write "unknown"). As of 2026-04, Claude Code sends effort as an API parameter invisible to the model; this field is reserved for when they start injecting it into the system prompt.
+  - **THINK** — check conversation history for thinking blocks (`"type": "thinking"` or `Thought for` markers) from prior assistant messages. If found → `enabled`. If this is the very first response and no history exists → omit the line. As of 2026-04, thinking is an API parameter; the model can only detect it retroactively from prior turn history.
   - **CONTEXT** — context window of the current model. Claude Sonnet/Opus 4.x = 200 000 tokens. If not injected by the system — write `200 000 tokens (model default)`
 
 ## VERIFY BEFORE OUTPUT — UNIVERSAL
