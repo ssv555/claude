@@ -1,5 +1,26 @@
 # Global Rules
 
+## Session Start — Status Block
+
+**REQUIRED:** The very FIRST response in every new conversation must BEGIN with this status block (before any other content):
+
+```
+MODEL:   [actual model ID]
+VERSION: [actual version]
+EFFORT:  [actual effort level]
+THINK:   [enabled/disabled]
+CONTEXT: [actual context window size]
+```
+
+Rules:
+- Output it ONCE — at the very start of the first response only. Never repeat in subsequent responses.
+- **ALL values MUST come from the actual system context injected by Claude Code into the current session.** NEVER copy values from this file or any other file. Each field has a specific real source:
+  - **MODEL** — from the system prompt line "You are powered by the model named ..." (e.g. `claude-opus-4-6`)
+  - **VERSION** — from the same line (e.g. `4.6`)
+  - **EFFORT** — from the `<reasoning_effort>` tag in the system context. Mapping: `0-33` → `low`, `34-66` → `medium`, `67-99` → `high`, `100` or absent → `max`. If the tag is missing, output `unknown (tag not found)`
+  - **THINK** — `enabled` if you are actually generating extended-thinking blocks (visible as &lt;thinking&gt; in the raw response), `disabled` otherwise
+  - **CONTEXT** — context window of the current model. Claude Sonnet/Opus 4.x = 200 000 tokens. If not injected by the system — write `200 000 tokens (model default)`
+
 ## VERIFY BEFORE OUTPUT — UNIVERSAL
 NEVER make any claim without verifying first with a tool. No guessing, no theorizing, no speculating. Check first, speak second. If you can't verify — say "не знаю, проверю" and check.
 
@@ -151,6 +172,20 @@ cd /d <project_path> && git add -A && git commit -m "msg" && git pull --rebase &
 - `git add -A` — all files
 - `git pull --rebase` before push — multiple devs on same branch
 - Full Windows paths, never `~/` or Unix
+
+## External ChatGPT Links — Extract & Archive
+
+When the user posts a link to a shared external chat/discussion (e.g. `chatgpt.com/s/...`):
+
+1. **Open via Playwright** — WebFetch does not handle SPAs. Follow embedded links too if they carry relevant material.
+2. **Filter content** — drop fluff, pleasantries, repetition. Keep:
+   - technical details (code, commands, flags, file/package names, versions)
+   - rationale / ideology (why this approach, which alternatives were rejected and why)
+3. **Save to `.docs/`** in project root (add to `.gitignore` if not there — private knowledge base, hidden from other devs).
+4. **Before creating a new file — scan existing files in `.docs/`**:
+   - if a file on a close topic exists → **append/merge** into it, no duplicates
+   - otherwise → **create new file**, English name, no spaces (use `_`), descriptive
+5. **Report briefly**: which file was created/updated and a one-line summary of what was added.
 
 ## Codex — Code Quality Rules
 

@@ -2,8 +2,6 @@
 name: changelog-sync
 description: Sync archive sessions and orphan commits into changelog drafts (reads sessions, generates 3-level texts, inserts into SQLite)
 disable-model-invocation: false
-allowed-tools: Bash(bun *),Bash(git *),Bash(ls *),Bash(wc *),Read,Glob,Grep
-model: opus
 ---
 
 Generate changelog entries from archive sessions and orphan git commits.
@@ -63,12 +61,29 @@ Filter: keep only files that:
 2. Have filename date > `last_sync_at` (or all if first run)
 3. Match valid filename format: `YYYY.MM.DD_HH.MM_developer_Topic.md`
 
-Sort chronologically. This is the work queue.
+Sort chronologically. This is the **session queue**.
 
-## Step 3: Scan Orphan Commits (after sessions)
+## Step 3: Scan Orphan Commits
+
+Calculate the scan floor: `last_sync_at - 30 days` (buffer for manually deleted entries). If `last_sync_at` is null → scan all commits.
 
 ```bash
-git log --after="<last_sync_at or earliest date>" --format="%H|%ai|%an|%s" --no-merges
+# Calculate floor date (30 days before last_sync_at, or "1 year ago" for first run)
+bun -e "
+const lastSync = '<last_sync_at_or_null>';
+if (lastSync === 'null') {
+  const d = new Date(); d.setFullYear(d.getFullYear() - 1);
+  console.log(d.toISOString().slice(0, 10));
+} else {
+  const d = new Date(lastSync); d.setDate(d.getDate() - 30);
+  console.log(d.toISOString().slice(0, 10));
+}
+process.exit(0);
+"
+```
+
+```bash
+git log --after="<floor_date>" --format="%H|%ai|%an|%s" --no-merges
 ```
 
 Get already-processed commit hashes:
@@ -85,19 +100,22 @@ process.exit(0);
 For each commit NOT in the processed set:
 - Check if it overlaps with any session by date ± 2 hours and same developer
 - If it overlaps → skip (covered by session)
-- If it doesn't overlap AND has >3 files changed → it's an orphan, add to queue
+- If it doesn't overlap AND has >3 files changed → it's an orphan
 - Check files changed: `git diff --stat <hash>^..<hash> | tail -1`
 
-## Step 4: Process Queue Sequentially
+**Collect orphans into a SEPARATE list. Do NOT add them to the session queue.**
 
-For each item in the queue (sessions first, then orphan commits):
+> **Note**: `getProcessedCommitHashes()` is the authoritative deduplication gate. The date floor is only an optimization to avoid scanning ancient history — always trust the hash set over the date.
+
+## Step 4: Process Sessions
+
+For each session in the queue:
 
 ### 4a. Output Progress
 Print to chat: `[N/total] filename — парсинг...`
 
 ### 4b. Read Content
-- **Session**: Read the file with Read tool, parse metadata from filename and content
-- **Orphan commit**: Run `git show --stat <hash>` and `git log -1 --format="%B" <hash>`
+Read the file with Read tool, parse metadata from filename and content.
 
 ### 4c. Generate 3-Level Texts (Russian only)
 
@@ -149,7 +167,73 @@ process.exit(0);
 ### 4e. Output Completion
 Print: `[N/total] готово, черновик создан`
 
-## Step 5: Update Sync State
+## Step 5: Handle Orphan Commits (interactive)
+
+If no orphans found → skip to Step 6.
+
+### 5a. Present Orphan List
+
+Print a numbered table to chat:
+
+```
+Найдены сиротские коммиты (не покрыты сессиями):
+
+ #  | Дата       | Автор | Файлов | Сообщение
+----|------------|-------|--------|----------
+ 1. | 2026-04-11 | ssv   | 17     | update changelog, service ui, auth fixes
+ 2. | ...        | ...   | ...    | ...
+```
+
+### 5b. Ask User
+
+Use `AskUserQuestion` to ask:
+
+> Что сделать с сиротскими коммитами?
+> - Номера через запятую (например `1,3`) — создать сессию + черновик для выбранных
+> - `все` — создать для всех
+> - `нет` — пропустить все
+
+### 5c. Process Approved Orphans
+
+For each approved orphan commit:
+
+1. **Gather commit data**: `git show --stat <hash>` and `git log -1 --format="%B" <hash>`
+
+2. **Generate session file** in `docs/archive/sessions/` with name derived from commit:
+   - Filename: `YYYY.MM.DD_HH.MM_<developer>_<Topic_from_commit_msg>.md`
+   - Developer mapping: `ssv555`/`ssv` → `ssv`, `Kirill`/`WhiteDullahan` → `kirill`
+   - Topic: first 2-3 meaningful words from commit message, CamelCase, underscores between words
+
+   Session file content:
+   ```markdown
+   # PROMT
+
+   > Автогенерация из сиротского коммита <short_hash>
+
+   **Model**: orphan commit | **Branch**: main | **Начало**: <commit_date> | **Конец**: <commit_date> | **Длительность**: unknown
+
+   ## Выполнено
+
+   <parsed from commit message and diff stats — list what was done>
+
+   ### Модифицированные файлы
+
+   <file list from git show --stat>
+
+   ---
+
+   ## TODO
+
+   - Нет
+   ```
+
+3. **Generate 3-level texts** (same rules as Step 4c)
+
+4. **Insert changelog draft** with both `sessionFile` (the generated file) and `commitHash`
+
+5. **Output**: `[orphan N/M] <hash_short> — сессия создана, черновик добавлен`
+
+## Step 6: Update Sync State
 
 ```bash
 bun -e "
@@ -164,15 +248,17 @@ process.exit(0);
 "
 ```
 
-## Step 6: Final Report
+## Step 7: Final Report
 
 Print summary to chat:
 
 ```
 Changelog sync завершён:
 - Сессий обработано: N
-- Сиротских коммитов: M
-- Черновиков создано: N+M
+- Сиротских коммитов найдено: X
+- Сиротских коммитов обработано: Y (сессии созданы)
+- Сиротских коммитов пропущено: Z
+- Черновиков создано: N+Y
 - Ревью: /service/changelog (включить "Показать черновики")
 ```
 
@@ -187,3 +273,4 @@ Changelog sync завершён:
 - **Escape bash** — all text values must be properly escaped before insertion
 - **Duration**: Parse from session metadata `Xh Ym` → minutes. If no metadata → null
 - **entryDate**: Parse from session filename `YYYY.MM.DD_HH.MM` → `YYYY-MM-DD HH:MM` format
+- **Orphan sessions**: Generated session files are real archive files — they will be found by future syncs, so `sessionFile` must be set to prevent re-processing

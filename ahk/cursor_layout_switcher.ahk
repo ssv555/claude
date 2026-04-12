@@ -3,8 +3,16 @@
 ; Это focus-only (НЕ toggle) — всегда открывает/фокусит терминал
 
 global PreviousLayout := 0
+global ccEmpty := 1
 
-#IfWinActive ahk_exe Cursor.exe
+; Группа поддерживаемых редакторов — все хоткеи ниже работают в этих IDE
+GroupAdd, CodeEditors, ahk_exe Cursor.exe
+GroupAdd, CodeEditors, ahk_exe Code.exe
+GroupAdd, CodeEditors, ahk_exe VSCodium.exe
+GroupAdd, CodeEditors, ahk_exe webstorm64.exe
+GroupAdd, CodeEditors, ahk_exe Trae.exe
+
+#IfWinActive ahk_group CodeEditors
 
 ; Alt+Z - переход на терминал, переключение на английскую раскладку
 $!z::
@@ -171,6 +179,43 @@ HelpGuiEscape:
     return
 }
 
+; === Авто-EN при / в чате ===
+
+~Enter::
+~Escape::
+~BackSpace::
+~Delete::
+    ccEmpty := 1
+    return
+
+; NumpadDiv — всегда EN при русской раскладке (нет причин жать NumpadDiv в RU)
+$NumpadDiv::
+    currentLang := GetCurrentLayout() & 0xFFFF
+    if (currentLang != 0x0409)
+    {
+        SoundBeep, 800, 80
+        SwitchToEnglishForce()
+        Sleep, 50
+    }
+    SendInput {NumpadDiv}
+    return
+
+; SC035 (/ в EN, . в RU) — только если поле "пустое"
+$SC035::
+    if ccEmpty
+    {
+        currentLang := GetCurrentLayout() & 0xFFFF
+        if (currentLang != 0x0409)
+        {
+            SoundBeep, 800, 80
+            SwitchToEnglishForce()
+            Sleep, 50
+        }
+    }
+    ccEmpty := 0
+    SendInput {Blind}{SC035}
+    return
+
 #IfWinActive
 
 ; === Вспомогательные функции ===
@@ -185,6 +230,16 @@ GetCurrentLayout()
 SwitchToEnglish()
 {
     PostMessage, 0x50, 0, 0x04090409,, A
+}
+
+SwitchToEnglishForce()
+{
+    ; Читаем из реестра какой хоткей для переключения: 1=Alt+Shift, 2=Ctrl+Shift
+    RegRead, lhk, HKEY_CURRENT_USER, Keyboard Layout\Toggle, Language Hotkey
+    if (lhk = 2)
+        SendInput {LCtrl down}{LShift down}{LShift up}{LCtrl up}
+    else
+        SendInput {LAlt down}{LShift down}{LShift up}{LAlt up}
 }
 
 SwitchToLayout(LocaleID)

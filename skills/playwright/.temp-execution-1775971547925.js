@@ -24,7 +24,17 @@ function getContextOptionsWithHeaders(options = {}) {
 
 (async () => {
   try {
-    C:/Users/ssv55/AppData/Local/Temp/playwright-chatgpt-extract.js
+    
+const browser = await chromium.launch({ headless: false, slowMo: 200 });
+const page = await browser.newPage();
+await page.goto('https://chatgpt.com/s/t_69db2bf2bcd08191bf06b577f4f82543', { waitUntil: 'networkidle', timeout: 30000 });
+await page.waitForTimeout(5000);
+const text = await page.innerText('body');
+console.log('=== PAGE TEXT START ===');
+console.log(text);
+console.log('=== PAGE TEXT END ===');
+await browser.close();
+
   } catch (error) {
     console.error('❌ Automation error:', error.message);
     if (error.stack) {
