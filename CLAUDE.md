@@ -142,14 +142,14 @@ User explicitly flagged this after I wrote `run_all_update.cmd` for VDole withou
 
 Retries on external integrations are part of correctly implementing the request, not a side-quest. When the task is "write a script that calls X over the network", retries are implicit in "correctly". No need to ask first.
 
-## File links — resolve symlinks, use relative paths
+## File links — ALWAYS relative from workspace root
 
-When referencing files outside the current project, ALWAYS:
-1. Check if the path is a symlink (`readlink` / `ls -la`)
-2. Resolve to the real path
-3. Build a relative path from the project root to the real target
+All file links in chat — relative from workspace root. NEVER `C:\...`, `D:\...`, `~/`, `%USERPROFILE%`.
 
-`~/.claude` → `D:\Data\Documents\Programming\Projects\AI\Claude\`. All projects are on D:, relative paths work. Never claim "cross-drive, impossible" without checking symlinks first.
+- **Inside project:** `[file](docs/tech/codex.patterns.md)`
+- **Outside project:** resolve symlinks (`readlink`), then count `../` segments from workspace root to target. Example: workspace `D:\...\WEB\VDole`, target `D:\...\AI\Claude\codex.md` → shared root is `Projects/`, so `../../AI/Claude/codex.md` (up from `WEB/VDole` = 2 levels)
+
+Absolute paths to files outside the project do not open in VSCode chat. All projects on `D:`, relative paths always work. Check symlinks before claiming "cross-drive".
 
 ## AskUserQuestion — not available in subagents/hooks
 

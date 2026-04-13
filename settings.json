@@ -37,6 +37,15 @@
             "command": "powershell -ExecutionPolicy Bypass -Command \"& (Join-Path $env:USERPROFILE '.claude/hooks/block-dangerous.ps1'); exit $LASTEXITCODE\""
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -Command \"& (Join-Path $env:USERPROFILE '.claude/hooks/sealed-block.ps1'); exit $LASTEXITCODE\""
+          }
+        ]
       }
     ]
   },

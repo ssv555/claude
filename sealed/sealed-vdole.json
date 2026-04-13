@@ -1,0 +1,34 @@
+{
+    "version":  1,
+    "root":  "d:/Data/Documents/Programming/Projects/WEB/VDole",
+    "groups":  {
+                   "auth":  {
+                                "description":  "Authentication core — HMAC token verification",
+                                "sealed":  true,
+                                "level":  2,
+                                "files":  [
+                                              "back/src/middleware/auth.ts"
+                                          ]
+                            },
+                   "security":  {
+                                    "description":  "CSRF, CAPTCHA, ban cache, security monitoring",
+                                    "sealed":  true,
+                                    "level":  2,
+                                    "files":  [
+                                                  "back/src/middleware/csrf.ts",
+                                                  "back/src/lib/captcha.ts",
+                                                  "back/src/lib/ban-cache.ts",
+                                                  "back/src/lib/security-monitor.ts"
+                                              ]
+                                },
+                   "passwords":  {
+                                     "description":  "Password strength validation and forbidden list",
+                                     "sealed":  true,
+                                     "level":  2,
+                                     "files":  [
+                                                   "back/src/lib/password-policy.ts",
+                                                   "back/src/lib/common-passwords.txt"
+                                               ]
+                                 }
+               }
+}

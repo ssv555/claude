@@ -13,11 +13,11 @@ Archive the current conversation session into a compact summary file in `docs/ar
 Run **all commands in parallel** to collect metadata in one round-trip:
 
 **Command A — Developer alias:**
-`git config user.name 2>/dev/null || git config user.email 2>/dev/null | sed 's/@.*//'`
-
-Apply mapping: `ssv555`/`ssv` → `ssv`, `Kirill`/`WhiteDullahan` → `kirill`.
+`grep '^DEV_SHORT_NAME=' .env.development 2>/dev/null | cut -d'=' -f2-`
+Fallback (if empty): `git config user.name 2>/dev/null || git config user.email 2>/dev/null | sed 's/@.*//'`
+Apply mapping to fallback only: `ssv555`/`ssv` → `ssv`, `Kirill`/`WhiteDullahan` → `kirill`.
 Cyrillic → transliterate to Latin lowercase. No match → use lowercased as-is.
-Empty → ask via AskUserQuestion: "Не удалось определить разработчика. Укажите алиас (например: ssv, kirill):"
+Empty after all attempts → ask via AskUserQuestion: "Не удалось определить разработчика. Укажите алиас (например: ssv, kirill):"
 
 **Command B — Session JSONL path:**
 `ls -t ~/.claude/projects/*$(basename "$(pwd)")/*.jsonl 2>/dev/null | head -1`
