@@ -1,9 +1,10 @@
-; Автопереключение раскладки в Cursor
+﻿; Автопереключение раскладки в Cursor
 ; F13 привязан в Cursor keybindings к workbench.action.terminal.focus
 ; Это focus-only (НЕ toggle) — всегда открывает/фокусит терминал
 
+#SingleInstance Force
+
 global PreviousLayout := 0
-global ccEmpty := 1
 
 ; Группа поддерживаемых редакторов — все хоткеи ниже работают в этих IDE
 GroupAdd, CodeEditors, ahk_exe Cursor.exe
@@ -178,43 +179,6 @@ HelpGuiEscape:
     Gui, Help:Destroy
     return
 }
-
-; === Авто-EN при / в чате ===
-
-~Enter::
-~Escape::
-~BackSpace::
-~Delete::
-    ccEmpty := 1
-    return
-
-; NumpadDiv — всегда EN при русской раскладке (нет причин жать NumpadDiv в RU)
-$NumpadDiv::
-    currentLang := GetCurrentLayout() & 0xFFFF
-    if (currentLang != 0x0409)
-    {
-        SoundBeep, 800, 80
-        SwitchToEnglishForce()
-        Sleep, 50
-    }
-    SendInput {NumpadDiv}
-    return
-
-; SC035 (/ в EN, . в RU) — только если поле "пустое"
-$SC035::
-    if ccEmpty
-    {
-        currentLang := GetCurrentLayout() & 0xFFFF
-        if (currentLang != 0x0409)
-        {
-            SoundBeep, 800, 80
-            SwitchToEnglishForce()
-            Sleep, 50
-        }
-    }
-    ccEmpty := 0
-    SendInput {Blind}{SC035}
-    return
 
 #IfWinActive
 
