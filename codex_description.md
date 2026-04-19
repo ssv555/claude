@@ -75,6 +75,13 @@
 - Never swallow errors silently. Fail fast, fail loud in development
 - Production: graceful degradation with user-friendly messages, detailed server-side logs
 
+## Report with Fix
+
+- **Never report a problem without a solution** — when you find an error, rule violation, bug, or inconsistency, ALWAYS include a concrete proposed fix alongside the report. The reader should never need to ask "и что делать?"
+- **Applies to**: code review findings, typecheck/lint/build errors, rule violations, spotted bugs, architectural inconsistencies
+- **Format**: Problem → Why it's a problem → Proposed fix (with code/commands if applicable)
+- **If multiple fixes exist** — recommend one, list alternatives briefly
+
 ## Security by Design
 
 - **OWASP Top 10** awareness: XSS, SQL injection, CSRF, broken auth — consider on every endpoint
@@ -114,6 +121,18 @@ Review depth must match **semantic complexity**, not line count. A 1-line change
   - Test-only changes that don't touch production code
 - **When in doubt, go deeper** — a false alarm costs minutes, a missed bug in auth costs days
 - **No rigid thresholds** — never use line count, file count, or diff size as the primary factor. They are hints at best. A 3-line regex change can be far more dangerous than a 500-line generated migration
+
+## Task Priority Triage
+
+When multiple operations or fixes arise during a task, triage by impact and urgency:
+
+- **Critical (immediate)** — business logic bugs, security vulnerabilities, data integrity issues, broken auth, payment errors, build/typecheck failures blocking deployment. Execute first, inline, before anything else
+- **Normal (in order)** — the main task the user requested, plus directly related fixes (imports, type errors caused by the change). Execute sequentially in natural order
+- **Deferred (async, last)** — non-blocking improvements: code style, minor refactors, non-critical warnings, cosmetic fixes, documentation updates, nice-to-have optimizations. Execute after all critical and normal work is done; can be run in parallel (background agents) if independent
+
+**Disputed or ambiguous priority** — when it's unclear whether something is critical or deferred (e.g. a potential race condition that may never trigger, a deprecation warning with no timeline), ask the user before acting. Don't silently promote or demote.
+
+**Interaction with "ASK BEFORE EXTRA CHANGES"** — this rule governs execution ORDER, not scope. Out-of-scope items still require user approval per the global rule. Priority triage applies to items WITHIN the approved scope: if the user approved 5 fixes, do the critical ones first.
 
 ## Testing
 

@@ -19,8 +19,8 @@ Apply mapping to fallback only: `ssv555`/`ssv` → `ssv`, `Kirill`/`WhiteDullaha
 Cyrillic → transliterate to Latin lowercase. No match → use lowercased as-is.
 Empty after all attempts → ask via AskUserQuestion: "Не удалось определить разработчика. Укажите алиас (например: ssv, kirill):"
 
-**Command B — Session JSONL path:**
-`ls -t ~/.claude/projects/*$(basename "$(pwd)")/*.jsonl 2>/dev/null | head -1`
+**Command B — Session JSONL path + session ID:**
+`SESSION_JSONL=$(ls -t ~/.claude/projects/*$(basename "$(pwd)")/*.jsonl 2>/dev/null | head -1) && echo "$SESSION_JSONL" && echo "---SID---" && basename "$SESSION_JSONL" .jsonl`
 
 **Command C — Git status:**
 `git diff --stat HEAD 2>/dev/null; echo "---STATUS---"; git status --short 2>/dev/null`
@@ -49,6 +49,27 @@ bun -e "const s=new Date('START'),e=new Date('END'),t=e-s;const h=Math.floor(t/3
 Result: `2026.03.23_10.47|23.03 10:47|24.03 11:02|24h 15m` — split by `|` into: filename date, start display, end display, duration.
 
 If JSONL extraction fails — still write the archive, just skip the metadata line.
+
+## Step 2.5: Collect token usage from JSONL
+
+Using the JSONL path and SESSION_ID from Step 1, run **one bun command** to aggregate tokens from main session + all subagents:
+
+```bash
+bun -e "
+const fs=require('fs');
+const sid='SESSION_ID';
+const main='SESSION_JSONL_PATH';
+const subDir=main.replace('.jsonl','')+'/subagents';
+function sum(f){const ls=fs.readFileSync(f,'utf-8').split('\n').filter(Boolean);let i=0,cc=0,cr=0,o=0,n=0;for(const l of ls){try{const j=JSON.parse(l);if(j.message?.usage){const u=j.message.usage;i+=u.input_tokens||0;cc+=u.cache_creation_input_tokens||0;cr+=u.cache_read_input_tokens||0;o+=u.output_tokens||0;n++}}catch{}}return{messages:n,input:i,cache_create:cc,cache_read:cr,output:o,total:i+cc+cr+o}}
+const m=sum(main);const subs=[];
+try{const files=fs.readdirSync(subDir).filter(f=>f.endsWith('.jsonl'));for(const f of files){subs.push({file:f,...sum(subDir+'/'+f)})}}catch{}
+const grand={input:m.input,cache_create:m.cache_create,cache_read:m.cache_read,output:m.output,total:m.total};
+for(const s of subs){grand.input+=s.input;grand.cache_create+=s.cache_create;grand.cache_read+=s.cache_read;grand.output+=s.output;grand.total+=s.total}
+console.log(JSON.stringify({main:m,subagents:subs,grand}))
+"
+```
+
+Replace `SESSION_ID` and `SESSION_JSONL_PATH` with actual values from Step 1. Parse the JSON output → use `grand.total` for the archive summary line. If the command fails, write `Токены: n/a`.
 
 ## Step 3: Detect Repeated Invocation
 
@@ -93,7 +114,7 @@ Ensure `docs/archive/sessions/` directory exists (`mkdir -p docs/archive/session
 
 <original prompt or compact summary>
 
-**Model**: <model> | **Branch**: <branch> | **Начало**: <start> | **Конец**: <end> | **Длительность**: <duration>
+**Model**: <model> | **Branch**: <branch> | **Начало**: <start> | **Конец**: <end> | **Длительность**: <duration> | **Токены**: <grand.total> (in: <input>, cache_create: <cache_create>, cache_read: <cache_read>, out: <output>)
 
 ## Выполнено
 

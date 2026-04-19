@@ -14,7 +14,8 @@
       "mcp__amsterdam_my__*",
       "mcp__moscow_my__*",
       "mcp__playwright__*",
-      "mcp__desktop__*"
+      "mcp__desktop__*",
+      "mcp__pencil"
     ],
     "deny": [
       "Read(**/.env)",
@@ -50,6 +51,5 @@
     ]
   },
   "autoUpdatesChannel": "latest",
-  "effortLevel": "high",
-  "model": "sonnet"
+  "effortLevel": "high"
 }
