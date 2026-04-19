@@ -1,14 +1,14 @@
 ---
 name: seo-check
-description: Audit on-page SEO across public URLs (meta tags, canonical, hreflang, OG/Twitter, JSON-LD, sitemap, robots). Read-only — reports findings, never edits. Reads project-specific config from ./tests/skills/seo-check.md
+description: Audit SEO + performance + conversion across public URLs. Three modes — quick (curl, mechanics), deep (Playwright, real browser), full (+ conversion/selling analysis). Read-only — reports findings, never edits. Asks user which mode to run. Reads project-specific config from ./tests/skills/seo-check.md
 disable-model-invocation: false
-allowed-tools: Bash(bun *),Bash(curl *),Read,Glob,Grep
+allowed-tools: Bash(bun *),Bash(curl *),Read,Glob,Grep,AskUserQuestion,mcp__playwright__browser_navigate,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_evaluate,mcp__playwright__browser_console_messages,mcp__playwright__browser_network_requests,mcp__playwright__browser_resize,mcp__playwright__browser_close,mcp__playwright__browser_wait_for
 model: sonnet
 ---
 
 # SEO Check — Universal Auditor
 
-Read-only SEO audit. Fetches live public URLs, parses HTML, validates against standard on-page SEO checklist. Reports findings as a table — never edits files.
+Read-only audit of SEO mechanics, real-browser rendering, and conversion potential. Three escalating modes — user picks at start. Reports findings as a table, never edits files.
 
 <!-- Project-specific configuration: ./tests/skills/seo-check.md
      This is a global skill — production URL, public routes, locales,
@@ -16,55 +16,47 @@ Read-only SEO audit. Fetches live public URLs, parses HTML, validates against st
 
 ## Execution
 
-### Step 1: Read local config
+### Step 0: Read local config
 
 Read `./tests/skills/seo-check.md` from the project root.
 
-- **If file exists** — parse the sections described under "Config format" below. Then go to Step 2.
-- **If file NOT found** — print:
+- **If file exists** — parse the sections described under "Config format" below.
+- **If file NOT found** — print the template (see "Config format") and STOP.
 
-```
-⚠️ Файл ./tests/skills/seo-check.md не найден.
+### Step 1: Ask user which mode + which environment
 
-Создайте файл с описанием SEO-конфигурации проекта.
-Минимальный шаблон:
+Use `AskUserQuestion` with **two** questions in one call:
 
-## Site
-- production: https://example.com
-- locales: ru, en
-- default_locale: ru
-- locale_url_pattern: /{lang} prefix for non-default (например /en/...)
+**Q1: Какое окружение проверить?**
 
-## Public URLs
-- /
-- /about
+Build options dynamically from the local config's `## Environments` section. Typical options:
 
-## Sitemap
-- path: /sitemap.xml
+| Option | Label | Description |
+|--------|-------|-------------|
+| 1 | Dev | Стенд разработчика (например vdole-ssv.it-joy.ru). Свежий код, до деплоя. |
+| 2 | Prod | Боевой продакшн. Может отставать от dev — проверять перед/после деплоя. |
 
-## Robots
-- path: /robots.txt
-- must_disallow: /api/, /auth/
+If only one URL configured — skip this question, use it.
 
-## Meta expectations
-- og_image: /img/og_default.png (1200x630)
-- json_ld_required: true
-- yandex_verification: true
-```
+**Q2: Какой уровень аудита запустить?**
 
-Then STOP. Do not run anything.
+| Option | Label | Description |
+|--------|-------|-------------|
+| 1 | Quick | Только curl. Мета-теги, canonical, hreflang, sitemap, robots, OG/Twitter, JSON-LD. ~30 сек, без браузера. |
+| 2 | Deep | Quick + Playwright: рендер после hydration, скриншоты desktop/mobile, битые ссылки, цепочки редиректов, OG-превью, console errors, network failures. ~3 мин. |
+| 3 | Full | Deep + конверсионный анализ: value proposition, CTA above the fold, trust signals, читаемость, LCP/CLS/INP, mobile UX, friction в формах. ~5 мин. |
 
-### Step 2: Run checks
+Wait for explicit choices. Use the chosen URL as `{base}` for all subsequent fetches.
+
+### Step 2: Run Quick checks (always)
 
 Print header:
 
 ```
-**SEO Check** [0/N]
+**SEO Check — Quick** [0/N]
 ```
 
-Run checks in this order. Each check has its own progress line.
-
-#### Check group A — robots.txt and sitemap.xml
+#### A. robots.txt and sitemap.xml
 
 1. **robots.txt** — fetch `{production}{robots.path}`. Verify:
    - HTTP 200
@@ -77,102 +69,160 @@ Run checks in this order. Each check has its own progress line.
    - Every URL in `## Public URLs` appears in sitemap (for each locale)
    - `<lastmod>` present and not older than 12 months
    - `<loc>` URLs return HTTP 200 (HEAD request, sample up to 20)
-   - `hreflang` alternates symmetric (each language references all others + x-default)
+   - `hreflang` alternates symmetric
 
-#### Check group B — per-page checks
+#### B. Per-page checks
 
-For each URL in `## Public URLs`, for each locale, fetch the page and verify:
+For each URL × locale, fetch and verify:
 
-3. **HTTP status** — 200 (not 3xx redirect chain, not 4xx/5xx)
-4. **Charset** — `<meta charset="UTF-8">` present
-5. **Lang attribute** — `<html lang="...">` matches the page's locale
+3. **HTTP status** — 200, no redirect chain
+4. **Charset** — `<meta charset="UTF-8">`
+5. **Lang attribute** — `<html lang="...">` matches locale
 6. **Viewport** — `<meta name="viewport" content="width=device-width, initial-scale=1.0">`
-7. **Title** — present, length 10–60 chars, unique across all checked pages
-8. **Description** — present, length 50–160 chars, unique
-9. **Canonical** — present, absolute URL, points to self (or to a valid primary)
-10. **hreflang** — one tag per locale + `x-default`, symmetric, absolute URLs
-11. **Open Graph** — `og:type`, `og:title`, `og:description`, `og:url`, `og:image`, `og:site_name`, `og:locale` all present
+7. **Title** — present, 10–60 chars, unique
+8. **Description** — present, 50–160 chars, unique
+9. **Canonical** — present, absolute, points to self
+10. **hreflang** — one tag per locale + `x-default`, symmetric, absolute
+11. **Open Graph** — `og:type`, `og:title`, `og:description`, `og:url`, `og:image`, `og:site_name`, `og:locale`
 12. **Twitter Card** — `twitter:card` (summary_large_image), `twitter:title`, `twitter:description`, `twitter:image`
-13. **Structured data** — at least one `<script type="application/ld+json">` if `json_ld_required: true`. Validate JSON parses.
-14. **H1** — exactly one `<h1>` per page, non-empty
-15. **Images alt** — every `<img>` has non-empty `alt` (warn, not fail)
-16. **noindex check** — public pages must NOT contain `<meta name="robots" content="noindex">`
-17. **OG image** — fetch `og_image` URL, verify HTTP 200 and Content-Type starts with `image/`
-18. **Yandex verification** (if `yandex_verification: true`) — `<meta name="yandex-verification">` present on `/`
+13. **Structured data** — JSON-LD if `json_ld_required: true`, validate JSON parses
+14. **H1** — exactly one, non-empty
+15. **Images alt** — every `<img>` has non-empty `alt` (WARN)
+16. **noindex check** — public pages must NOT have `noindex`
+17. **OG image** — fetch URL, verify HTTP 200 + `image/*` Content-Type
+18. **Yandex verification** (if enabled) — meta tag present on `/`
 
-#### Check group C — cross-page
+#### C. Cross-page
 
-19. **Title uniqueness** — no two pages share the same `<title>`
-20. **Description uniqueness** — no two pages share the same description
-21. **Canonical loops** — no page's canonical points to a 404 or to a non-canonical URL
+19. **Title uniqueness** — no duplicates
+20. **Description uniqueness** — no duplicates
+21. **Canonical loops** — no canonical points to 404 or non-canonical URL
 
-### Step 3: Output
+### Step 3: Run Deep checks (if mode ≥ Deep)
+
+Print header:
+
+```
+**SEO Check — Deep** [0/M]
+```
+
+For each public URL × locale, use Playwright:
+
+22. **Real browser render** — `browser_navigate` to URL, wait for network idle. Capture `browser_snapshot`. Verify the same SEO elements (title, meta, canonical, JSON-LD) are present **after hydration** — sometimes React strips/replaces head tags.
+23. **Console errors** — `browser_console_messages`. Any `error` level → FAIL with message.
+24. **Network failures** — `browser_network_requests`. Any 4xx/5xx → FAIL with URL+status.
+25. **Broken internal links** — extract all `<a href>` pointing to same origin via `browser_evaluate`, HEAD-request each, report 404s.
+26. **Redirect chains** — for every URL in sitemap + every internal link, follow redirects with `curl -sIL`. Report any chain length > 1 or any 302 (should be 301).
+27. **Mobile screenshot** — `browser_resize` to 375×812 (iPhone), `browser_take_screenshot`. Save to `.playwright-mcp/seo-{lang}-{slug}-mobile.png`.
+28. **Desktop screenshot** — `browser_resize` to 1440×900, `browser_take_screenshot`. Save to `.playwright-mcp/seo-{lang}-{slug}-desktop.png`.
+29. **OG preview render** — fetch og:image URL directly, verify dimensions match `og:image:width`/`og:image:height`. Mention as a note: "Соцсети закешируют этот превью — проверить в [opengraph.xyz](https://www.opengraph.xyz/) перед запуском".
+30. **Hydration mismatch** — diff curl HTML vs post-hydration HTML for `<head>`. Report any meta/canonical/JSON-LD that disappeared, changed, or got duplicated.
+
+### Step 4: Run Full checks (if mode = Full)
+
+Print header:
+
+```
+**SEO Check — Full (Selling)** [0/K]
+```
+
+For each public URL × locale (use Playwright snapshot from Step 3):
+
+31. **Value proposition clarity** — extract H1 + first paragraph + first CTA. Assess: does a first-time visitor understand in 5 seconds *what this is, who it's for, what action to take*? Report as PASS/WARN with reasoning. Reference: lands well-known frameworks (StoryBrand, "5-second test").
+32. **CTA above the fold** — at 1440×900 viewport, capture screenshot of viewport-only (not full page). Verify at least one prominent CTA (`<button>`, `<a class*="btn">`, or visually prominent link) is visible without scrolling. List all CTAs found above the fold with their text.
+33. **Trust signals** — scan page for: testimonials, customer logos, security badges (SSL, GDPR, certifications), team/contact info, social proof (user count, ratings). Report what's present and what's missing.
+34. **Friction in forms** — if page has `<form>`, count fields. >5 fields = WARN (high friction). Required fields without clear labels = WARN. No inline validation hints = note.
+35. **Readability** — word count, average sentence length (< 20 words = good), passive voice ratio (< 20% = good). Flag walls of text without subheadings/bullets.
+36. **Performance metrics** — `browser_evaluate` to read `performance.getEntriesByType('navigation')[0]` and `PerformanceObserver` for LCP/CLS/INP. Report numbers. Targets: LCP < 2.5s, CLS < 0.1, INP < 200ms.
+37. **Mobile UX** — at 375×812: tap targets < 44px → WARN (Apple HIG). Horizontal scroll → FAIL. Text smaller than 16px on body → WARN.
+38. **Heading hierarchy** — extract all `<h1>`–`<h6>` order. Skipped levels (h1 → h3) = WARN. Multiple h1 = FAIL (already in Quick).
+39. **Internal linking depth** — for each public URL, count clicks from homepage. Pages > 3 clicks deep = WARN (poor SEO juice flow).
+40. **Page weight** — total transferred bytes from `browser_network_requests`. > 2 MB on mobile = WARN. > 5 MB = FAIL.
+
+### Step 5: Output during execution
 
 For each check, print as it runs:
 
 ```
 [i/N] Check Name -- checking...
 [i/N] Check Name -- PASS
-```
-
-or
-
-```
 [i/N] Check Name -- FAIL: <one-line reason, with URL>
-```
-
-or
-
-```
 [i/N] Check Name -- WARN: <one-line reason>
 ```
 
 **Run ALL checks** even if earlier ones fail.
 
-### Step 4: Summary
-
-After all checks, print a table grouped by severity:
+### Step 6: Summary
 
 ```
-## SEO Audit Summary
+## SEO Audit Summary — {mode}
 
 ### FAIL (must fix)
-| Check | URL | Issue |
-|-------|-----|-------|
-| ... | ... | ... |
+| # | Check | URL | Issue |
 
 ### WARN (should review)
-| Check | URL | Issue |
-|-------|-----|-------|
-| ... | ... | ... |
+| # | Check | URL | Issue |
 
 ### PASS
 N checks passed
+
+### Screenshots (Deep+ only)
+- [seo-ru-home-desktop.png](.playwright-mcp/seo-ru-home-desktop.png)
+- ...
+
+### Selling notes (Full only)
+{prose summary of conversion findings — what works, what doesn't, top 3 recommendations}
 ```
 
-### Step 5: Verdict
+### Step 7: Verdict
 
 - All PASS → "SEO в порядке"
 - Any FAIL → "Найдены критичные проблемы — нужно править"
 - Only WARN → "Критики нет, есть что улучшить"
 
+Plus for Full mode: 1–3 sentence summary of "что мешает продавать сильнее".
+
+### Step 8: Offer fix flow
+
+If any FAIL or WARN was found, ask via `AskUserQuestion`:
+
+> Найдено: {N_fail} критичных, {N_warn} предупреждений. Запустить /seo-fix?
+
+Options:
+
+| Option | Label | Description |
+|--------|-------|-------------|
+| 1 | Да, всё (механика авто + контент по очереди) | полный проход |
+| 2 | Только механические (быстро, без вопросов) | canonical, hreflang, robots, sitemap, OG-картинка размер |
+| 3 | Только конкретные пункты | пользователь укажет номера в следующем сообщении |
+| 4 | Нет, я сам | завершить |
+
+**Do NOT auto-invoke** `/seo-fix` — wait for user choice. If 1/2/3, instruct user to run `/seo-fix` next (the fix skill will pick up findings from this conversation context).
+
+If all PASS — skip Step 8 entirely.
+
 ## Implementation notes
 
-- Use `curl -sS -L -A "Mozilla/5.0 (compatible; SEOAudit/1.0)" -o /tmp/seo-page.html -w "%{http_code}" {url}` for HTML fetch
-- For HEAD checks: `curl -sSI -o /dev/null -w "%{http_code}" {url}`
-- Parse HTML with a small bun script using regex or `cheerio`-like extraction. Don't pull heavy deps — inline regex for `<title>`, `<meta>`, `<link>`, `<h1>`, `<html lang>` is fine.
-- Static landings (server-rendered) work with curl. SPA routes (rendered client-side) need a noindex check on the source HTML — if a public route relies on JS rendering for SEO content, flag it as FAIL.
-- Network calls have retries (3 attempts, 2s backoff) — see global retry rule.
+- **Quick mode**: `curl -sS -L -A "Mozilla/5.0 (compatible; SEOAudit/1.0)" -o /tmp/seo-page.html -w "%{http_code}" {url}` for HTML. `curl -sSI -o /dev/null -w "%{http_code}" {url}` for HEAD.
+- **Deep/Full mode**: use Playwright MCP. Always `browser_close` at end.
+- Parse HTML with bun + regex (don't pull cheerio — inline regex for `<title>`, `<meta>`, `<link>`, `<h1>`, `<html lang>` is enough).
+- Network calls retry 3× with 2s backoff (global rule for external integrations).
+- Screenshots → `.playwright-mcp/` (gitignored). Use slugified filename: `seo-{lang}-{path-slug}-{viewport}.png`.
+- For SPA: if a public route relies on JS rendering for SEO content (Quick HTML has empty `<title>` or no meta), flag as **CRITICAL FAIL** in Quick mode regardless.
 
 ## Config format
 
-The local file `./tests/skills/seo-check.md` should contain:
+Local file `./tests/skills/seo-check.md`:
 
 ```markdown
 # SEO Check — {ProjectName}
 
+## Environments
+- prod: https://example.com
+- dev: https://example-dev.com
+  (at least one required; both recommended — user picks at runtime)
+
 ## Site
-- production: https://example.com
 - locales: ru, en
 - default_locale: ru
 - locale_url_pattern: /{lang} prefix for non-default
@@ -194,9 +244,15 @@ The local file `./tests/skills/seo-check.md` should contain:
 - json_ld_required: true
 - yandex_verification: true
 
+## Selling expectations
+(used by Full mode — what each landing should sell)
+- /: главная — продаёт идею платформы инвесторам и предпринимателям
+- /welcome_agents: продаёт регистрацию предпринимателям
+- /welcome_contragents: продаёт регистрацию инвесторам
+
 ## Skip checks
-(optional — list check numbers to skip with reasoning)
-- 15 (images alt) — landing pages have decorative SVGs only
+(optional — list check numbers + reason)
+- 15 (images alt) — landing has decorative SVGs only
 
 ## On success
 SEO в порядке
@@ -208,6 +264,8 @@ SEO в порядке
 ## Rules
 
 - **Read-only.** Never edit any file. Report only.
-- **Production by default.** Audit the production URL unless user explicitly asks for a dev stand.
+- **Dev by default.** Audit dev stand by default — это место, где код в процессе работы. Prod аудитят отдельно после деплоя для финальной верификации. Если в конфиге только prod — используем его.
 - **Communicate in Russian.**
-- **Don't fix anything.** If user wants fixes, that's a separate task.
+- **Don't fix anything** — fixes are a separate task.
+- **Always ask which mode** — never assume.
+- **Always close browser** at end of Deep/Full runs (`browser_close`).
