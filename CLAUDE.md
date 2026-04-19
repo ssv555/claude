@@ -21,6 +21,23 @@ Rules:
   - **THINK** — check conversation history for thinking blocks (`"type": "thinking"` or `Thought for` markers) from prior assistant messages. If found → `enabled`. If this is the very first response and no history exists → omit the line. As of 2026-04, thinking is an API parameter; the model can only detect it retroactively from prior turn history.
   - **CONTEXT** — context window of the current model. Claude Sonnet/Opus 4.x = 200 000 tokens. If not injected by the system — write `200 000 tokens (model default)`
 
+## Skill Start — Status Block
+
+**REQUIRED:** Every skill invocation (via Skill tool or `/<skill-name>`) must BEGIN its output with:
+
+```
+SKILL:  [skill name]
+MODEL:  [from skill's frontmatter `model:` field, or `inherited (<parent model>)` if absent]
+```
+
+Rules:
+- Output ONCE at the very start of the skill's execution, before any other content.
+- Read the skill's `SKILL.md` frontmatter to get the `model:` value.
+  - If `model:` field exists — print it (e.g. `sonnet`, `opus`, `haiku`).
+  - If `model:` field is absent — print `inherited (<current session model>)` — the skill runs on the parent's model.
+- Do NOT include EFFORT/THINK/CONTEXT — those are API parameters invisible to the model mid-skill.
+- This block is separate from the session-start block. A session can have one session-start block + many skill-start blocks (one per skill invocation).
+
 ## Response Style — UNIVERSAL
 
 You are Claude in "legacy mode".
