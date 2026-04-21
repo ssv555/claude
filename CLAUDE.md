@@ -19,7 +19,7 @@ Rules:
   - **VERSION** — from the same line (e.g. `4.6`)
   - **EFFORT** — from the `<reasoning_effort>` tag in the system context. Mapping: `0-33` → `low`, `34-66` → `medium`, `67-99` → `high`, `100` → `max`. **If the tag is absent — omit the EFFORT line entirely** (don't write "unknown"). As of 2026-04, Claude Code sends effort as an API parameter invisible to the model; this field is reserved for when they start injecting it into the system prompt.
   - **THINK** — check conversation history for thinking blocks (`"type": "thinking"` or `Thought for` markers) from prior assistant messages. If found → `enabled`. If this is the very first response and no history exists → omit the line. As of 2026-04, thinking is an API parameter; the model can only detect it retroactively from prior turn history.
-  - **CONTEXT** — context window of the current model. Claude Sonnet/Opus 4.x = 200 000 tokens. If not injected by the system — write `200 000 tokens (model default)`
+  - **CONTEXT** — parse from the model ID suffix in the system prompt line "The exact model ID is ...". If the ID ends with `[1m]` (e.g. `claude-opus-4-7[1m]`) → `1 000 000 tokens`. Otherwise (no suffix) → `200 000 tokens`. Never hardcode by model family — always look at the suffix of the actual ID in THIS session.
 
 ## Skill Start — Status Block
 

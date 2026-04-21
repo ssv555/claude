@@ -71,6 +71,29 @@ console.log(JSON.stringify({main:m,subagents:subs,grand}))
 
 Replace `SESSION_ID` and `SESSION_JSONL_PATH` with actual values from Step 1. Parse the JSON output → use `grand.total` for the archive summary line. If the command fails, write `Токены: n/a`.
 
+## Step 2.7: Compute relative links to session JSONL files
+
+The archive file lives at `docs/archive/sessions/<name>.md` (inside the workspace). The session JSONL and its subagent JSONLs live outside the workspace (typically under `C:\Users\<user>\.claude\projects\...`). Compute **forward-slash relative paths from the archive file's directory** to each JSONL so the links open as clickable files in VSCode.
+
+Use one bun command (paths from Step 1 + the archive file path from Step 5):
+
+```bash
+bun -e "
+const path=require('path');const fs=require('fs');
+const archiveDir=path.resolve('docs/archive/sessions');
+const main='SESSION_JSONL_PATH';
+const subDir=main.replace(/\.jsonl$/,'')+'/subagents';
+const rel=p=>path.relative(archiveDir,p).split(path.sep).join('/');
+const out={main:rel(main),subs:[]};
+try{const files=fs.readdirSync(subDir).filter(f=>f.endsWith('.jsonl'));for(const f of files){out.subs.push({name:f,path:rel(subDir+'/'+f)})}}catch{}
+console.log(JSON.stringify(out))
+"
+```
+
+Replace `SESSION_JSONL_PATH` with the actual path from Step 1. Parse JSON → `out.main` is the relative path to the main session JSONL; `out.subs[]` lists subagent JSONLs (may be empty).
+
+If the bun call fails, skip the "Сессия" block entirely — do not write absolute paths as fallback.
+
 ## Step 3: Detect Repeated Invocation
 
 Check if `/session-archive` was already called earlier in this conversation by searching conversation history for a previously written archive file path in `docs/archive/sessions/`.
@@ -118,6 +141,8 @@ Ensure `docs/archive/sessions/` directory exists (`mkdir -p docs/archive/session
 <original prompt or compact summary>
 
 **Model**: <model> | **Branch**: <branch> | **Начало**: <start> | **Конец**: <end> | **Длительность**: <duration> | **Токены**: <grand.total> (in: <input>, cache_create: <cache_create>, cache_read: <cache_read>, out: <output>)
+
+**Сессия**: [<sessionId>.jsonl](<out.main>)<if out.subs not empty:> · субагенты: [<sub1.name>](<sub1.path>), [<sub2.name>](<sub2.path>), ...
 
 ## Выполнено
 
