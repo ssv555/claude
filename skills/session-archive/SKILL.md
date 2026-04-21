@@ -75,13 +75,16 @@ Replace `SESSION_ID` and `SESSION_JSONL_PATH` with actual values from Step 1. Pa
 
 Check if `/session-archive` was already called earlier in this conversation by searching conversation history for a previously written archive file path in `docs/archive/sessions/`.
 
+**CRITICAL — no exceptions:** If `/session-archive` has EVER been called earlier in this conversation, this is a **continuation archive** regardless of how different the new topic or work is. You are NOT creating two "first" archives in one conversation. Same JSONL → continuations. Never skip the suffix because "the topic is unrelated" — `/changelog-sync` segments the JSONL by the `_N` suffix; omitting it causes two .md files to claim the same JSONL timeline and double-count work time.
+
 **If this is a repeated call:**
 - This is a **continuation archive** — only cover what happened AFTER the previous archive call
 - The prompt = the user's first message after the previous archive (not the original session prompt)
-- Topic = auto-generated from this new prompt
+- Topic = auto-generated from this new prompt (new work, new topic is fine)
 - "Выполнено" = only work done after the previous archive
 - Metadata `Начало` = timestamp of the previous archive call (not session start)
-- Create a new file with suffix `_2`, `_3`, etc. (based on how many archives exist for today + dev)
+- Metadata `Конец` = current timestamp (when this archive is being written)
+- Filename MUST have suffix `_2`, `_3`, etc. — count how many archives exist for today + dev so far, add 1. The topic in the filename can be completely different from the first archive's topic.
 
 **If this is the first call:** proceed normally.
 
@@ -104,7 +107,7 @@ Path: `docs/archive/sessions/<filename_date>_<dev>_<topic>.md`
 Example: `docs/archive/sessions/2026.03.23_10.47_ssv_Home_pages.md`
 
 Topic words separated by underscores (e.g. `Audit_columns_rules`).
-If file already exists, append suffix: `_2`, `_3`, etc.
+Suffix `_2`, `_3`, etc. is REQUIRED for continuation archives (see Step 3) — even when the topic is new — and also whenever a same-timestamp file already exists on disk.
 Ensure `docs/archive/sessions/` directory exists (`mkdir -p docs/archive/sessions`).
 
 ### Template

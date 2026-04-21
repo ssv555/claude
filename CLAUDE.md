@@ -299,17 +299,7 @@ cd /d <project_path> && git add -A && git commit -m "msg" && git pull --rebase &
 
 ## External ChatGPT Links — Extract & Archive
 
-When the user posts a link to a shared external chat/discussion (e.g. `chatgpt.com/s/...`):
-
-1. **Open via Playwright** — WebFetch does not handle SPAs. Follow embedded links too if they carry relevant material.
-2. **Filter content** — drop fluff, pleasantries, repetition. Keep:
-   - technical details (code, commands, flags, file/package names, versions)
-   - rationale / ideology (why this approach, which alternatives were rejected and why)
-3. **Save to `.docs/`** in project root (add to `.gitignore` if not there — private knowledge base, hidden from other devs).
-4. **Before creating a new file — scan existing files in `.docs/`**:
-   - if a file on a close topic exists → **append/merge** into it, no duplicates
-   - otherwise → **create new file**, English name, no spaces (use `_`), descriptive
-5. **Report briefly**: which file was created/updated and a one-line summary of what was added.
+Shared LLM-chat links (`chatgpt.com/s/...`, `chat.openai.com/share/...`, `claude.ai/share/...`, etc.) are handled by the global skill `chatgpt-archive` — auto-triggers on such URLs. See `~/.claude/skills/chatgpt-archive/SKILL.md` for the full workflow (Playwright extract → filter → merge/append into project `.docs/` → brief report).
 
 ## Claude Code Session Storage — UNIVERSAL
 

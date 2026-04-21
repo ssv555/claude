@@ -6,3 +6,4 @@
 - [Playwright — tabs, not multiple servers](feedback_playwright_tabs.md) — for parallel browser work use `browser_tabs action=new` in the single live MCP server, never duplicate `@playwright/mcp` entries
 - [Settings relative paths](feedback_settings_relative_paths.md) — additionalDirectories: only `../`, `~/`, `./` — never absolute with usernames
 - [Task checkbox format](feedback_todo_checkbox_format.md) — [x]/[ ] at START of line, never mid/end; no tables for status
+- [No git stash](feedback_no_git_stash.md) — Never use git stash with parallel sessions; use WIP commits; never stash drop without user confirmation
