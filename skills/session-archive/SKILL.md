@@ -83,7 +83,8 @@ const path=require('path');const fs=require('fs');
 const archiveDir=path.resolve('docs/archive/sessions');
 const main='SESSION_JSONL_PATH';
 const subDir=main.replace(/\.jsonl$/,'')+'/subagents';
-const rel=p=>path.relative(archiveDir,p).split(path.sep).join('/');
+const real=p=>{try{return fs.realpathSync(p)}catch{return p}};
+const rel=p=>path.relative(archiveDir,real(p)).split(path.sep).join('/');
 const out={main:rel(main),subs:[]};
 try{const files=fs.readdirSync(subDir).filter(f=>f.endsWith('.jsonl'));for(const f of files){out.subs.push({name:f,path:rel(subDir+'/'+f)})}}catch{}
 console.log(JSON.stringify(out))
@@ -91,6 +92,8 @@ console.log(JSON.stringify(out))
 ```
 
 Replace `SESSION_JSONL_PATH` with the actual path from Step 1. Parse JSON → `out.main` is the relative path to the main session JSONL; `out.subs[]` lists subagent JSONLs (may be empty).
+
+**Critical — `fs.realpathSync` is mandatory.** On Windows, `C:\Users\<user>\.claude` is commonly a symlink to `D:\...\AI\Claude`. Without `realpath` the path.relative() call treats `C:` and `D:` as different drives and returns the absolute path, which breaks clickable links in VSCode. Always resolve the real filesystem path first, then compute the relative path from the archive directory.
 
 If the bun call fails, skip the "Сессия" block entirely — do not write absolute paths as fallback.
 

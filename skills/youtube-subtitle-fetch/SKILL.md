@@ -1,9 +1,10 @@
 ---
-name: youtube-subtitle-analyzer
+name: youtube-subtitle-fetch
+model: sonnet
 description: Fetches and structures YouTube subtitles into clean JSON (videoId, language, source, title, channel, duration, chapters, chunks, fullText). Uses yt-dlp under the hood to pull manual or auto-generated subs plus video metadata and description, then strips noise tags ([music], [applause], [аплодисменты] …), merges rolling-window duplicates typical of YouTube ASR, extracts chapters from the description, and caches everything under ~/.cache/youtube-toolkit/<videoId>/. Use when the user wants to summarise, outline, transcribe, or "analyse by subtitles" a YouTube video, or asks "о чём это видео / сделай конспект / расшифруй ролик / дай тезисы" with a YouTube URL in context. Also works on a local .vtt / .srt file via --file. NOT for videos without subtitles (no STT here — that is a separate direct-video-analyzer skill) and NOT for video/audio download. Semantic analysis (TL;DR, topics, key theses) is performed by the caller on the returned JSON, not by this skill.
 ---
 
-# youtube-subtitle-analyzer
+# youtube-subtitle-fetch
 
 Converts a YouTube URL (or a local subtitle file) into structured JSON ready for downstream summarisation. Offline-capable after first fetch (results are cached by `videoId`).
 
@@ -17,9 +18,9 @@ Converts a YouTube URL (or a local subtitle file) into structured JSON ready for
 ## CLI
 
 ```bash
-bun ~/.claude/skills/youtube-subtitle-analyzer/analyze.ts <youtube-url>
-bun ~/.claude/skills/youtube-subtitle-analyzer/analyze.ts <youtube-url> --no-cache
-bun ~/.claude/skills/youtube-subtitle-analyzer/analyze.ts --file <path.vtt|.srt>
+bun ~/.claude/skills/youtube-subtitle-fetch/analyze.ts <youtube-url>
+bun ~/.claude/skills/youtube-subtitle-fetch/analyze.ts <youtube-url> --no-cache
+bun ~/.claude/skills/youtube-subtitle-fetch/analyze.ts --file <path.vtt|.srt>
 ```
 
 Prints JSON to stdout. On cache hit returns instantly, network untouched.

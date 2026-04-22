@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { parseYouTube } from "../youtube-parser/parse";
+import { parseYouTube } from "../youtube-url-extract/parse";
 import { fetchSubs, type YtDlpMeta } from "./lib/fetch";
 import { parseCues, type Cue } from "./lib/parse-vtt";
 import { normalizeCues, joinFullText } from "./lib/normalize";
