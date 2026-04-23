@@ -368,3 +368,6 @@ echo "JSON written, size: $(wc -c < /tmp/cl-batch.json) bytes, entries: $(python
 [2026-04-23 22:54:23] BLOCKED: ALLOWED by user: Git destructive/push/commit
   Command: rm -f .tmp/chat-validator/retries.json; echo '{"session_id":"test-demo","last_assistant_message":"Some prose before.\n\n```bash\ngit add employers/*.md && git commit -m \"docs(employers): add INVEST stories, Gherkin AC, NFR, Compliance, STRIDE, OWASP, WCAG, self-gate and more improvements\" && git push\n```\n\nSome prose after."}' | bun run .claude/skills/tools-chat-validator/validator.ts
 
+[2026-04-24 01:33:47] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf "C:/Users/ssv55/.claude/skills/changelog-sync" && echo "deleted" && ls "C:/Users/ssv55/.claude/skills/" | grep -i changelog || echo "no changelog skills globally"
+
