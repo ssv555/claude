@@ -80,10 +80,18 @@ Do NOT edit any files until user responds.
 
    If `.claude/skills/session-archive/SKILL.md` does not exist — skip this step silently.
 
-6. Output SHORT commit message (3-5 words, english, prefix: fix/add/update/refactor/remove) as:
+6. Output ONE short Russian preamble line (≤80 chars), then the command block. The preamble explains what the command does and orients the user — without it, a bare command floating in chat looks torn out of context.
+
+Preamble examples (pick one that fits the situation):
+- `Команда для push:`
+- `Исправленная команда:` (when retrying after validator block)
+- `Готовая команда, после версионного бампа:` (when step 4e bumped version)
+- `Команда push (v1.0.015):` (short version-tagged variant)
+
+Then output SHORT commit message (3-5 words, english, prefix: fix/add/update/refactor/remove):
 
 ```bash
 git add -A && git commit -m "message" && git pull --rebase && git push
 ```
 
-No text before or after the code block.
+No other text after the code block.

@@ -108,6 +108,13 @@ $!7::
     return
 }
 
+; Alt+8 - push changelog entries to prod
+$!8::
+{
+    FocusTerminalAndType("bun run changelog:push-to-prod")
+    return
+}
+
 ; Alt+9 - prod-to-dev database sync
 $!9::
 {
@@ -158,6 +165,7 @@ $!h::
         . "`n  Alt+5  - git add + commit + push"
         . "`n  Alt+6  - git reset --hard origin/main"
         . "`n  Alt+7  - push AHK scripts to git"
+        . "`n  Alt+8  - bun run changelog:push-to-prod"
         . "`n  Alt+9  - prod-to-dev (sync prod DB to local)"
         . "`n"
         . "`nDocs (Starlight):"

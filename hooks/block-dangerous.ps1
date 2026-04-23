@@ -1,8 +1,37 @@
-# Claude Code PreToolUse hook - blocks dangerous patterns in Bash commands
+# Claude Code PreToolUse hook - blocks dangerous patterns in Bash commands.
+# This hook is CRITICAL - it is the only thing that stops Claude from running
+# `git commit`, `git push`, `rm -rf`, and other destructive commands.
+# DO NOT edit the matching patterns without understanding what you are removing.
+#
 # Exit code 2 = block tool call and show stderr to model
 # Exit code 0 = allow tool call
 #
-# IMPORTANT: When calling from settings.json, use this pattern:
+# =============================================================================
+# CRITICAL - settings.json invocation requires ESCAPED dollar signs
+# =============================================================================
+# In ~/.claude/settings.json the hooks[].command string MUST be:
+#   powershell -ExecutionPolicy Bypass -Command "& (Join-Path \$env:USERPROFILE '...'); exit \$LASTEXITCODE"
+#
+# Note the BACKSLASH before each dollar sign. In the JSON file itself these
+# appear as "\\$env:USERPROFILE" and "\\$LASTEXITCODE" (because JSON unescapes
+# \\ to a single backslash).
+#
+# Why the backslash is mandatory:
+#   Claude Code VSCode extension (v2.1.117+) runs hook commands through bash.
+#   Without the backslash, bash expands $env:USERPROFILE -> ":USERPROFILE"
+#   ($env is an empty bash variable, :USERPROFILE is a literal suffix).
+#   PowerShell then receives a broken path, throws CommandNotFoundException,
+#   and exits with code 0. Claude Code sees exit 0 and runs the forbidden
+#   command anyway - silent security failure.
+#
+# With the backslash: bash treats \$ as a literal $, passes it to PowerShell
+# untouched, and PowerShell does its own variable expansion correctly.
+#
+# Regression verified 2026-04-22 - do NOT remove the escapes.
+# Also applies to sealed-block.ps1 in the same settings.json.
+# =============================================================================
+#
+# Exit code propagation pattern when invoking this script from settings.json:
 #   & script.ps1; exit $LASTEXITCODE
 # Direct call (& $f) or dot-source (. $f) do NOT propagate exit codes!
 

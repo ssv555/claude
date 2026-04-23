@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -Command \"& (Join-Path $env:USERPROFILE '.claude/hooks/block-dangerous.ps1'); exit $LASTEXITCODE\""
+            "command": "powershell -ExecutionPolicy Bypass -Command \"& (Join-Path \\$env:USERPROFILE '.claude/hooks/block-dangerous.ps1'); exit \\$LASTEXITCODE\""
           }
         ]
       },
@@ -44,13 +44,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -Command \"& (Join-Path $env:USERPROFILE '.claude/hooks/sealed-block.ps1'); exit $LASTEXITCODE\""
+            "command": "powershell -ExecutionPolicy Bypass -Command \"& (Join-Path \\$env:USERPROFILE '.claude/hooks/sealed-block.ps1'); exit \\$LASTEXITCODE\""
           }
         ]
       }
     ]
   },
   "autoUpdatesChannel": "latest",
-  "effortLevel": "high",
-  "model": "sonnet"
+  "effortLevel": "xhigh"
 }

@@ -4,6 +4,12 @@
 #
 # Config: ~/.claude/sealed/*.json — one file per project
 # Called from settings.json for matcher "Edit|Write"
+#
+# CRITICAL: the settings.json command string MUST escape dollar signs as \$ for
+# both $env:USERPROFILE and $LASTEXITCODE (written as \\$ in the JSON file).
+# Without the escape, bash eats the variables before PowerShell sees them, the
+# hook silently fails with exit 0, and sealed files become editable by Claude.
+# See block-dangerous.ps1 header for the full explanation and regression context.
 
 $input_json = [Console]::In.ReadToEnd()
 
