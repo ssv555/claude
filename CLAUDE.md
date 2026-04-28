@@ -337,6 +337,15 @@ cd /d <project_path> && git add -A && git commit -m "msg" && git pull --rebase &
 
 Shared LLM-chat links (`chatgpt.com/s/...`, `chat.openai.com/share/...`, `claude.ai/share/...`, etc.) are handled by the global skill `chatgpt-archive` — auto-triggers on such URLs. See `~/.claude/skills/chatgpt-archive/SKILL.md` for the full workflow (Playwright extract → filter → merge/append into project `.docs/` → brief report).
 
+## Google Sheets — read & write capability
+
+Локально настроен Service Account + JSON-ключ + bun-скрипт на `googleapis`. Могу читать и редактировать любой Google Sheets, расшаренный на email сервис-аккаунта как Editor.
+
+- Документация: [`~/.claude/docs/google-sheets-write.md`](docs/google-sheets-write.md) — setup, email сервис-аккаунта, операции (update / append / clear / get / batchUpdate), безопасность, quotas.
+- Скрипт: [`~/.claude/tmp/sheets-write/write-sheet.ts`](tmp/sheets-write/write-sheet.ts) — переиспользуемый, `node_modules` с `googleapis` уже установлены рядом.
+
+Для записи в новый лист: пользователь шарит лист на SA-email (из docs) как Editor → говорит ID листа и что записать → правлю константы в скрипте (`SHEET_ID` / `RANGE` / `values`) и запускаю.
+
 ## Claude Code Session Storage — UNIVERSAL
 
 Claude Code stores session data locally. Use this to extract token usage, durations, and other metadata.

@@ -7,3 +7,8 @@
 - [Settings relative paths](feedback_settings_relative_paths.md) — additionalDirectories: only `../`, `~/`, `./` — never absolute with usernames
 - [Task checkbox format](feedback_todo_checkbox_format.md) — [x]/[ ] at START of line, never mid/end; no tables for status
 - [No git stash](feedback_no_git_stash.md) — Never use git stash with parallel sessions; use WIP commits; never stash drop without user confirmation
+- [Servers inventory](feedback_servers_inventory.md) — All servers (moscow_my / amsterdam_my / amsterdam_grey / amsterdam_grey_root) pre-configured as MCP + ssh-servers.json — find it, never ask
+- [Brevity is default](feedback_brevity_default.md) — Default = shortest answer that's actionable; long form only on explicit "распиши/подробно"
+
+## Reference
+- [MTProto proxy infra](../docs/mtproto-proxy.md) — Moscow-front + Amsterdam grey/my architecture, configs, diagnostics, rollback. Set up 2026-04-26.

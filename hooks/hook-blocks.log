@@ -371,3 +371,309 @@ echo "JSON written, size: $(wc -c < /tmp/cl-batch.json) bytes, entries: $(python
 [2026-04-24 01:33:47] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
   Command: rm -rf "C:/Users/ssv55/.claude/skills/changelog-sync" && echo "deleted" && ls "C:/Users/ssv55/.claude/skills/" | grep -i changelog || echo "no changelog skills globally"
 
+[2026-04-25 06:47:01] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mkdir -p "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/archive" && mv "d:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/vscodium_paste_lag.md" "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/archive/VSCODIUM_PASTE_LAG_FIX.md" && ls -la "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/archive/"
+
+[2026-04-25 09:31:22] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && powershell -nop -c "
+foreach (\$f in '.env.development','.env.production','.env.laptop') {
+  Write-Host \"=== \$f ===\"
+  \$lines = Get-Content \$f
+  for (\$i=0; \$i -lt \$lines.Count; \$i++) {
+    if (\$lines[\$i] -match '^DATA_ENCRYPTION_KEY=') {
+      \$start = [Math]::Max(0, \$i-5)
+      for (\$j=\$start; \$j -le \$i; \$j++) {
+        \$marker = if (\$j -eq \$i) { '>>>' } else { '   ' }
+        Write-Host \"L\$(\$j+1) \$marker \$(\$lines[\$j])\"
+      }
+      \$v = \$lines[\$i] -replace '^DATA_ENCRYPTION_KEY=', ''
+      Write-Host \"  hash: \$([Convert]::ToHexString([System.Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes(\$v))).Substring(0,12).ToLower())\"
+      break
+    }
+  }
+}
+Remove-Item '.tmp/fix_env.ps1','.tmp/rotate_dek_local.ps1' -Force -ErrorAction SilentlyContinue
+Write-Host 'cleaned tmp scripts'"
+
+[2026-04-26 17:39:50] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mv "C:/Users/ssv55/.claude/projects/d--Data-Documents-Programming-Projects-WEB-VDole/memory/feedback_servers_inventory.md" "C:/Users/ssv55/.claude/memory/feedback_servers_inventory.md"
+
+[2026-04-26 18:21:41] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mv /c/Users/ssv55/.claude/projects/d--Data-Documents-Programming-Projects-WEB-VDole/memory/feedback_brevity_default.md /c/Users/ssv55/.claude/memory/feedback_brevity_default.md && ls /c/Users/ssv55/.claude/memory/feedback_brevity_default.md
+
+[2026-04-26 18:25:32] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: PUB_GW=$(cat "D:/Data/Documents/Programming/Projects/WEB/.ssh/amsterdam_grey_www-data.pub") && ssh -i "D:/Data/Documents/Programming/Projects/WEB/.ssh/id_ed25519_amsterdam_grey_root" -p 22 root@94.103.80.11 "echo '' >> /var/www/.ssh/authorized_keys && echo \"$PUB_GW\" >> /var/www/.ssh/authorized_keys && chown www-data:www-data /var/www/.ssh/authorized_keys && chmod 600 /var/www/.ssh/authorized_keys && echo '=== /var/www/.ssh/authorized_keys ===' && cat /var/www/.ssh/authorized_keys && echo '=== ╤Г╨▒╨╕╤А╨░╤О ╤Б╨╗╤Г╤З╨░╨╣╨╜╨╛ ╤Б╨╛╨╖╨┤╨░╨╜╨╜╤Л╨╣ /home/www-data ===' && rm -rf /home/www-data/ && echo OK"
+
+[2026-04-26 18:26:15] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mv "D:/Data/Documents/Programming/Projects/WEB/.ssh/id_ed25519_amsterdam_grey_root" "D:/Data/Documents/Programming/Projects/WEB/.ssh/amsterdam_grey_root" && mv "D:/Data/Documents/Programming/Projects/WEB/.ssh/id_ed25519_amsterdam_grey_root.pub" "D:/Data/Documents/Programming/Projects/WEB/.ssh/amsterdam_grey_root.pub" && ls "D:/Data/Documents/Programming/Projects/WEB/.ssh/amsterdam_grey_root"*
+
+[2026-04-26 18:28:25] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: cd "D:/Data/Documents/Programming/Projects/WEB/.ssh" && chmod 644 id_rsa_moscow_my 2>&1; powershell -Command "Remove-Item -Force 'D:\Data\Documents\Programming\Projects\WEB\.ssh\id_rsa_moscow_my'" 2>&1; ls id_rsa_moscow_my 2>&1; echo "---"; ls -la
+
+[2026-04-26 18:52:36] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: ssh -i "D:/Data/Documents/Programming/Projects/WEB/.ssh/amsterdam_grey_root" -p 22 root@94.103.80.11 'set -e; cd /tmp; for i in 1 2 3; do echo "[attempt $i/3] fetching mtg latest release info..."; if URL=$(curl -fsSL --max-time 15 https://api.github.com/repos/9seconds/mtg/releases/latest | grep -oE "https://[^\"]+linux-amd64[^\"]+\.tar\.gz" | head -1) && [ -n "$URL" ]; then echo "URL: $URL"; break; fi; sleep 2; done; for i in 1 2 3; do echo "[attempt $i/3] downloading..."; if curl -fsSL --max-time 60 "$URL" -o mtg.tar.gz; then echo "OK download: $(ls -la mtg.tar.gz | awk "{print \$5}") bytes"; break; fi; sleep 2; done; tar -xzf mtg.tar.gz; MTG_BIN=$(find . -name mtg -type f | head -1); echo "Bin found: $MTG_BIN"; install -m 0755 "$MTG_BIN" /usr/local/bin/mtg; rm -rf mtg.tar.gz mtg-* /tmp/mtg-extract 2>/dev/null; echo; echo "=== ╤Г╤Б╤В╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╛ ==="; mtg --version'
+
+[2026-04-26 18:53:24] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: ssh -i "D:/Data/Documents/Programming/Projects/WEB/.ssh/amsterdam_my_root" -p 1022 root@77.238.231.203 'set -e; cd /tmp; for i in 1 2 3; do echo "[attempt $i/3] fetching mtg..."; if URL=$(curl -fsSL --max-time 15 https://api.github.com/repos/9seconds/mtg/releases/latest | grep -oE "https://[^\"]+linux-amd64[^\"]+\.tar\.gz" | head -1) && [ -n "$URL" ]; then break; fi; sleep 2; done; for i in 1 2 3; do if curl -fsSL --max-time 60 "$URL" -o mtg.tar.gz; then break; fi; sleep 2; done; tar -xzf mtg.tar.gz; install -m 0755 $(find . -name mtg -type f | head -1) /usr/local/bin/mtg; rm -rf mtg.tar.gz mtg-2*; echo "mtg version: $(mtg --version | head -1)"; echo; SECRET=$(mtg generate-secret --hex cloudflare.com); echo "SECRET=$SECRET"; id mtg 2>/dev/null || useradd --system --no-create-home --shell /usr/sbin/nologin mtg; mkdir -p /etc/mtg; cat > /etc/mtg/config.toml << EOF
+secret = "$SECRET"
+bind-to = "0.0.0.0:8443"
+concurrency = 8192
+prefer-ip = "prefer-ipv4"
+
+[network]
+public-ip = "77.238.231.203"
+EOF
+chown -R mtg:mtg /etc/mtg
+cat > /etc/systemd/system/mtg.service << "EOF"
+[Unit]
+Description=MTProto Proxy (mtg)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mtg
+Group=mtg
+ExecStart=/usr/local/bin/mtg run /etc/mtg/config.toml
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65535
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable --now mtg
+sleep 2
+systemctl is-active mtg
+ss -tlnp | grep :8443
+echo
+echo "=== access link ==="
+mtg access /etc/mtg/config.toml'
+
+[2026-04-26 22:54:14] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: ssh -i "D:/Data/Documents/Programming/Projects/WEB/.ssh/moscow_my_root" -p 1022 root@195.2.75.212 'awk "
+BEGIN { in_block = 0 }
+/^upstream mtproto_pool {/ { in_block = 1; print; print \"    # grey тАФ primary ╨┤╨╛ 2000 ╨║╨╛╨╜╨╜╨╡╨║╤В╨╛╨▓; my тАФ overflow/failover\"; print \"    server 94.103.80.11:8443 max_conns=2000 max_fails=3 fail_timeout=30s;\"; print \"    server 77.238.231.203:8443 backup max_fails=3 fail_timeout=30s;\"; next }
+in_block && /^}/ { in_block = 0; print; next }
+in_block { next }
+{ print }
+" /etc/nginx/stream.conf > /tmp/stream.conf.new && mv /tmp/stream.conf.new /etc/nginx/stream.conf; echo "=== upstream ╨┐╨╛╤Б╨╗╨╡ ==="; sed -n "/^upstream mtproto_pool/,/^}/p" /etc/nginx/stream.conf; echo; nginx -t 2>&1 && systemctl reload nginx && systemctl is-active nginx'
+
+[2026-04-26 23:50:05] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -f ~/.claude/hooks/vpn-check.conf ~/.claude/hooks/vpn-check.ps1 ~/.claude/hooks/vpn-check.log ~/.claude/tmp/vpn-bench3.ps1 2>&1; rm -rf ~/.claude/skills/vpn-check 2>&1; echo "--- remaining vpn-check artifacts (should be empty):"; find ~/.claude -name '*vpn-check*' -o -name '*vpn-bench*' 2>/dev/null
+
+[2026-04-27 00:45:49] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf "d:/Data/Documents/Programming/Projects/WEB/VDole/.claude/skills/tools-tokens" && ls "d:/Data/Documents/Programming/Projects/WEB/VDole/.claude/skills/" | head -20
+
+[2026-04-27 01:10:11] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mkdir -p "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/employers/legacy_role_cards" && mv "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/employers/emp-00-orchestrator.md" "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/employers/emp-01-analyst.md" "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/employers/emp-02-architect.md" "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/employers/emp-03-developer.md" "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/employers/emp-04-reviewer.md" "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/employers/emp-05-designer.md" "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/employers/legacy_role_cards/" && ls "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/employers/"
+
+[2026-04-27 01:10:40] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf "d:/Data/Documents/Programming/Projects/WEB/VDole/.claude/skills/emp-00-orchestrator" "d:/Data/Documents/Programming/Projects/WEB/VDole/.claude/skills/emp-01-analyst" "d:/Data/Documents/Programming/Projects/WEB/VDole/.claude/skills/emp-02-architect" "d:/Data/Documents/Programming/Projects/WEB/VDole/.claude/skills/emp-03-developer" "d:/Data/Documents/Programming/Projects/WEB/VDole/.claude/skills/emp-04-reviewer" "d:/Data/Documents/Programming/Projects/WEB/VDole/.claude/skills/emp-05-designer" && echo "---VDole local skills now:---" && ls "d:/Data/Documents/Programming/Projects/WEB/VDole/.claude/skills/"
+
+[2026-04-27 01:26:50] BLOCKED: Elevated privileges (-Verb RunAs)
+  Command: powershell -NoProfile -Command 'Start-Process powershell -Verb RunAs -ArgumentList "-NoProfile","-ExecutionPolicy","Bypass","-File","C:\Users\ssv55\.claude-proxy\install-services.ps1"'
+
+[2026-04-27 02:18:15] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add build.js && git commit -m "fix: build.js тАФ compile all ts files, not just main.ts" && git pull --rebase && git push 2>&1
+
+[2026-04-27 02:21:31] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "fix: bundled build (resolves ESM import issues), remove old user.js" && git pull --rebase && git push 2>&1
+
+[2026-04-27 02:22:12] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: ssh moscow_my "cd /var/www/ai_sky_net_bot && git clean -fd src/ 2>&1 | tail -20" 2>&1
+
+[2026-04-27 02:23:08] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && node build.js 2>&1 && git add build.js && git commit -m "fix: remove banner from build (conflicts with source imports)" && git push 2>&1
+
+[2026-04-27 02:29:56] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && node build.js 2>&1 && git add -A && git commit -m "fix: replace undefined roles.USER/ASSISTANT with string literals" && git push 2>&1
+
+[2026-04-27 06:59:04] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: code review тАФ dead code, error catches, tz-aware date, deploy npm install
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push
+
+[2026-04-27 10:13:58] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git push 2>&1
+
+[2026-04-27 10:22:45] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add src/wireguard.ts && git commit -m "fix: WireGuard тАФ SSH to Amsterdam server, parse names from conf comments" && git push 2>&1
+
+[2026-04-27 10:27:18] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && npm run build 2>&1 && git add src/wireguard.ts && git commit -m "fix: WG sort peers by IP" && git push 2>&1
+
+[2026-04-27 10:32:50] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && npm run build 2>&1 && git add src/wireguard.ts && git commit -m "fix: WG conf parser тАФ handle comments before [Peer]" && git push 2>&1
+
+[2026-04-27 22:45:51] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && npm run build 2>&1 && git add src/utils/utils.ts && git commit -m "fix: human-readable hourly monitoring message" && git push 2>&1
+
+[2026-04-27 22:47:31] BLOCKED: DENIED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && npm run build 2>&1 && git add src/utils/utils.ts && git commit -m "fix: clarify monitoring message тАФ process memory, not OS" && git push 2>&1
+
+[2026-04-27 22:47:54] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add src/utils/utils.ts && git commit -m "fix: clarify monitoring message тАФ process memory, not OS"
+
+[2026-04-27 22:48:05] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git push 2>&1
+
+[2026-04-27 22:50:50] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add src/menu-app.ts && git commit -m "feat: WireGuard admin menu with user list, peer status, help"
+
+[2026-04-27 22:51:02] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git push 2>&1
+
+[2026-04-27 22:54:13] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add src/menu-app.ts && git commit -m "feat: WG menu тАФ add peer config and peer status buttons"
+
+[2026-04-27 22:54:57] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git push 2>&1
+
+[2026-04-27 23:03:24] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add src/wireguard.ts scripts/gen.sh && git commit -m "feat: wg add/del commands, gen.sh IP range support (clients 2-29, family 30-99)"
+
+[2026-04-27 23:03:35] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git push 2>&1
+
+[2026-04-27 23:36:41] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git push 2>&1
+
+[2026-04-27 23:42:30] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add src/wireguard.ts src/menu-app.ts src/text.ts src/constants/constants.ts && git commit -m "feat: WG menu add/del buttons with marker + 10min timeout"
+
+[2026-04-27 23:42:42] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git push 2>&1
+
+[2026-04-27 23:45:14] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && npm run build 2>&1 && git add src/wireguard.ts && git commit -m "fix: truncate long AllowedIPs in wg uN to fit Telegram 4096 char limit"
+
+[2026-04-27 23:45:27] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git push 2>&1
+
+[2026-04-27 23:51:04] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add src/wireguard.ts && git commit -m "fix: wg uN sends .conf files as documents + QR as photo"
+
+[2026-04-27 23:51:16] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git push 2>&1 && bash scripts/deploy.sh 2>&1
+
+[2026-04-27 23:54:11] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && npm run build 2>&1 && git add src/wireguard.ts && git commit -m "fix: WG QR search by base name without _pc/_mobile suffix" && git push 2>&1 && bash scripts/deploy.sh 2>&1
+
+[2026-04-27 23:55:39] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && npm run build 2>&1 && git add src/wireguard.ts && git commit -m "fix: send QR png alongside its matching mobile .conf" && git push 2>&1 && bash scripts/deploy.sh 2>&1
+
+[2026-04-28 00:55:52] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add src/wireguard.ts && git commit -m "feat: wg qr/on/off/rename/stats + lookup by IP octet"
+
+[2026-04-28 01:03:46] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git push 2>&1
+
+[2026-04-28 03:35:38] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "fix: default model opus, effort high" && git pull --rebase && git push 2>&1
+
+[2026-04-28 03:39:25] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -3 && git add -A && git commit -m "fix: claude CLI path from env, remove shell:true" && git pull --rebase && git push 2>&1
+
+[2026-04-28 03:41:26] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -3 && git add -A && git commit -m "fix: run claude CLI as ssv user when bot is root" && git pull --rebase && git push 2>&1
+
+[2026-04-28 03:44:54] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -2 && git add -A && git commit -m "fix: remove su workaround, bot runs as ssv" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 03:48:01] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -2 && git add -A && git commit -m "fix: add --verbose required by stream-json" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 03:52:18] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -2 && git add -A && git commit -m "fix: show non-JSON output in chat, detect zero-token failures" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 04:02:38] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -2 && git add -A && git commit -m "fix: noAutoClose for Claude Code menu pages" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 04:04:36] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -2 && git add -A && git commit -m "fix: stop deleting Claude menu on button press" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 04:06:09] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -2 && git add -A && git commit -m "fix: return to Claude menu after project/model select" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 04:08:05] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -2 && git add -A && git commit -m "fix: move model button next to project" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 04:12:12] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "feat: persistent settings, effort selection, status in page title" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 04:13:31] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -2 && git add -A && git commit -m "fix: add git pull --rebase to claude workflow" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 04:14:48] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -2 && git add -A && git commit -m "fix: request commit hash in claude summary output" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 04:22:06] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -2 && git add -A && git commit -m "fix: prevent menu delete in else branch for noAutoClose" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 04:24:29] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -2 && git add -A && git commit -m "fix: use alert popups instead of replyMsg to keep menu open" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 04:27:01] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -2 && git add -A && git commit -m "fix: move answerCbQuery from actionMenu to per-branch, enable alert popups" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 04:29:55] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -2 && git add -A && git commit -m "fix: help via replyMsg, alert text under 200 char limit" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-04-28 07:23:16] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: ssh -o ConnectTimeout=5 moscow_my 'su - ssv -c "cd /home/ssv/Projects/Telegram/ai_sky_net_bot && git pull --rebase && git branch -d claude/2026-04-28-╨╛╨┐╤В╨╕╨╝╨╕╨╖╨░╤Ж╨╕╤П-╨┐╤А╨╛╨╕╨╖╨▓╨╛╨┤╨╕╤В╨╡╨╗╤М╨╜╨╛╤Б╤В╨╕-╨┐ && echo --- && git log --oneline -5"' 2>&1
+
+[2026-04-28 10:56:53] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: ssh -o ConnectTimeout=5 moscow_my "su - ssv -c \"ssh -o ConnectTimeout=5 amsterdam_my bash\" << 'REMOTE'
+cd /etc/wireguard
+
+# ╨г╨┤╨░╨╗╤П╨╡╨╝ ╨Т╨б╨Б ╤Б╨▓╤П╨╖╨░╨╜╨╜╨╛╨╡ ╤Б miha + ╨╝╤Г╤Б╨╛╤А╨╜╤Л╨╣ orphan [Peer] ╨▒╨╗╨╛╨║
+# ╨б╨╜╨░╤З╨░╨╗╨░ ╤Г╨┤╨░╨╗╨╕╨╝ ╨┐╨╕╤А╨░ ╨╕╨╖ runtime
+wg set wg0 peer wpZEc7mnB0mQ5qAzi8TXmZ2Bz17a+6Rkr10CEGwimGk= remove 2>/dev/null || true
+
+# ╨г╨┤╨░╨╗╤П╨╡╨╝ ╤Д╨░╨╣╨╗╤Л
+rm -f *miha* 2>/dev/null
+
+# ╨Я╨╡╤А╨╡╤Б╨╛╨╖╨┤╨░╤С╨╝ ╤З╨╕╤Б╤В╤Л╨╣ ╨║╨╛╨╜╤Д╨╕╨│: ╤Г╨▒╨╕╤А╨░╨╡╨╝ ╨▓╤Б╤С ╨╜╨░╤З╨╕╨╜╨░╤П ╤Б orphan ╨▒╨╗╨╛╨║╨░ ╨╕ miha
+# ╨Э╨░╤Е╨╛╨┤╨╕╨╝ ╤Б╤В╤А╨╛╨║╤Г ╨┐╨╛╤Б╨╗╨╡ kupriyanov_s_mobile PresharedKey ╨╕ ╨╛╨▒╤А╨╡╨╖╨░╨╡╨╝
+LINE=\$(grep -n 'squmCtVEZYXITL4brOgH' wg0.conf | cut -d: -f1)
+if [ -n \"\$LINE\" ]; then
+    head -n \$LINE wg0.conf > wg0.conf.tmp
+    echo '' >> wg0.conf.tmp
+    mv wg0.conf.tmp wg0.conf
+fi
+
+# ╨Я╤А╨╛╨▓╨╡╤А╤П╨╡╨╝
+echo '--- RESULT ---'
+tail -10 wg0.conf
+echo '--- VALIDATE ---'
+wg-quick strip wg0 > /dev/null 2>&1 && echo 'CONFIG OK' || echo 'CONFIG BROKEN'
+wg syncconf wg0 <(wg-quick strip wg0) 2>&1 && echo 'SYNC OK' || echo 'SYNC FAILED'
+REMOTE" 2>&1
+
+[2026-04-28 11:14:36] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: ssh -o ConnectTimeout=5 moscow_my "ssh -o ConnectTimeout=5 amsterdam_my 'cd /etc/wireguard && KEY=YFs4n/hhMoJtW0JEBSEB+j94sOL7fFq1Y95qS2QaFRY= && wg set wg0 peer \$KEY remove 2>/dev/null; grep -v miha wg0.conf | grep -v YFs4n | grep -v 10.0.0.12 > wg0.tmp && mv wg0.tmp wg0.conf && sed -i \"/^\\[Peer\\]\$/{ N; /^\\[Peer\\]\\n\$/d }\" wg0.conf && rm -f *miha* 2>/dev/null && wg-quick strip wg0 >/dev/null 2>&1 && echo CONFIG_OK || echo CONFIG_BROKEN'" 2>&1
+
+[2026-04-28 11:34:59] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: ssh -o ConnectTimeout=5 moscow_my "ssh -o ConnectTimeout=5 amsterdam_my 'cd /etc/wireguard && grep -v \"^\\[Peer\\]\" wg0.conf > wg0.tmp; echo \"\" >> wg0.tmp; grep -c \"\\[Peer\\]\" wg0.conf | xargs -I{} echo \"Removed {} empty Peer blocks\"; mv wg0.tmp wg0.conf'" 2>&1
+
+[2026-04-28 12:01:34] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: git -C "$HOME/.claude" rm -r --cached tmp/ 2>&1 | tail -5
+
+[2026-04-28 12:01:58] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: git add -A && git commit -m "add: upload error details and max request body size" && git pull --rebase && git push 2>&1 | tail -15
+
+[2026-04-28 12:02:10] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "$HOME/.claude" && git add -A && git commit -m "update: gitignore tmp/.secrets, google sheets docs, memory, proxy env" && git pull --rebase && git push 2>&1 | tail -15
+
+[2026-04-28 12:03:45] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "$HOME/.claude" && git add -A && git commit -m "update: gitignore tmp/.secrets, google sheets docs, memory, proxy env, dark theme" 2>&1 | tail -10 && git push 2>&1 | tail -5
+
