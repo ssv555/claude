@@ -4,7 +4,7 @@
     "groups":  {
                    "auth":  {
                                 "description":  "Authentication — all auth routes, middleware, helpers, DB access",
-                                "sealed":  false,
+                                "sealed":  true,
                                 "level":  2,
                                 "files":  [
                                               "back/src/middleware/auth.ts",

@@ -12,3 +12,4 @@
 
 ## Reference
 - [MTProto proxy infra](../docs/mtproto-proxy.md) — Moscow-front + Amsterdam grey/my architecture, configs, diagnostics, rollback. Set up 2026-04-26.
+- [Proxy tunnels](reference_proxy_tunnels.md) — HTTP proxy localhost:8080 via SSH tunnels to Amsterdam tinyproxy, NSSM services auto-start
