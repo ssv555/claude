@@ -1,4 +1,10 @@
 {
+  "env": {
+    "HTTPS_PROXY": "http://localhost:8080",
+    "HTTP_PROXY": "http://localhost:8080",
+    "ALL_PROXY": "http://localhost:8080",
+    "NO_PROXY": "localhost,127.0.0.1,::1"
+  },
   "permissions": {
     "allow": [
       "Bash",
@@ -15,7 +21,8 @@
       "mcp__moscow_my__*",
       "mcp__playwright__*",
       "mcp__desktop__*",
-      "mcp__pencil"
+      "mcp__pencil",
+      "Edit(/.claude/skills/employers/**)"
     ],
     "deny": [
       "Read(**/.env)",
@@ -49,12 +56,6 @@
         ]
       }
     ]
-  },
-  "env": {
-    "HTTPS_PROXY": "http://localhost:8080",
-    "HTTP_PROXY": "http://localhost:8080",
-    "ALL_PROXY": "http://localhost:8080",
-    "NO_PROXY": "localhost,127.0.0.1,::1"
   },
   "effortLevel": "high",
   "autoUpdatesChannel": "latest",

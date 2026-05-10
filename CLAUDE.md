@@ -311,6 +311,50 @@ All file links in chat — relative from workspace root. NEVER `C:\...`, `D:\...
 
 Absolute paths to files outside the project do not open in VSCode chat. All projects on `D:`, relative paths always work. Check symlinks before claiming "cross-drive".
 
+## CHAT OUTPUT — PRE-SEND CHECKS — UNIVERSAL
+
+**Mentally validate every chat message against this checklist BEFORE sending.** Previously a Stop-hook (`tools-chat-validator`) caught violations after the fact, but it only fires after the broken text is already streamed to the user — every fail wasted tokens on a full rewrite and left a duplicated message in the transcript. The hook is removed; correctness now lives in the model. Treat each violation as a critical defect.
+
+### Rule #1 — File link first in every list bullet
+
+Every bullet that mentions a file MUST start with the markdown link, then a separator (— or :), then the description. The file link is ALWAYS first; nothing (no bold text, no label, no emoji, no number-tag) precedes it inside the bullet.
+
+```
+✅ - [back/src/app.ts](back/src/app.ts) — main Elysia entry, mounts all /api routes
+✅ - [front/src/routes/auth.tsx](front/src/routes/auth.tsx) + [back/src/app.ts](back/src/app.ts) — both touched for the /auth split
+❌ - **Усилить правило.** Перенести в [CLAUDE.md](CLAUDE.md) ...   # bold before link
+❌ - Memory updated: see [feedback_x.md](feedback_x.md) ...        # description before link
+❌ - Done. [docs/foo.md](docs/foo.md) — created.                   # status word before link
+```
+
+If a bullet has no file to reference, just write prose — do NOT invent a link to satisfy the rule. The rule applies only to bullets that DO mention files.
+
+If a bullet would naturally start with status text ("Готово.", "Создан.", "Память обновлена."), restructure: pull the link to the front, push the status into the description. Or move the status out of the bullet entirely (single line above the list).
+
+### Rule #2 — Git command chain + ≤72 char commit message
+
+When outputting a `git commit` command for the user to run, ALWAYS:
+
+1. Full chain on one line: `cd /d <project_path> && git add -A && git commit -m "<msg>" && git pull --rebase && git push`.
+2. Commit message inside `-m "..."` MUST be ≤72 characters (UTF-8). Count before sending.
+3. Windows CMD syntax: `cd /d`, full `D:\...` paths, never `~/` or Unix slashes inside `cd`.
+
+```
+✅ cd /d D:\Data\Documents\Programming\Projects\WEB\VDole && git add -A && git commit -m "fix auth nonce TTL" && git pull --rebase && git push
+❌ git commit -m "Refactored authentication module to support multiple OAuth providers and fix nonce TTL bug"   # 90 chars, no chain, no cd
+```
+
+For long context, use the description body via HEREDOC — but the `-m` summary itself stays short.
+
+### Self-check workflow
+
+Before pressing send, scan your draft for:
+
+- Any bullet starting with `**`, a word, an emoji, or anything other than `[` → fix per Rule #1.
+- Any `git commit -m "..."` → count chars in the quoted string + verify the cd/&&/pull/push chain → fix per Rule #2.
+
+Two seconds of self-check beats a full rewrite plus duplicated message in the user's transcript.
+
 ## AskUserQuestion — not available in subagents/hooks
 
 `AskUserQuestion` works ONLY in the main session. Subagents (Agent tool), background agents, and hook-triggered agents CANNOT use it — it is blocked at system level.
