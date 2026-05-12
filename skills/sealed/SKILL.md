@@ -19,6 +19,8 @@ Protects critical files (auth, security, payments) from accidental AI edits via 
 
 User invokes via `/sealed` (or natural language). All actions dispatch from the first argument.
 
+**Shortcuts:** `/seal <group>` ≡ `/sealed <group>`, `/unseal <group>` ≡ `/sealed unseal <group>`. Defined in `~/.claude/commands/seal.md` and `~/.claude/commands/unseal.md`. The PreToolUse hook (`~/.claude/hooks/sealed-block.ps1`) uses the short forms in its block messages.
+
 ### `/sealed` (no args) — show status
 
 ```bash

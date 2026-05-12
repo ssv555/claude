@@ -903,3 +903,159 @@ EOF
 [2026-05-11 01:01:07] BLOCKED: ALLOWED by user: Git destructive/push/commit
   Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add src/amg-plate-ocr.ts src/amg-ff.ts tests/test-amg-ff.ts && git commit -m "fix: correct BY plate format (4 digits + 2 letters + region)" && git pull --rebase && git push 2>&1
 
+[2026-05-11 08:39:46] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add docs/amg-invite.md && git commit -m "docs: update plate formats table and OCR pipeline" && git pull --rebase && git push 2>&1
+
+[2026-05-11 08:49:12] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add webapp/src/utils/plate.ts && git commit -m "fix: sync webapp plate.ts with CIS formats" && git pull --rebase && git push 2>&1
+
+[2026-05-11 08:49:29] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git stash && git pull --rebase && git stash pop && git push 2>&1
+
+[2026-05-11 13:49:23] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -f "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/.tmp/ChatExport_2026-05-11/rag_index.sqlite" && cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/scripts/rag" && docker compose down -v && rm -rf qdrant_data && docker compose up -d 2>&1 | tail -5
+
+[2026-05-11 13:55:11] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -f "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/.tmp/ChatExport_2026-05-11/rag_index.sqlite" && cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/scripts/rag" && docker compose down -v 2>&1 | tail -3 && rm -rf qdrant_data && docker compose up -d 2>&1 | tail -3
+
+[2026-05-11 17:22:35] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && mv scripts/rag/docker-compose.yml rag/ && mv scripts/rag/qdrant_data rag/ 2>/dev/null; mv scripts/rag/monitor.ts src/rag/ && mv scripts/rag/test-search.ts src/rag/ && mv scripts/rag/index.ts src/rag/indexer.ts && mv scripts/rag/db.ts src/rag/ && mv scripts/rag/text.ts src/rag/text-utils.ts && mv scripts/rag/embed.ts src/rag/ && mv scripts/rag/qdrant.ts src/rag/qdrant-indexer.ts && mv scripts/rag/types.ts src/rag/ && mv src/lib/rag/embedder.ts src/rag/ && mv src/lib/rag/qdrant-search.ts src/rag/ && mv src/lib/rag/rag-pipeline.ts src/rag/ && echo "moved"
+
+[2026-05-11 17:22:53] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && mv rag_index.sqlite rag/ 2>/dev/null; mv rag_index.sqlite-shm rag/ 2>/dev/null; mv rag_index.sqlite-wal rag/ 2>/dev/null; rm -f rag_index.sqlite rag_index.sqlite-shm rag_index.sqlite-wal 2>/dev/null && echo "moved"
+
+[2026-05-11 17:23:11] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && rmdir scripts/rag 2>/dev/null; rmdir scripts 2>/dev/null; rmdir src/lib/rag 2>/dev/null; ls src/rag/ && echo "---" && ls rag/
+
+[2026-05-11 17:24:32] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: ls "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/scripts/rag/" 2>/dev/null; rmdir "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/scripts/rag" 2>/dev/null; echo "done"
+
+[2026-05-11 17:24:50] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/scripts/rag" && echo "done"
+
+[2026-05-11 19:27:30] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+feat: RAG search UI + rag./ask. prefix, code review fixes
+
+- API endpoint /srv/rag/search, WebApp RagSearchPage
+- rag./ask./╤А╨░╨│. prefix with vector search
+- Remove obsolete 45amgrus. prefix
+- Fix worker path (dist/rag/), markProcessed only on success
+- EmbeddingManager.configure() replaces any-cast
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)"
+
+[2026-05-11 19:27:43] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git pull --rebase && git push
+
+[2026-05-11 19:42:19] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: ssh moscow_my "cd /var/www/ai_sky_net_bot && rm -rf .git/objects/pack/*.idx .git/objects/pack/*.pack && git init && git remote add origin https://github.com/ssv555/ai_sky_net_bot.git 2>/dev/null; git fetch origin main && git reset --hard origin/main && echo 'OK'" 2>&1
+
+[2026-05-11 20:24:26] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: powershell -nop -c "Expand-Archive -Path 'D:\Data\Documents\Programming\Projects\WEB\VDole\.docs\archive\YandexMail.zip' -DestinationPath 'C:\Users\ssv55\AppData\Local\Temp\zipcheck' -Force; Get-ChildItem 'C:\Users\ssv55\AppData\Local\Temp\zipcheck' | Select-Object Name, Length; Remove-Item -Path 'C:\Users\ssv55\AppData\Local\Temp\zipcheck' -Recurse -Force"
+
+[2026-05-11 21:03:09] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: powershell -nop -c "Get-Process node -ErrorAction SilentlyContinue | Where-Object { \$_.CommandLine -match 'indexer' } | Stop-Process -Force; Start-Sleep -Seconds 2; Remove-Item 'D:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot\.tmp\ChatExport_2026-05-11\rag_index.sqlite*' -Force -ErrorAction SilentlyContinue; Write-Host 'cleaned'"
+
+[2026-05-11 22:02:56] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: powershell -nop -c "Remove-Item 'D:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot\.tmp\ChatExport_2026-05-11\rag_index.sqlite*' -Force -ErrorAction SilentlyContinue; Write-Host 'sqlite cleaned'"
+
+[2026-05-11 22:29:15] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mv back/src/scripts/test-smtp.ts back/src/scripts/test-email.ts 2>&1
+ls back/src/scripts/test-*.ts 2>&1
+
+[2026-05-11 22:45:14] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: NO_PROXY='*' curl -s --noproxy '*' -X DELETE 'http://localhost:6333/collections/amg_chat' 2>&1 && powershell -nop -c "Remove-Item 'D:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot\.tmp\ChatExport_2026-05-11\rag_index.sqlite*' -Force -ErrorAction SilentlyContinue; Write-Host 'cleaned'"
+
+[2026-05-11 22:47:40] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: powershell -nop -c "Remove-Item 'D:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot\.tmp\ChatExport_2026-05-11\rag_index.sqlite*' -Force -ErrorAction SilentlyContinue; Write-Host 'cleaned'" && NO_PROXY='*' curl -s --noproxy '*' -X DELETE 'http://localhost:6333/collections/amg_chat' 2>&1 && cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && NO_PROXY='*' npx tsx --no-warnings src/rag/indexer.ts --input ".tmp/ChatExport_2026-05-11/result.json" --qdrant "http://localhost:6333" --device gpu 2>&1
+
+[2026-05-11 22:48:51] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: powershell -nop -c "Remove-Item 'D:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot\.tmp\ChatExport_2026-05-11\rag_index.sqlite*' -Force -ErrorAction SilentlyContinue" && NO_PROXY='*' curl -s --noproxy '*' -X DELETE 'http://localhost:6333/collections/amg_chat' 2>&1 && cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && NO_PROXY='*' npx tsx --no-warnings src/rag/indexer.ts --input ".tmp/ChatExport_2026-05-11/result.json" --qdrant "http://localhost:6333" --device gpu 2>&1
+
+[2026-05-11 22:54:03] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: powershell -nop -c "Remove-Item 'D:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot\.tmp\ChatExport_2026-05-11\rag_index.sqlite*' -Force -ErrorAction SilentlyContinue" && NO_PROXY='*' curl -s --noproxy '*' -X DELETE 'http://localhost:6333/collections/amg_chat' 2>&1 && cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && NO_PROXY='*' npx tsx --no-warnings src/rag/indexer.ts --input ".tmp/ChatExport_2026-05-11/result.json" --qdrant "http://localhost:6333" --device gpu 2>&1
+
+[2026-05-11 22:56:01] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: powershell -nop -c "Remove-Item 'D:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot\.tmp\ChatExport_2026-05-11\rag_index.sqlite*' -Force -ErrorAction SilentlyContinue" && NO_PROXY='*' curl -s --noproxy '*' -X DELETE 'http://localhost:6333/collections/amg_chat' 2>&1 && cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && NO_PROXY='*' npx tsx --no-warnings src/rag/indexer.ts --input ".tmp/ChatExport_2026-05-11/result.json" --qdrant "http://localhost:6333" --device gpu 2>&1
+
+[2026-05-11 22:58:54] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: powershell -nop -c "Remove-Item 'D:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot\.tmp\ChatExport_2026-05-11\rag_index.sqlite*' -Force -ErrorAction SilentlyContinue" && NO_PROXY='*' curl -s --noproxy '*' -X DELETE 'http://localhost:6333/collections/amg_chat' 2>&1 && cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && NO_PROXY='*' npx tsx --no-warnings src/rag/indexer.ts --input ".tmp/ChatExport_2026-05-11/result.json" --qdrant "http://localhost:6333" --device gpu 2>&1
+
+[2026-05-11 23:05:36] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: powershell -nop -c "Remove-Item 'D:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot\.tmp\ChatExport_2026-05-11\rag_index.sqlite*' -Force -ErrorAction SilentlyContinue" && NO_PROXY='*' curl -s --noproxy '*' -X DELETE 'http://localhost:6333/collections/amg_chat' 2>&1 && cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && NO_PROXY='*' npx tsx --no-warnings src/rag/indexer.ts --input ".tmp/ChatExport_2026-05-11/result.json" --qdrant "http://localhost:6333" --device gpu 2>&1
+
+[2026-05-11 23:06:57] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: powershell -nop -c "Remove-Item 'D:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot\.tmp\ChatExport_2026-05-11\rag_index.sqlite*' -Force -ErrorAction SilentlyContinue" && NO_PROXY='*' curl -s --noproxy '*' -X DELETE 'http://localhost:6333/collections/amg_chat' 2>&1 && cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && NO_PROXY='*' npx tsx --no-warnings src/rag/indexer.ts --input ".tmp/ChatExport_2026-05-11/result.json" --qdrant "http://localhost:6333" --device gpu 2>&1
+
+[2026-05-11 23:23:23] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "feat: GPU embedding via Python CUDA, fix indexer imports, EmbeddingManager device switch" && git pull --rebase && git push 2>&1
+
+[2026-05-11 23:34:11] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && rm -rf node_modules/onnxruntime-node && npm install 2>&1 | tail -5
+
+[2026-05-11 23:35:01] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "fix: remove onnxruntime-node override (1.26тЖТ1.14 for @xenova/transformers compat)" && git pull --rebase && git push 2>&1 | tail -5
+
+[2026-05-11 23:42:02] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -3 && git add -A && git commit -m "fix: use web_app button in DM, url button in groups for RAG search" && git pull --rebase && git push 2>&1 | tail -3
+
+[2026-05-11 23:58:26] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "fix: RAG search тАФ openTelegramLink + sessionStorage cache for Mini App" && git pull --rebase && git push 2>&1 | tail -3 && bash scripts/deploy.sh 2>&1 | tail -5
+
+[2026-05-12 00:08:34] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -3 && git add -A && git commit -m "feat: RAG in group тАФ reply + send web_app button to DM" && git pull --rebase && git push 2>&1 | tail -3 && bash scripts/deploy.sh 2>&1 | tail -5
+
+[2026-05-12 00:10:58] SEALED BLOCKED: group=auth
+  File: front/src/components/auth/registrationflow.tsx
+
+[2026-05-12 00:13:57] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -3 && git add -A && git commit -m "fix: RAG search result text format" && git pull --rebase && git push 2>&1 | tail -3 && bash scripts/deploy.sh 2>&1 | tail -3
+
+[2026-05-12 00:22:14] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -3 && git add -A && git commit -m "fix: RAG group тАФ auto-delete group msg 60s, delete prev DM before new" && git pull --rebase && git push 2>&1 | tail -3 && bash scripts/deploy.sh 2>&1 | tail -5
+
+[2026-05-12 00:44:51] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "feat: RAG deep link via Mini App (startapp), remove DM fallback" && git pull --rebase && git push 2>&1 | tail -3 && bash scripts/deploy.sh 2>&1 | tail -5
+
+[2026-05-12 00:49:30] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/webapp" && npm run build 2>&1 | tail -2 && cd .. && git add -A && git commit -m "fix: base64url UTF-8 decode for cyrillic in startapp param" && git pull --rebase && git push 2>&1 | tail -2 && bash scripts/deploy.sh 2>&1 | tail -3
+
+[2026-05-12 00:56:26] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git mv docs/todo/bug_auth_registration_phone_step_state_loss.md docs/archive/2026-05-12_bug_auth_registration_phone_step_state_loss.md 2>&1 || mv docs/todo/bug_auth_registration_phone_step_state_loss.md docs/archive/2026-05-12_bug_auth_registration_phone_step_state_loss.md
+
+[2026-05-12 00:57:58] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "feat: RAG search pagination + page size + max results dropdown" && git pull --rebase && git push 2>&1 | tail -3 && bash scripts/deploy.sh 2>&1 | tail -3
+
+[2026-05-12 01:03:52] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "feat: bottom nav bar (Garage/Search/More), /garage route, pb-16 for nav" && git pull --rebase && git push 2>&1 | tail -3 && bash scripts/deploy.sh 2>&1 | tail -3
+
+[2026-05-12 01:21:05] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot && git add -A && git commit -m "feat: search controls bottom, FAB fix, WebApp menu button for AMG group" && git pull --rebase && git push
+
+[2026-05-12 02:18:51] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot && npm run build 2>&1 | tail -3 && git add -A && git commit -m "fix: use web_app buttons in groups, not url" && git pull --rebase && git push
+
+[2026-05-12 02:25:26] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot && npm run build 2>&1 | tail -3 && git add -A && git commit -m "fix: deep link for webapp buttons in groups" && git pull --rebase && git push
+
+[2026-05-12 02:30:31] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot && npm run build 2>&1 | tail -3 && git add -A && git commit -m "fix: use correct Mini App deep link with short name" && git pull --rebase && git push
+
+[2026-05-12 02:40:09] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot && git add -A && git commit -m "feat: admin search + rag dropdowns moved to bottom" && git pull --rebase && git push
+
+[2026-05-12 02:47:16] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot && git add -A && git commit -m "docs: update commands in CLAUDE.md, help, TODO; remove ask. prefix alias" && git pull --rebase && git push
+
+[2026-05-12 03:19:10] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mv "C:/Users/ssv55/.claude/tmp/spf_reg_session.md" "d:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/spf_reg_session.md" && ls -la "d:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/spf_reg_session.md"
+
+[2026-05-12 03:33:46] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "fix: build rag-online-converter as separate bundle for worker thread" && git pull --rebase && git push 2>&1 | tail -3 && bash scripts/deploy.sh 2>&1 | tail -5
+
+[2026-05-12 03:34:03] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git push 2>&1
+

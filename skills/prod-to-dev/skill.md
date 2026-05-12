@@ -51,8 +51,17 @@ Use `mcp__<MCP>__download`:
 
 ## Step 3 — Get local DATABASE_URL
 
-Read `<target_env_file>` (path from project-config) from project root. Extract `DATABASE_URL` value.
+Resolve `<target_env_file>` from project-config:
+- If value is `AUTO` (recommended) — detect by hostname via project's helper (e.g. VDole has `back/src/shared/local-machine.ts` with `HOST_MAP` and `DEFAULT_ENV_FILE`). For VDole: read `HOST_MAP` from that file, look up `$env:COMPUTERNAME` (Windows) / `hostname` (Unix). If matched → use mapped file; else use `DEFAULT_ENV_FILE` (`.env.laptop`).
+- If value is a concrete filename (e.g. `.env.development`) — use it directly.
+
+Read the resolved env file from project root. Extract `DATABASE_URL` value.
 Replace `0.0.0.0` with `localhost` in the URL if present.
+
+Get hostname on Windows:
+```powershell
+powershell.exe -Command "[System.Environment]::MachineName"
+```
 
 ## Step 4 — Find local pg_restore
 
