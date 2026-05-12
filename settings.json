@@ -57,7 +57,7 @@
       }
     ]
   },
-  "effortLevel": "high",
+  "effortLevel": "max",
   "autoUpdatesChannel": "latest",
   "theme": "dark-daltonized"
 }
