@@ -9,6 +9,8 @@
 - [No git stash](feedback_no_git_stash.md) — Never use git stash with parallel sessions; use WIP commits; never stash drop without user confirmation
 - [Servers inventory](feedback_servers_inventory.md) — All servers (moscow_my / amsterdam_my / amsterdam_grey / amsterdam_grey_root) pre-configured as MCP + ssh-servers.json — find it, never ask
 - [Brevity is default](feedback_brevity_default.md) — Default = shortest answer that's actionable; long form only on explicit "распиши/подробно"
+- [User instruction FIRST](feedback_user_action_first.md) — Ручной юзер-шаг → инструкция первой строкой, мои доки/код параллельно
+- [Vivaldi personal browser](feedback_vivaldi_personal_browser.md) — `playwright_vivaldi` MCP цепляется к живой сессии Vivaldi юзера; per-task разрешение, не закрываю ничего, не трогаю закладки
 
 ## Reference
 - [MTProto proxy infra](../docs/mtproto-proxy.md) — Moscow-front + Amsterdam grey/my architecture, configs, diagnostics, rollback. Set up 2026-04-26.

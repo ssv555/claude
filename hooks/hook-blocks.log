@@ -1059,3 +1059,295 @@ ls back/src/scripts/test-*.ts 2>&1
 [2026-05-12 03:34:03] BLOCKED: ALLOWED by user: Git destructive/push/commit
   Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git push 2>&1
 
+[2026-05-12 11:57:46] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git commit -m "$(cat <<'EOF'
+feat: car reminders system (TO, insurance, tax, oil)
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)"
+
+[2026-05-12 11:57:58] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git pull --rebase && git push
+
+[2026-05-12 11:58:47] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: ssh moscow_my "cd /var/www/ai_sky_net_bot && git checkout -- webapp/tsconfig.tsbuildinfo && git pull"
+
+[2026-05-12 12:16:46] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: git commit -m "$(cat <<'EOF'
+feat: compact monitoring format, RAG runtime stats
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)"
+
+[2026-05-12 12:16:57] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: git pull --rebase && git push
+
+[2026-05-12 20:21:14] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git commit -m "$(cat <<'EOF'
+feat: RAG relevance controls, embed dispose, compact monitoring
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)"
+
+[2026-05-12 20:21:34] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git pull --rebase && git push
+
+[2026-05-12 20:42:57] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && rm -rf .tmp/gpg-key-transfer && ls .tmp/ 2>&1 || echo "(.tmp empty or gone)"
+
+[2026-05-12 20:56:03] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+feat: RAG settings collapse toggle, minScore step 0.01
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push
+
+[2026-05-12 21:04:02] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+feat: RAG search history dropdown (last 20 queries)
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push
+
+[2026-05-12 22:45:43] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git commit -m "$(cat <<'EOF'
+feat: favorites system (RAG search + bot command fav.)
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" 2>&1
+
+[2026-05-12 22:47:03] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: git add -A && git commit -m "deploy: rename serverbunтЖТiamrich + run services as www-data" && git push
+
+[2026-05-12 22:54:43] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git pull --rebase && git push 2>&1
+
+[2026-05-12 22:55:02] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: git add package.json bun.lock && git commit -m "deps: switch xlsx to @e965/xlsx fork (npm registry, unblocks Moscow IP)" && git push
+
+[2026-05-12 22:55:33] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: ssh moscow_my "cd /var/www/ai_sky_net_bot && git checkout -- webapp/tsconfig.tsbuildinfo" 2>&1
+
+[2026-05-12 23:04:35] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: SVG hearts, throw on API errors in webapp
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push 2>&1
+
+[2026-05-12 23:22:05] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: extract userId directly from initData header
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push 2>&1
+
+[2026-05-12 23:28:02] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -3 && cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: optimistic UI for heart toggle
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push 2>&1
+
+[2026-05-12 23:32:42] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/webapp" && npx tsc --noEmit 2>&1 | tail -3 && cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -3 && git add -A && git commit -m "$(cat <<'EOF'
+fix: keep heart overrides until new search
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push 2>&1
+
+[2026-05-12 23:39:09] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/webapp" && npx tsc --noEmit 2>&1 | tail -3 && cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -3 && git add -A && git commit -m "$(cat <<'EOF'
+fix: restore search on back-nav, stable heart state
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push 2>&1
+
+[2026-05-12 23:43:20] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -3 && git add -A && git commit -m "$(cat <<'EOF'
+debug: log getReqUserId failures
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push 2>&1 && bash scripts/deploy.sh 2>&1 | tail -6
+
+[2026-05-12 23:46:25] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/webapp" && npx tsc --noEmit 2>&1 | tail -5 && cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -3 && git add -A && git commit -m "$(cat <<'EOF'
+fix: use allFavorites for heart state, drop check endpoint
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push 2>&1 && bash scripts/deploy.sh 2>&1 | tail -3
+
+[2026-05-12 23:49:17] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/webapp" && npx tsc --noEmit 2>&1 | tail -3 && cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && npm run build 2>&1 | tail -3 && git add -A && git commit -m "$(cat <<'EOF'
+fix: bigint string vs number comparison for hearts
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push 2>&1 && bash scripts/deploy.sh 2>&1 | tail -3
+
+[2026-05-13 00:07:41] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+feat: add Help page + More hub in WebApp
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)"
+
+[2026-05-13 00:07:52] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git pull --rebase && git push
+
+[2026-05-13 00:11:10] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: move Help tab switcher to bottom
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push
+
+[2026-05-13 00:22:39] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git commit -m "fix: skip ff trigger on long messages (>200 chars)"
+
+[2026-05-13 00:22:50] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git pull --rebase && git push
+
+[2026-05-13 14:00:48] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git commit -m "feat: highlight numbers in monitoring report with <code> tags" && git pull --rebase && git push
+
+[2026-05-13 14:05:26] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "feat: add /mon command for on-demand monitoring report" && git pull --rebase && git push
+
+[2026-05-13 14:08:06] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "fix: getBool -> getAsBoolean, add conf.has() for missing GEO config" && git pull --rebase && git push
+
+[2026-05-13 14:08:50] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: ssh moscow_my "cd /var/www/ai_sky_net_bot && git checkout -- webapp/tsconfig.tsbuildinfo" 2>&1
+
+[2026-05-13 14:46:30] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+feat: geo-proximity engine тАФ real-time proximity detection + nightly habitat report
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)"
+
+[2026-05-13 14:46:44] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git pull --rebase && git push 2>&1
+
+[2026-05-13 14:47:30] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: ssh moscow_my "cd /var/www/ai_sky_net_bot && git checkout -- webapp/tsconfig.tsbuildinfo" 2>&1
+
+[2026-05-13 14:53:41] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+docs: add geo-proximity section to WebApp Help page
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push 2>&1
+
+[2026-05-13 15:06:33] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: instant render geo settings page, no skeleton blocking
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push 2>&1
+
+[2026-05-13 16:56:52] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "feat: user profile page + remove phone from geo settings" && git pull --rebase && git push
+
+[2026-05-13 17:08:57] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "fix: use bold instead of code tag for mobile compatibility"
+
+[2026-05-13 17:09:06] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git pull --rebase && git push
+
+[2026-05-13 17:16:09] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "fix: clean unused imports in GeoSettingsPage" && git pull --rebase && git push
+
+[2026-05-13 17:19:25] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "fix: bold+code combo for mobile stats highlight"
+
+[2026-05-13 17:20:29] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git pull --rebase && git push
+
+[2026-05-13 17:23:16] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "fix: visible skeleton + error state on profile page" && git pull --rebase && git push
+
+[2026-05-13 17:29:47] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "feat: loading timer on profile page" && git pull --rebase && git push && bash scripts/deploy.sh 2>&1
+
+[2026-05-13 17:29:58] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole/scripts/deploy" && bash -c '
+TIMESTAMP=$(date +"%Y-%m-%d__%H-%M-%S")
+HASH=abc12345
+
+echo "=== Filename simulation ==="
+echo "Manual dump:        ${TIMESTAMP}__db__${HASH}.dump.gpg"
+echo "Auto dump:          ${TIMESTAMP}__db__${HASH}__auto.dump.gpg"
+echo "Globals manual:     ${TIMESTAMP}__db__${HASH}__globals.sql.gpg"
+echo "Globals auto:       ${TIMESTAMP}__db__${HASH}__auto__globals.sql.gpg"
+echo ""
+
+echo "=== _extract_hash tests ==="
+source ./lib/notify_telegram_admin.sh
+echo "new auto:    $(_extract_hash "${TIMESTAMP}__db__${HASH}__auto")"
+echo "new manual:  $(_extract_hash "${TIMESTAMP}__db__${HASH}")"
+echo "legacy auto: $(_extract_hash "db_2026-05-12_22-49-57_1fc79a2a_auto")"
+echo "legacy man:  $(_extract_hash "db_2026-05-12_22-49-57_1fc79a2a")"
+echo ""
+
+echo "=== Glob match check ==="
+mkdir -p /tmp/glob-test
+cd /tmp/glob-test
+touch "${TIMESTAMP}__db__${HASH}.dump.gpg"
+touch "${TIMESTAMP}__db__${HASH}__auto.dump.gpg"
+touch "db_2026-05-12_22-49-57_${HASH}.dump.gpg"
+touch "db_2026-05-12_22-49-57_${HASH}_auto.dump.gpg"
+echo "All files matching *_${HASH}*.dump.gpg:"
+ls *_${HASH}*.dump.gpg
+echo ""
+echo "Auto-only matching *_auto.dump.gpg:"
+ls *_auto.dump.gpg
+echo ""
+echo "Manual-only (NOT *_auto.dump.gpg) matching *_${HASH}*.dump.gpg:"
+for f in *_${HASH}*.dump.gpg; do
+    [[ "$f" == *_auto.dump.gpg ]] && continue
+    echo "$f"
+done
+rm -rf /tmp/glob-test
+'
+
+[2026-05-13 17:30:57] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/webapp" && npx tsc --noEmit 2>&1 && cd .. && git add -A && git commit -m "fix: keep timer visible after profile loads (green, stopped)" && git pull --rebase && git push && bash scripts/deploy.sh 2>&1
+
+[2026-05-13 17:36:49] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "fix: switch monitoring msg to MarkdownV2 for mobile"
+
+[2026-05-13 17:39:38] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git pull --rebase && git push
+
+[2026-05-13 17:44:54] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "fix: pass tg_user_id to profile API (like other endpoints)" && git pull --rebase && git push && bash scripts/deploy.sh 2>&1
+
+[2026-05-13 17:54:21] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "feat: profile тАФ avatar from TG, copyable username, allowCall toggle, no timer" && git pull --rebase && git push && bash scripts/deploy.sh 2>&1
+
+[2026-05-13 18:03:01] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "fix: profile dirty state тАФ compare to saved values, no false positives" && git pull --rebase && git push && bash scripts/deploy.sh 2>&1
+
+[2026-05-13 18:09:28] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "fix: remove duplicate allowCall toggle from profile page" && git pull --rebase && git push && bash scripts/deploy.sh 2>&1
+
