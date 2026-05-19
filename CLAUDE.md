@@ -440,6 +440,37 @@ To sum main session + all subagents, run the script on each JSONL and sum the to
 - **Orchestrator finalization** (`final.md`) — report per-subagent and total tokens
 - **User asks about token usage** — extract from the current session's JSONL
 
+## Personal Infra — moscow_my / amsterdam_my / amsterdam_grey
+
+Документация / canonical source скриптов / snapshots для **personal-серверов пользователя**
+(не VDole-продакшен) лежат в:
+
+```
+D:\Data\Backup\Ubuntu Servers\INFRA\
+```
+
+Структура: `INFRA/servers/<server-alias>/{docs,snapshots,scripts}/`. Точка входа в каждый
+сервер — `servers/<alias>/README.md`. Конкретно по moscow_my (VPN-relay для домашнего PC,
+AmneziaWG + VLESS legacy + AS13335-expanded wg0 → amsterdam) — открой
+`D:\Data\Backup\Ubuntu Servers\INFRA\servers\moscow_my\README.md`.
+
+**Правила доступа Claude к INFRA** — строгие, прописаны в
+`D:\Data\Backup\Ubuntu Servers\INFRA\CLAUDE.md`. Главное: Claude имеет право
+создавать/править/удалять **только внутри INFRA/**, ничего выше по дереву
+(`D:\Data\Backup\Ubuntu Servers\`, `D:\Data\Backup\`, и т.д.) не трогать. Это
+включает runtime-копии скриптов в `Ubuntu Servers\moscow_my\awg\` — там лежат
+работающие копии с приватными ключами клиента, sync делает пользователь сам.
+
+Версионирование — SVN, инициализируется и управляется пользователем.
+
+### VPN exit check — `check-vpn.cmd`
+
+Client-side diagnostic for the user's PC. Probes 14 services (5 RU + 9 INTL), parses Cloudflare `cf-ray` PoP, classifies external IP against known infra ranges, flags INTL traffic leaking through RU PoP. Server-agnostic — usable with any active tunnel (moscow_my relay, direct to amsterdam_my/amsterdam_grey, no-VPN baseline). Use it whenever VPN routing needs verification across projects.
+
+- Canonical: `D:\Data\Backup\Ubuntu Servers\INFRA\scripts\check-vpn\` (`check-vpn.cmd` + `check-vpn.ps1` + `README.md` + `logs/`).
+- Runtime: separate copy on user's PC, synced by user (location varies per machine).
+- Run: double-click `check-vpn.cmd`; per-run log written to `logs/check-vpn_YYYY-MM-DD_HHmmss.log`.
+
 ## Codex — Code Quality Rules
 
 See [codex.md](./codex.md) — SOLID, DRY, KISS, YAGNI, Clean Code, Security, Testing, Performance.

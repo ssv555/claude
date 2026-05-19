@@ -1351,3 +1351,240 @@ rm -rf /tmp/glob-test
 [2026-05-13 18:09:28] BLOCKED: ALLOWED by user: Git destructive/push/commit
   Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "fix: remove duplicate allowCall toggle from profile page" && git pull --rebase && git push && bash scripts/deploy.sh 2>&1
 
+[2026-05-14 07:46:52] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: git commit -m "$(cat <<'EOF'
+fix: RAG qdrant upsert retry + send batch errors to owner
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)"
+
+[2026-05-14 07:47:03] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: git pull --rebase && git push
+
+[2026-05-14 07:51:11] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: git commit -m "$(cat <<'EOF'
+fix: amg-ff trigger limit 200тЖТ20, add photos to manual plate input
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)"
+
+[2026-05-14 07:51:22] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: git pull --rebase && git push
+
+[2026-05-14 20:26:28] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git commit -m "$(cat <<'EOF'
+feat: amg-ff inline buttons (retry/manual/cancel), 60s auto-delete, tests
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)"
+
+[2026-05-14 20:26:39] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git pull --rebase && git push
+
+[2026-05-14 20:37:19] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: amg-ff confirm OCR plate before lookup, no auto-search
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push
+
+[2026-05-14 20:41:40] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+feat: amg-ff retry OCR with rejected plates in prompt
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push
+
+[2026-05-14 20:51:20] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git checkout -- src/amg-ff.ts src/amg-plate-ocr.ts
+
+[2026-05-14 21:08:09] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+feat: OCR retry тАФ crop center, parallel providers, o4-mini, improved prompt
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push
+
+[2026-05-14 21:11:52] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: remove real plate from OCR prompt example
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push
+
+[2026-05-14 21:22:28] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: don't catch prefix commands (╤З╨╡╨╣./who.) as plate input
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push
+
+[2026-05-14 21:29:14] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: auto-delete '╨а╨░╤Б╨┐╨╛╨╖╨╜╨░╤О ╨╜╨╛╨╝╨╡╤А...' status after OCR completes
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push
+
+[2026-05-14 22:10:32] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: OCR retry sequential (no rate limit flood), auto-delete status msgs
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push
+
+[2026-05-14 22:27:24] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: show '╨Ш╤Й╤Г: PLATE...' on button click instead of silent delete
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push
+
+[2026-05-14 22:36:13] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: don't filter rejected plates on retry, don't auto-delete final msgs
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push && bash scripts/deploy.sh
+
+[2026-05-14 22:43:11] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: OCR JSON parsing тАФ code-block extraction, curly quotes, non-greedy
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push && bash scripts/deploy.sh
+
+[2026-05-15 07:44:34] SEALED BLOCKED: group=auth
+  File: back/src/middleware/auth.ts
+
+[2026-05-15 07:58:20] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: ssh moscow_my "mv /etc/nginx/conf.d/check-ssl-certs.sh /usr/local/bin/check-ssl-certs.sh && chmod +x /usr/local/bin/check-ssl-certs.sh && sed -i 's|/etc/nginx/conf.d/check-ssl-certs.sh|/usr/local/bin/check-ssl-certs.sh|' /etc/systemd/system/check-ssl-certs.service && systemctl daemon-reload 2>&1"
+
+[2026-05-16 23:13:35] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: cd "d:/Data/Backup/Ubuntu Servers" && \
+rmdir amsterdam_my/keys-self/ssv amsterdam_my/keys-self/web \
+      amsterdam_grey/keys-self/root_legacy \
+      moscow_my/keys-self/root moscow_my/keys-self/ssv \
+      vdole_pro_timeweb_moscow/keys-self 2>&1 | head -3
+echo "--- after rmdir, structure now ---"; \
+ls amsterdam_my/keys-self/ amsterdam_grey/keys-self/ moscow_my/keys-self/ vdole_pro_timeweb_moscow/ 2>&1
+
+[2026-05-16 23:13:54] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:/Data/Backup/Ubuntu Servers" && \
+echo "=== Amsterdam тЖТ amsterdam_my (merge) ===" && \
+mv Amsterdam/ssv  amsterdam_my/keys-self/ssv && \
+mv Amsterdam/web  amsterdam_my/keys-self/web && \
+mv Amsterdam/etc  amsterdam_my/etc && \
+mv Amsterdam/var  amsterdam_my/var && \
+mv Amsterdam/tmp  amsterdam_my/tmp && \
+mv Amsterdam/squid amsterdam_my/squid && \
+mv "Amsterdam/Putty-Sessions.reg"   amsterdam_my/Putty-Sessions.reg && \
+mv "Amsterdam/backup.etc.nginx.sh"  amsterdam_my/backup.etc.nginx.sh && \
+mv "Amsterdam/etc.nginx.tar.gz"     amsterdam_my/etc.nginx.tar.gz && \
+rmdir Amsterdam && echo "OK Amsterdam"
+
+echo "=== Amsterdam-Grey тЖТ amsterdam_grey (merge) ===" && \
+mv Amsterdam-Grey/.ssh  amsterdam_grey/keys-self/root_legacy && \
+mv Amsterdam-Grey/home  amsterdam_grey/home && \
+mv Amsterdam-Grey/grey.txt amsterdam_grey/grey.txt && \
+rm -rf Amsterdam-Grey/SSH && \
+rmdir Amsterdam-Grey && echo "OK Amsterdam-Grey"
+
+echo "=== Moscow тЖТ moscow_my (merge) ===" && \
+mv Moscow/ssh/root moscow_my/keys-self/root && \
+mv Moscow/ssh/ssv  moscow_my/keys-self/ssv && \
+rmdir Moscow/ssh && \
+mv Moscow/Incremental moscow_my/Incremental && \
+mv Moscow/WireGuard   moscow_my/WireGuard && \
+mv Moscow/backup      moscow_my/backup && \
+mv Moscow/etc         moscow_my/etc && \
+mv Moscow/var         moscow_my/var && \
+mv "Moscow/_backup_www.sh" "moscow_my/_backup_www.sh" && \
+rmdir Moscow && echo "OK Moscow"
+
+echo "=== vdole-pro тЖТ vdole_pro_timeweb_moscow (merge) ===" && \
+rmdir vdole-pro/ssh 2>/dev/null; \
+rmdir vdole-pro && echo "OK vdole-pro (only empty ssh/, dropped)"
+echo "--- FINAL TOP ---"; \
+ls -la "d:/Data/Backup/Ubuntu Servers/"
+
+[2026-05-16 23:14:22] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: cd "d:/Data/Backup/Ubuntu Servers" && \
+mv "Moscow/ssh/Readme.txt" "moscow_my/keys-self/Readme_ssh_lesson.txt" && \
+rmdir Moscow/ssh && \
+mv Moscow/Incremental moscow_my/Incremental && \
+mv Moscow/WireGuard   moscow_my/WireGuard && \
+mv Moscow/backup      moscow_my/backup && \
+mv Moscow/etc         moscow_my/etc && \
+mv Moscow/var         moscow_my/var && \
+mv "Moscow/_backup_www.sh" "moscow_my/_backup_www.sh" && \
+rmdir Moscow && \
+echo "OK Moscow now" && \
+echo "--- FINAL TOP ---" && ls -la "d:/Data/Backup/Ubuntu Servers/"
+
+[2026-05-16 23:18:03] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: echo "=== BEFORE delete: WEB/.ssh contents ==="; ls -la "d:/Data/Documents/Programming/Projects/WEB/.ssh/" 2>&1 | head -5; \
+echo "--- size ---"; du -sh "d:/Data/Documents/Programming/Projects/WEB/.ssh/" 2>&1; \
+echo "=== DELETING ==="; \
+rm -rf "d:/Data/Documents/Programming/Projects/WEB/.ssh/" && echo "DELETED OK"; \
+echo "=== Verify removed ==="; ls -la "d:/Data/Documents/Programming/Projects/WEB/.ssh/" 2>&1 | head -3; \
+echo "=== Verify SSH still works via new path ==="; ssh -F C:/Users/ssv55/.ssh/config -o BatchMode=yes -o ConnectTimeout=5 vdole_pro_timeweb_moscow "echo OK_post_delete"
+
+[2026-05-16 23:48:03] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: echo "=== ╨г╨┤╨░╨╗╤П╤О orphan-╤Д╨░╨╣╨╗╤Л ╨╕╨╖ WEB/.ssh/ ===" && rm "d:/Data/Documents/Programming/Projects/WEB/.ssh/amsterdam_my_ssv" "d:/Data/Documents/Programming/Projects/WEB/.ssh/amsterdam_my_ssv.pub" && echo "=== ╨Я╤А╨╛╨▓╨╡╤А╤П╤О ╤З╤В╨╛ ╨┐╨░╨┐╨║╨░ ╨╛╨┐╤Г╤Б╤В╨╡╨╗╨░ ===" && ls -la "d:/Data/Documents/Programming/Projects/WEB/.ssh/" 2>/dev/null && echo "" && echo "=== ╨г╨┤╨░╨╗╤П╤О ╨┐╤Г╤Б╤В╤Г╤О ╨┐╨░╨┐╨║╤Г WEB/.ssh/ ===" && rmdir "d:/Data/Documents/Programming/Projects/WEB/.ssh/" 2>&1 && echo "тЬЕ WEB/.ssh/ ╤Г╨┤╨░╨╗╤С╨╜" || echo "rmdir failed тАФ ╨┐╨░╨┐╨║╨░ ╨╜╨╡ ╨┐╤Г╤Б╤В╨░"
+
+[2026-05-17 00:45:48] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git mv docs/todo/vps_optimization_playbook.md docs/archive/infra/2026-05-17_vps_optimization_playbook.md && git status --short | head -10
+
+[2026-05-17 00:45:58] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mv docs/todo/vps_optimization_playbook.md docs/archive/infra/2026-05-17_vps_optimization_playbook.md && ls docs/archive/infra/ && echo '---' && ls docs/todo/ | grep -i vps
+
+[2026-05-17 01:57:27] BLOCKED: Elevated privileges (-Verb RunAs)
+  Command: powershell -nop -c "Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile','-Command','(Get-Process -Id 10084).Path | Out-File C:\Users\ssv55\.claude\tmp\nginx_path.txt' -WindowStyle Hidden -Wait" 2>&1; sleep 1; cat ~/.claude/tmp/nginx_path.txt 2>&1
+
+[2026-05-17 20:49:03] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mkdir -p "/d/Data/Documents/Programming/Projects/WEB/VDole/docs/archive/todo" && mv -v "/d/Data/Documents/Programming/Projects/WEB/VDole/docs/todo/general/ssh_hardening_lockdown.md" "/d/Data/Documents/Programming/Projects/WEB/VDole/docs/archive/todo/2026.05.17_ssh_hardening_lockdown_done.md" && echo "--- ╨┐╤А╨╛╨▓╨╡╤А╨║╨░ ---" && ls -la "/d/Data/Documents/Programming/Projects/WEB/VDole/docs/archive/todo/2026.05.17_ssh_hardening_lockdown_done.md" && echo "--- ╤Б╤В╨░╤А╨╛╨│╨╛ ╤Д╨░╨╣╨╗╨░ ╨╜╨╡╤В ---" && ls "/d/Data/Documents/Programming/Projects/WEB/VDole/docs/todo/general/ssh_hardening_lockdown.md" 2>&1 || echo "(╨╛╤В╤Б╤Г╤В╤Б╤В╨▓╤Г╨╡╤В тАФ ╨╛╨║)"
+
+[2026-05-17 21:05:44] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mkdir -p D:/Data/Documents/Programming/Projects/WEB/VDole/.tmp && mv C:/Users/ssv55/.claude/tmp/proxy-cleanup-ADMIN.cmd D:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/proxy-cleanup-ADMIN.cmd && ls -la D:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/proxy-cleanup-ADMIN.cmd
+
+[2026-05-17 21:13:59] BLOCKED: 'nul' reserved device name
+  Command: cmd //c "where /r \"C:\\Program Files\" lagofast* 2>nul & where /r \"C:\\Program Files (x86)\" lagofast* 2>nul & where /r \"%LOCALAPPDATA%\" lagofast* 2>nul" 2>&1 | head -20
+
+[2026-05-17 21:14:47] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf C:/Users/ssv55/.claude/tmp/net-audit.cmd C:/Users/ssv55/.claude/tmp/net-audit.ps1 C:/Users/ssv55/.claude/tmp/proxy-cleanup.cmd C:/Users/ssv55/.claude/tmp/net-residue-check.cmd C:/Users/ssv55/.claude/tmp/audit.txt C:/Users/ssv55/.claude/tmp/cleanup-out.txt C:/Users/ssv55/.claude/tmp/residue.txt 2>&1 && rm -f D:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/proxy-cleanup-ADMIN.cmd && ls C:/Users/ssv55/.claude/tmp/ 2>&1 | head -10 && echo === && ls D:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/ 2>&1 | head -10
+
+[2026-05-17 21:57:08] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf C:/Users/ssv55/scoop/persist/nginx && ls C:/Users/ssv55/scoop/persist/ 2>&1
+
+[2026-05-18 09:55:39] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mv "C:/Users/ssv55/bin/hiddify_safe_start.cmd" "C:/Program Files/Hiddify/hiddify_safe_start.cmd" 2>&1 && ls -la "C:/Program Files/Hiddify/hiddify_safe_start.cmd"
+
+[2026-05-18 09:55:59] BLOCKED: Elevated privileges (-Verb RunAs)
+  Command: powershell -nop -Command "Start-Process -Verb RunAs -Wait -FilePath cmd -ArgumentList '/c move \"C:\Users\ssv55\bin\hiddify_safe_start.cmd\" \"C:\Program Files\Hiddify\\\"'" 2>&1; ls -la "C:/Program Files/Hiddify/hiddify_safe_start.cmd" 2>&1; ls "C:/Users/ssv55/bin/" 2>&1
+
+[2026-05-18 12:35:07] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/net-vpn/snapshots/2026-05-18_pre-awg/state" && mv state/* . && rmdir state && ls -la
+
+[2026-05-18 20:12:48] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole/.docs/net-vpn/snapshots/2026-05-18_post-fulltunnel" && tar -xzf snap.tgz --strip-components=1 && rm snap.tgz && echo '=== restructuring: flat files/ тЖТ files/etc/wireguard/ etc ===' && mkdir -p files/etc/wireguard files/etc/amnezia/amneziawg files/usr/local/bin files/etc/cron.d files/etc/systemd/system/awg-quick@awg-clients.service.d && mv files/wg0.conf files/etc/wireguard/ && mv files/awg-clients.conf files/etc/amnezia/amneziawg/ && mv files/server_pub.key files/etc/amnezia/amneziawg/ && mv files/as13335-current.txt files/root_awg-backups_as13335-current.txt && mv files/wg0-as13335.sh files/usr/local/bin/ && mv files/awg-postup.sh files/usr/local/bin/ && mv files/awg-postdown.sh files/usr/local/bin/ && mv files/moscow-relay-watch.sh files/usr/local/bin/ 2>/dev/null && mv files/cron-wg0-as13335 files/etc/cron.d/wg0-as13335 && mv files/systemd-override-awg-quick.conf files/etc/systemd/system/awg-quick@awg-clients.service.d/override.conf && echo '=== final structure ===' && find files state -type f | sort && echo '=== generating hashes ===' && find files -type f | sort | xargs sha256sum > hashes.sha256 && wc -l hashes.sha256
+
+[2026-05-18 21:52:06] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf "D:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/awg-helper"
+
+[2026-05-19 18:45:48] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mkdir -p "d:/Data/Backup/Ubuntu Servers/INFRA/scripts/check-vpn" && mv "d:/Data/Backup/Ubuntu Servers/INFRA/servers/moscow_my/scripts/check-vpn.cmd" "d:/Data/Backup/Ubuntu Servers/INFRA/scripts/check-vpn/check-vpn.cmd" && mv "d:/Data/Backup/Ubuntu Servers/INFRA/servers/moscow_my/scripts/check-vpn.ps1" "d:/Data/Backup/Ubuntu Servers/INFRA/scripts/check-vpn/check-vpn.ps1" && ls -la "d:/Data/Backup/Ubuntu Servers/INFRA/scripts/check-vpn/" && echo "---source after:" && ls "d:/Data/Backup/Ubuntu Servers/INFRA/servers/moscow_my/scripts/"
+
