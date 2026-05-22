@@ -19,7 +19,8 @@
       "mcp__playwright__*",
       "mcp__desktop__*",
       "mcp__pencil",
-      "Edit(/.claude/skills/employers/**)"
+      "Edit(/.claude/skills/employers/**)",
+      "Read(//d/Data/Documents/Programming/Projects/WEB/VDole/scripts/deploy/**)"
     ],
     "deny": [
       "Read(**/.env)",

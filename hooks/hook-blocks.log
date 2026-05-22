@@ -1588,3 +1588,40 @@ echo "=== Verify SSH still works via new path ==="; ssh -F C:/Users/ssv55/.ssh/c
 [2026-05-19 18:45:48] BLOCKED: ALLOWED by user: Move/rename (mv)
   Command: mkdir -p "d:/Data/Backup/Ubuntu Servers/INFRA/scripts/check-vpn" && mv "d:/Data/Backup/Ubuntu Servers/INFRA/servers/moscow_my/scripts/check-vpn.cmd" "d:/Data/Backup/Ubuntu Servers/INFRA/scripts/check-vpn/check-vpn.cmd" && mv "d:/Data/Backup/Ubuntu Servers/INFRA/servers/moscow_my/scripts/check-vpn.ps1" "d:/Data/Backup/Ubuntu Servers/INFRA/scripts/check-vpn/check-vpn.ps1" && ls -la "d:/Data/Backup/Ubuntu Servers/INFRA/scripts/check-vpn/" && echo "---source after:" && ls "d:/Data/Backup/Ubuntu Servers/INFRA/servers/moscow_my/scripts/"
 
+[2026-05-20 22:54:12] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf .tmp/sync-stage && mkdir -p .tmp/sync-stage
+
+[2026-05-20 22:54:53] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cp .tmp/sync-stage/* "D:/Data/Backup/Ubuntu Servers/INFRA/servers/amsterdam_grey/scripts/" && chmod +x "D:/Data/Backup/Ubuntu Servers/INFRA/servers/amsterdam_grey/scripts/wg-easy-hidden-peer.sh" && ls -la "D:/Data/Backup/Ubuntu Servers/INFRA/servers/amsterdam_grey/scripts/" && rm -rf .tmp/sync-stage
+
+[2026-05-20 23:26:48] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: mkdir -p "D:/Data/Backup/Ubuntu Servers/INFRA/servers/moscow_my/backups" "D:/Data/Backup/Ubuntu Servers/INFRA/servers/amsterdam_my/backups" "D:/Data/Backup/Ubuntu Servers/INFRA/servers/amsterdam_grey/backups" && rm -rf .tmp/sync-stage && mkdir -p .tmp/sync-stage
+
+[2026-05-20 23:28:02] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: cd .tmp/sync-stage && \
+mv moscow_my_wg0.conf.bak.20260520_221203 "D:/Data/Backup/Ubuntu Servers/INFRA/servers/moscow_my/backups/wg0.conf.bak.20260520_221203" && \
+mv moscow_my_01-netcfg.yaml.bak.20260520_181308 "D:/Data/Backup/Ubuntu Servers/INFRA/servers/moscow_my/backups/01-netcfg.yaml.bak.20260520_181308" && \
+mv amsterdam_my_01-netcfg.yaml.bak.20260520_181328 "D:/Data/Backup/Ubuntu Servers/INFRA/servers/amsterdam_my/backups/01-netcfg.yaml.bak.20260520_181328" && \
+mv amsterdam_grey_01-netcfg.yaml.bak.20260520_221126 "D:/Data/Backup/Ubuntu Servers/INFRA/servers/amsterdam_grey/backups/01-netcfg.yaml.bak.20260520_221126" && \
+mv amsterdam_grey_rules.v4.bak.20260520_221151 "D:/Data/Backup/Ubuntu Servers/INFRA/servers/amsterdam_grey/backups/rules.v4.bak.20260520_221151" && \
+mv amsterdam_grey_wg-easy.env.bak.20260520_223706 "D:/Data/Backup/Ubuntu Servers/INFRA/servers/amsterdam_grey/backups/wg-easy.env.bak.20260520_223706" && \
+cd .. && rmdir sync-stage && \
+echo "=== moscow_my/backups/ ===" && ls -la "D:/Data/Backup/Ubuntu Servers/INFRA/servers/moscow_my/backups/" && \
+echo "=== amsterdam_my/backups/ ===" && ls -la "D:/Data/Backup/Ubuntu Servers/INFRA/servers/amsterdam_my/backups/" && \
+echo "=== amsterdam_grey/backups/ ===" && ls -la "D:/Data/Backup/Ubuntu Servers/INFRA/servers/amsterdam_grey/backups/"
+
+[2026-05-20 23:52:10] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: SNAP="/d/Data/Backup/Ubuntu Servers/INFRA/servers/amsterdam_grey/snapshots/2026-05-20_post-xray"; rmdir "$SNAP/configs/etc/nginx/sites-enabled" 2>/dev/null; find "$SNAP" -type d | sort; echo "--- versions snippet ---"; cat "$SNAP/state/snap_versions.txt"
+
+[2026-05-21 07:25:12] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: SNAP="/d/Data/Backup/Ubuntu Servers/INFRA/servers/moscow_my/snapshots/2026-05-21_full-config"; mkdir -p "$SNAP/state" "$SNAP/configs"; cd /tmp && rm -rf snap-full-2026-05-21 && tar xzf /d/Data/Documents/Programming/Projects/WEB/VDole/.tmp/snap_moscow_full.tar.gz; cp snap-full-2026-05-21/state/* "$SNAP/state/" && cp snap-full-2026-05-21/configs.tar.gz "$SNAP/configs.tar.gz"; cd "$SNAP/configs" && tar xzf "$SNAP/configs.tar.gz" 2>&1 | tail -3; echo "---size---"; du -sh "$SNAP"; echo "---key dirs---"; ls "$SNAP/configs/etc/" | head -30; echo "---custom scripts---"; ls "$SNAP/configs/usr/local/bin/" 2>&1; echo "---AwG keys (sanity)---"; ls "$SNAP/configs/etc/amnezia/amneziawg/" 2>&1
+
+[2026-05-21 07:26:22] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: SNAP="/d/Data/Backup/Ubuntu Servers/INFRA/servers/amsterdam_my/snapshots/2026-05-21_full-config"; mkdir -p "$SNAP/state" "$SNAP/configs"; cd /tmp && rm -rf snap-full-2026-05-21 && tar xzf /d/Data/Documents/Programming/Projects/WEB/VDole/.tmp/snap_amst_my_full.tar.gz; cp snap-full-2026-05-21/state/* "$SNAP/state/" && cp snap-full-2026-05-21/configs.tar.gz "$SNAP/configs.tar.gz"; cd "$SNAP/configs" && tar xzf "$SNAP/configs.tar.gz" 2>&1 | tail -3; echo "---size---"; du -sh "$SNAP"; echo "---key dirs---"; ls "$SNAP/configs/etc/"; echo "---htpasswd sanity---"; ls "$SNAP/configs/etc/nginx/.htpasswd_panels" 2>&1; echo "---streams---"; ls "$SNAP/configs/etc/nginx/streams-enabled/" 2>&1; echo "---x-ui?---"; ls "$SNAP/configs/etc/x-ui/" 2>&1; echo "---prometheus?---"; ls "$SNAP/configs/etc/prometheus/" 2>&1
+
+[2026-05-21 07:27:19] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: SNAP="/d/Data/Backup/Ubuntu Servers/INFRA/servers/vdole_pro_timeweb_moscow/snapshots/2026-05-21_full-config"; mkdir -p "$SNAP/state" "$SNAP/configs"; cd /tmp && rm -rf snap-full-2026-05-21 && tar xzf /d/Data/Documents/Programming/Projects/WEB/VDole/.tmp/snap_vdole_pro_full.tar.gz; cp snap-full-2026-05-21/state/* "$SNAP/state/" && cp snap-full-2026-05-21/configs.tar.gz "$SNAP/configs.tar.gz"; cd "$SNAP/configs" && tar xzf "$SNAP/configs.tar.gz" 2>&1 | tail -3; echo "---size---"; du -sh "$SNAP"; echo "---key dirs---"; ls "$SNAP/configs/etc/"; echo "---postgres---"; ls "$SNAP/configs/etc/postgresql/18/main/" 2>&1; echo "---systemd custom---"; ls "$SNAP/configs/etc/systemd/system/" 2>&1 | grep -E 'vdole|node-sync|chronyd' | head
+
+[2026-05-22 18:46:35] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf "C:/Users/ssv55/Tools/NekoBox" && ls "C:/Users/ssv55/Tools/" 2>&1; echo "---tmp old inventory---"; ls "C:/Users/ssv55/.claude/tmp/proxy_old_inventory.md" 2>&1; echo "---settings env now---"; grep -A3 '"env"' "C:/Users/ssv55/.claude/settings.json" 2>&1
+

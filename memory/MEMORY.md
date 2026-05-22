@@ -15,3 +15,5 @@
 ## Reference
 - [MTProto proxy infra](../docs/mtproto-proxy.md) — Moscow-front + Amsterdam grey/my architecture, configs, diagnostics, rollback. Set up 2026-04-26.
 - [Proxy tunnels](reference_proxy_tunnels.md) — HTTP proxy localhost:8080 via SSH tunnels to Amsterdam tinyproxy, NSSM services auto-start
+- [antifilter.network BGP](reference_antifilter_bgp.md) — public BGP peer with RKN registry prefixes for router policy routing
+- [.ps1 ASCII-only](feedback_windows_script_encoding.md) — Write saves no-BOM, PS 5.x mangles Cyrillic → use English in PowerShell scripts
