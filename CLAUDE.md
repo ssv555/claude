@@ -474,3 +474,11 @@ Client-side diagnostic for the user's PC. Probes 14 services (5 RU + 9 INTL), pa
 ## Codex — Code Quality Rules
 
 See [codex.md](./codex.md) — SOLID, DRY, KISS, YAGNI, Clean Code, Security, Testing, Performance.
+
+## Deep Styles (design engineering, animations, polish)
+
+Триггерные фразы в запросе пользователя или в task-файле сотрудника: `use Deep Styles`, `используй Deep Styles`, `использовать глубокие стили`, `применить deep styles`, `глубокие стили`.
+
+При срабатывании триггера — загрузи и применяй [codex.design.deep-styles.md](./codex.design.deep-styles.md) (`~/.claude/codex.design.deep-styles.md`): durations, custom easing curves, scale-on-press, transform-origin, springs, `prefers-reduced-motion`, clip-path-трюки, perceived performance, review-таблицы Before/After/Why. Источник — Emil Kowalski's Design Engineering Skill, snapshot 2026-05-22.
+
+Без триггера файл НЕ читается и его правила НЕ применяются — это намеренно, чтобы не перегружать обычные дизайн-задачи философией микро-интеракций. Тот же триггер действует и для `emp-05-designer` в пайплайне сотрудников — orchestrator передаёт фразу в `00_task.md`, дизайнер добавляет секцию «Animation & Motion (Deep Styles)» в `02b_design.md`.
