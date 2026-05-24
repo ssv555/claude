@@ -12,11 +12,11 @@ originSessionId: 4a48c027-14ef-4f44-ad95-766e46cde474
 
 | Server | Host | Port | User | Key (relative to D:/.../WEB/) | MCP name |
 |---|---|---|---|---|---|
-| moscow_my | 195.2.75.212 | 1022 | root | `.ssh/moscow_my_root` | `mcp__moscow_my__*` |
-| amsterdam_my | 77.238.231.203 | 1022 | root | `.ssh/amsterdam_my_root` | `mcp__amsterdam_my__*` |
-| amsterdam_grey | 94.103.80.11 | 22 | www-data | `.ssh/amsterdam_grey_www-data` | `mcp__amsterdam_grey__*` |
-| amsterdam_grey_root | 94.103.80.11 | 22 | **root** (прямой) | `.ssh/amsterdam_grey_root` | `mcp__amsterdam_grey_root__*` |
-| amsterdam_grey_sudo | 94.103.80.11 | 22 | grey (in `sudo`+`docker` groups) | `.ssh/amsterdam_grey_grey` | — (только bash ssh) |
+| moscow_my | 195.2.75.212 | 53847 | root | `.ssh/moscow_my_root` | `mcp__moscow_my__*` |
+| amsterdam_my | 77.238.231.203 | 53847 | root | `.ssh/amsterdam_my_root` | `mcp__amsterdam_my__*` |
+| amsterdam_grey | 94.103.80.11 | 53847 | www-data | `.ssh/amsterdam_grey_www-data` | `mcp__amsterdam_grey__*` |
+| amsterdam_grey_root | 94.103.80.11 | 53847 | **root** (прямой) | `.ssh/amsterdam_grey_root` | `mcp__amsterdam_grey_root__*` |
+| amsterdam_grey_sudo | 94.103.80.11 | 53847 | grey (in `sudo`+`docker` groups) | `.ssh/amsterdam_grey_grey` | — (только bash ssh) |
 
 **Sudo на amsterdam_grey:**
 - **Предпочтительный путь:** прямой root через `amsterdam_grey_root` — без пароля и без sudo. Создан 2026-04-26, добавлен в `/root/.ssh/authorized_keys`.

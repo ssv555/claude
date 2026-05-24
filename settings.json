@@ -20,7 +20,10 @@
       "mcp__desktop__*",
       "mcp__pencil",
       "Edit(/.claude/skills/employers/**)",
-      "Read(//d/Data/Documents/Programming/Projects/WEB/VDole/scripts/deploy/**)"
+      "Read(//d/Data/Documents/Programming/Projects/WEB/VDole/scripts/deploy/**)",
+      "Read(//d/Data/Backup/Ubuntu-Servers/INFRA/**)",
+      "Read(//d/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/**)",
+      "Read(//d/Data/Backup/Ubuntu-Servers/moscow_my/awg/**)"
     ],
     "deny": [
       "Read(**/.env)",
@@ -55,7 +58,7 @@
       }
     ]
   },
-  "effortLevel": "high",
   "autoUpdatesChannel": "latest",
-  "theme": "dark-daltonized"
+  "theme": "dark-daltonized",
+  "effortLevel": "high"
 }

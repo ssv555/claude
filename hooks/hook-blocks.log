@@ -1625,3 +1625,117 @@ echo "=== amsterdam_grey/backups/ ===" && ls -la "D:/Data/Backup/Ubuntu Servers/
 [2026-05-22 18:46:35] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
   Command: rm -rf "C:/Users/ssv55/Tools/NekoBox" && ls "C:/Users/ssv55/Tools/" 2>&1; echo "---tmp old inventory---"; ls "C:/Users/ssv55/.claude/tmp/proxy_old_inventory.md" 2>&1; echo "---settings env now---"; grep -A3 '"env"' "C:/Users/ssv55/.claude/settings.json" 2>&1
 
+[2026-05-23 07:33:31] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: SRC="D:/Data/Documents/Programming/Projects/WEB/VDole/.docs/net-vpn/DEFERRED_research_topics.md"
+DST_DIR="D:/Data/Backup/Ubuntu-Servers/INFRA/suspended"
+DST="$DST_DIR/anti_dpi_research_topics.md"
+
+mkdir -p "$DST_DIR"
+mv "$SRC" "$DST"
+
+echo "=== moved ==="; ls -la "$DST"
+echo
+echo "=== source gone ==="; ls "$SRC" 2>&1 || echo "OK: removed"
+echo
+echo "=== INFRA/suspended/ contents ==="; ls -la "$DST_DIR"
+
+[2026-05-23 07:58:11] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole/.tmp" && rm -f awg-add-peer.sh check_port_8080.ps1 columns.diff dns-fix-ADMIN.cmd dns-test.ts indexes.diff it-joy.com.ru.conf moscow-test.ts moscow_columns.tsv moscow_indexes.tsv plan_ipv6_end_to_end.md probe_ssh.ps1 spf_reg_session.md stream-sni-router.conf tcp-test.ts udp-test-isp.cmd udp-test-isp.ts v87446.hosted-by-vdsina.com.conf vdole_data_2026-05-12.sql vdole_files_2026-05-12.tar.gz vdole_pro_columns.tsv vdole_pro_indexes.tsv wg-all.zip wg-alt-ports.md wg-pktmon-ADMIN.cmd wg-pktmon.txt wifi-connect.cmd && rm -rf playwright wg-configs wg-decrypted wg0_edit && echo "--- after ---" && ls -la
+
+[2026-05-23 19:11:36] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: mkdir -p back/data/internal-docs && git mv "front/src/internal-docs/team-structure.md" "back/data/internal-docs/team-structure.md" && git mv "docs/business/EXPENSES.md" "back/data/internal-docs/expenses.md" && rmdir front/src/internal-docs 2>/dev/null; ls back/data/internal-docs/
+
+[2026-05-23 19:12:15] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: cd /d/Data/Documents/Programming/Projects/WEB/VDole && pwd && mkdir -p back/data/internal-docs && git mv "front/src/internal-docs/team-structure.md" "back/data/internal-docs/team-structure.md" && git mv "docs/business/EXPENSES.md" "back/data/internal-docs/expenses.md" && rmdir front/src/internal-docs 2>/dev/null; ls back/data/internal-docs/
+
+[2026-05-23 19:12:53] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: mv "front/src/internal-docs/team-structure.md" "back/data/internal-docs/team-structure.md" && git mv "docs/business/EXPENSES.md" "back/data/internal-docs/expenses.md" && rmdir front/src/internal-docs 2>/dev/null; ls back/data/internal-docs/ && git status --short docs/business/ back/data/internal-docs/ front/src/internal-docs 2>&1 | head -10
+
+[2026-05-23 21:02:42] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git mv front/src/routes/app/platform/internal-docs front/src/routes/app/platform/docs && git mv front/src/pages/platform/InternalDocPage.tsx front/src/pages/platform/PlatformDocPage.tsx && git mv front/src/pages/platform/InternalDocsHubPage.tsx front/src/pages/platform/PlatformDocsHubPage.tsx && ls front/src/routes/app/platform/docs/ && echo --- && ls front/src/pages/platform/Platform*
+
+[2026-05-23 21:02:57] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mv front/src/routes/app/platform/internal-docs front/src/routes/app/platform/docs && mv front/src/pages/platform/InternalDocPage.tsx front/src/pages/platform/PlatformDocPage.tsx && mv front/src/pages/platform/InternalDocsHubPage.tsx front/src/pages/platform/PlatformDocsHubPage.tsx && ls front/src/routes/app/platform/docs/ && echo --- && ls front/src/pages/platform/Platform*
+
+[2026-05-23 21:04:14] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git mv back/data/internal-docs back/data/platform-docs && git mv back/src/lib/internal-docs-storage.ts back/src/lib/platform-docs-storage.ts && ls back/data/platform-docs/ && ls back/src/lib/platform-docs-storage.ts
+
+[2026-05-23 21:04:45] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git mv back/data/internal-docs back/data/platform-docs && mv back/src/lib/internal-docs-storage.ts back/src/lib/platform-docs-storage.ts && ls back/data/platform-docs/ && echo --- && ls back/src/lib/platform-docs-storage.ts
+
+[2026-05-23 21:05:31] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mv back/src/lib/internal-docs-storage.ts back/src/lib/platform-docs-storage.ts && ls back/src/lib/platform-docs-storage.ts
+
+[2026-05-23 23:35:28] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add src/amneziawg.ts src/constants/constants.ts src/main.ts src/menu-app.ts src/text.ts && git commit -m "$(cat <<'EOF'
+feat: add AmneziaWG client management (mirror of WG module)
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)"
+
+[2026-05-23 23:35:39] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git pull --rebase && git push
+
+[2026-05-23 23:39:58] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git stash && git pull --rebase && git stash pop && git push
+
+[2026-05-23 23:44:37] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add src/amneziawg.ts && git commit -m "$(cat <<'EOF'
+fix: read AWG obfuscation from conf (not stale env), support S3/S4/I1-I5
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)"
+
+[2026-05-23 23:44:47] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git stash && git pull --rebase && git stash pop 2>/dev/null; git push
+
+[2026-05-23 23:47:12] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && npm run build 2>&1 && git add src/menu-app.ts && git commit -m "$(cat <<'EOF'
+fix: place WG and AWG on same row, MTProxy below
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git stash && git pull --rebase && git stash pop 2>/dev/null; git push
+
+[2026-05-24 00:04:38] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && npm run build 2>&1 && git add src/amneziawg.ts && git commit -m "$(cat <<'EOF'
+fix: AWG parser тАФ skip decorative comments, copy existing client configs
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git stash && git pull --rebase && git stash pop 2>/dev/null; git push
+
+[2026-05-24 00:07:31] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && npm run build 2>&1 && git add src/amneziawg.ts && git commit -m "$(cat <<'EOF'
+fix: AWG parser тАФ ignore Interface comments for peer naming
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git stash && git pull --rebase && git stash pop 2>/dev/null; git push
+
+[2026-05-24 08:56:22] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mv "/d/Data/Documents/Programming/Projects/WEB/VDole/docs/todo/infra_ssh_port_migration_2026-05-17.md" "/d/Data/Documents/Programming/Projects/WEB/VDole/docs/archive/todo/2026.05.24_ssh_port_migration_done.md" && echo "moved" && ls -la "/d/Data/Documents/Programming/Projects/WEB/VDole/docs/archive/todo/2026.05.24_ssh_port_migration_done.md"
+
+[2026-05-24 13:28:44] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: echo "=== #4 .tmp/winscp-bak content (╤З╤В╨╛ ╤Г╨┤╨░╨╗╤П╤О) ==="
+ls -la "/d/Data/Documents/Programming/Projects/WEB/VDole/.tmp/winscp-bak/" 2>&1
+echo
+echo "=== rm .tmp/winscp-bak ==="
+rm -rf "/d/Data/Documents/Programming/Projects/WEB/VDole/.tmp/winscp-bak"
+echo "result: $(ls /d/Data/Documents/Programming/Projects/WEB/VDole/.tmp/winscp-bak 2>&1)"
+echo
+echo "=== #5 Tabby dirs ==="
+ls -d /c/Users/ssv55/AppData/Roaming/tabby /c/Users/ssv55/AppData/Roaming/Tabby /c/Users/ssv55/AppData/Local/tabby /c/Users/ssv55/AppData/Local/Tabby 2>&1 | grep -v 'No such'
+rm -rf /c/Users/ssv55/AppData/Roaming/tabby /c/Users/ssv55/AppData/Roaming/Tabby /c/Users/ssv55/AppData/Local/tabby /c/Users/ssv55/AppData/Local/Tabby 2>&1
+echo "after: $(ls -d /c/Users/ssv55/AppData/Roaming/tabby /c/Users/ssv55/AppData/Local/tabby 2>&1 | grep -v 'No such' || echo 'gone')"
+echo
+echo "=== #5 WindTerm dir ==="
+ls -d "/d/Data/Tools/WindTerm_2.7.0" 2>&1 | grep -v 'No such'
+rm -rf "/d/Data/Tools/WindTerm_2.7.0"
+echo "after: $(ls -d /d/Data/Tools/WindTerm_2.7.0 2>&1 | grep -v 'No such' || echo 'gone')"
+
+[2026-05-24 15:42:46] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mv "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/.tmp/plan_abuse_admin_review.md" "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/docs/todo/plan_abuse_admin_review.md"
+

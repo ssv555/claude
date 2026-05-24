@@ -471,6 +471,16 @@ Client-side diagnostic for the user's PC. Probes 14 services (5 RU + 9 INTL), pa
 - Runtime: separate copy on user's PC, synced by user (location varies per machine).
 - Run: double-click `check-vpn.cmd`; per-run log written to `logs/check-vpn_YYYY-MM-DD_HHmmss.log`.
 
+## TMP CLEANUP — UNIVERSAL
+
+В конце задачи или сессии — убирать за собой временные файлы из `.tmp/`, `tmp/`, `.playwright-mcp/`, отладочные скрипты в корне проекта.
+
+1. Файл создан в текущей сессии для отладки/проверки → удалить в той же сессии после завершения задачи, молча.
+2. Файл создан раньше и тема закрыта (есть итоговый док в `docs/`, артефакт залит в репо, проблема решена) → вывести список «кандидаты на чистку», спросить «удалять?».
+3. Конфиги с приватными ключами (`*.conf` с `PrivateKey`, `wg-*`, `*.pem`, `*.key`) — отдельное подтверждение, даже если тема закрыта.
+4. Группа > 5 файлов или объём > 1 MB → всегда спросить, не удалять без подтверждения.
+5. Триггеры применения: конец задачи, явный запрос «убери за собой», `/clear`, начало новой темы.
+
 ## Codex — Code Quality Rules
 
 See [codex.md](./codex.md) — SOLID, DRY, KISS, YAGNI, Clean Code, Security, Testing, Performance.

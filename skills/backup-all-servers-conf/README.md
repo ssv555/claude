@@ -39,7 +39,7 @@ Default `INFRA_ROOT=/d/Data/Backup/Ubuntu-Servers/INFRA`. Все snapshot'ы к�
 ```
 Host amsterdam_grey_ssv
     HostName 94.103.80.11
-    Port 1022
+    Port 53847
     User ssv
     IdentityFile "D:/.../amsterdam_grey/keys-client/ssv/id_ed25519"
 ```

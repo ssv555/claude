@@ -1,149 +1,46 @@
 ---
-name: Local proxy tunnels (Amsterdam) — full infrastructure
-description: Complete proxy infrastructure: Windows NSSM services, SSH tunnels to Amsterdam/Moscow servers, tinyproxy on remote, nginx LB on local. HTTP proxy at localhost:8080.
+name: Anti-DPI proxy для домашнего PC (Hiddify + VLESS+REALITY через moscow_my)
+description: Текущий рабочий канал для Anthropic/AI/YouTube/etc. с домашнего Windows-PC. TUN-режим Hiddify v4 → VLESS+Reality на moscow_my:443 (SNI=vk.com) → wg0 → Amsterdam exit. Split-tunnel по Region:ru.
 type: reference
 ---
 
-## Proxy Infrastructure — Full Picture
-
-### Серверы
-
-| Сервер | IP | SSH port | Роль в прокси | Что крутится |
-|---|---|---|---|---|
-| **amsterdam_grey** | 94.103.80.11 | SSH 1022 | Primary proxy | tinyproxy на порту 8888 |
-| **amsterdam_my** | 77.238.231.203 | SSH 1022 | Backup proxy | tinyproxy на порту 8888 |
-| **moscow_my** | 195.2.75.212 | SSH 1022 | Jump-host для backup #2 | nginx stream (MTProxy router) + SSH jump |
-
-### Локальная машина Windows (PC пользователя)
-
-**Итоговая точка входа: `http://127.0.0.1:8080`** — HTTP-прокси через Амстердам.
-
-#### Схема трафика
+## Архитектура (2026-05-22 — актуально)
 
 ```
-Приложение (браузер, Claude Code, curl)
-  → localhost:8080 (nginx stream load balancer)
-    → localhost:8081 → SSH → amsterdam_grey:8888 (tinyproxy)   [PRIMARY]
-    → localhost:8082 → SSH → amsterdam_my:8888 (tinyproxy)     [BACKUP #1]
-    → localhost:8083 → SSH → moscow_my → amsterdam_my:8888     [BACKUP #2, ProxyJump]
+Windows PC (Hiddify v4.1.1, Service mode: VPN = TUN)
+  └── routing внутри Hiddify: Region:ru — geoip:ru direct, остальное → proxy outbound `claude-pc-moscow § 0`
+        └── VLESS+REALITY+Vision, uTLS chrome, SNI=vk.com
+              → moscow_my :443 TCP
+                  → nginx stream SNI-routes vk.com → 127.0.0.1:38760
+                      → Xray inbound-38760 → freedom-wg outbound
+                          → wg0 kernel routing: AS399358 → amsterdam_grey, остальное → amsterdam_my
 ```
 
-#### Windows-сервисы (NSSM)
+Никаких SSH-туннелей, NSSM-сервисов, nginx LB на Windows. Один Hiddify-клиент.
 
-**ОС:** Windows 11 Pro. Сервисы зарегистрированы через [NSSM](https://nssm.cc/) (Non-Sucking Service Manager) — обёртка, превращающая любой .exe в Windows-сервис с автоперезапуском.
+## Где документация / source of truth
 
-**Расположение NSSM:** `C:\Users\ssv55\scoop\apps\nssm\current\nssm.exe` (установлен через scoop)
+**Сервер + клиент полностью:** [`INFRA/servers/moscow_my/docs/vless_reality_claude.md`](D:/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/docs/vless_reality_claude.md) — единый канонический документ. Содержит: цепочку, server-side (inbound-38760 в x-ui.db, nginx stream map, routing rules), client-side (Hiddify настройки, профиль, anti-DPI стек), как получить UUID/keys, snapshot до изменений, эталонные latency, как добавить fallback exit-ноду.
 
-**Все 4 сервиса:**
-- Запуск: `AUTO_START` (стартуют при загрузке Windows)
-- Учётка: `LocalSystem`
-- При падении: NSSM перезапускает автоматически
-- Display name prefix: `Claude Proxy: <name>`
+## Ключевые факты для Claude (для быстрого контекста)
 
-| Service name | Display name | Тип | Local port | Что запускает |
-|---|---|---|---|---|
-| `claude-tunnel-grey` | Claude Proxy: claude-tunnel-grey | SSH tunnel | 8081 | `ssh -N -L 8081:localhost:8888 amsterdam_grey_root` |
-| `claude-tunnel-my` | Claude Proxy: claude-tunnel-my | SSH tunnel | 8082 | `ssh -N -L 8082:localhost:8888 amsterdam_my` |
-| `claude-tunnel-moscow` | Claude Proxy: claude-tunnel-moscow | SSH tunnel | 8083 | `ssh -N -J moscow_my -L 8083:localhost:8888 amsterdam_my` |
-| `claude-proxy-router` | Claude Proxy: claude-proxy-router | nginx LB | 8080 | `nginx -p "C:\Users\ssv55\.claude-proxy" -c nginx.conf -g "daemon off;"` |
+- **Клиент**: Hiddify v4.1.1, установлен `C:\Program Files\Hiddify\`, user data в `~/AppData/Roaming/hiddify/hiddify/`.
+- **Профиль**: `claude-pc-moscow` (импорт VLESS-URI). Outbound tag в финальном sing-box config: **`claude-pc-moscow § 0`** — это имя для custom route-rules, если они когда-то нужны (через Profile → Config Editor: tree).
+- **Region:ru** в Hiddify Settings → Routing делает split-tunnel автоматически: `geoip:ru`+`geosite:category-ru` → direct, остальное → proxy. **Custom per-domain rules не нужны** для базового сценария.
+- **Anti-DPI стек**: REALITY (dest=vk.com:443) + Vision (XTLS) + uTLS chrome + TLS fragment + mixed SNI case + padding + DoH (1.1.1.1) + IPv6 off.
+- **Серверный inbound**: id=3, tag=`inbound-38760`, listen `127.0.0.1:38760`, в `/etc/x-ui/x-ui.db`. UUID/PublicKey/ShortIds получить через `sudo sqlite3 /etc/x-ui/x-ui.db "SELECT settings, stream_settings FROM inbounds WHERE tag='inbound-38760';"`.
+- **nginx stream**: `/etc/nginx/stream.conf` map уже содержит `vk.com → 127.0.0.1:38760` рядом с `www.microsoft.com → :38756` и `www.bing.com → :38758`.
+- **HTTPS_PROXY env**: НЕ нужен. TUN перехватывает на уровне адаптера, env переменные были бы лишним слоем.
+- **Эталонные latency** (замер 2026-05-22): vk.com 65мс (direct), api.anthropic.com 320–540мс (через NL exit), ifconfig.me → `77.238.231.203` (amsterdam_my).
 
-**SSH binary:** `C:\Program Files\Git\usr\bin\ssh.exe` (Git for Windows)
+## Что заменило / удалено
 
-**SSH-опции** (одинаковые на всех туннелях):
-- `-N` — без интерактивного шелла, только туннель
-- `StrictHostKeyChecking=accept-new`
-- `ServerAliveInterval=10` — keepalive каждые 10с
-- `ServerAliveCountMax=3` — 3 пропуска = разрыв (NSSM перезапустит)
-- `ExitOnForwardFailure=yes` — если порт занят, не висеть молча
-- `BatchMode=yes` — никогда не спрашивать пароль
+Старая схема (4 NSSM-сервиса на Windows + nginx LB + 3 SSH-туннеля → tinyproxy на Amsterdam) — снесена до 2026-05-19. Снимок-инвентарь старой схемы временно лежит в `~/.claude/tmp/proxy_old_inventory.md` (на ~неделю, потом удалить).
 
-**nginx** запущен с `daemon off;` — NSSM сам управляет процессом, не нужен daemon mode.
+## Фаза 2 — реализована 2026-05-22
 
-#### Конфиги и пути
+В Hiddify создан Авто-профиль с sing-box `urltest` outbound, объединяющий 3 узла: moscow-vk (основной), amsterdam_grey direct, amsterdam_my direct. Существующие VLESS-inbound-ы на серверах переиспользованы — поднимать ничего не пришлось. Все профили в Hiddify переименованы по схеме «PC → откуда → куда → SNI → назначение».
 
-| Что | Путь |
-|---|---|
-| nginx конфиг | `C:\Users\ssv55\.claude-proxy\nginx.conf` |
-| nginx логи | `C:\Users\ssv55\.claude-proxy\logs\access.log`, `error.log` |
-| nginx binary | `C:\Users\ssv55\scoop\apps\nginx\current\nginx.exe` |
-| NSSM binary | `C:\Users\ssv55\scoop\apps\nssm\current\nssm.exe` |
-| SSH config | `C:\Users\ssv55\.ssh\config` (алиасы: amsterdam_grey_root, amsterdam_my, moscow_my) |
-| SSH ключи | `D:\Data\Documents\Programming\Projects\WEB\.ssh\` |
+Текущий tolerance=50ms даёт побочный эффект балансировки (узлы «одинаково лучшие», urltest колеблется). Для классического main+fallback — поднять до 200-300ms.
 
-#### Failover логика (nginx upstream)
-
-- Primary: 8081 (amsterdam_grey) — `max_fails=2 fail_timeout=10s`
-- Backup #1: 8082 (amsterdam_my) — backup
-- Backup #2: 8083 (amsterdam_my via Moscow) — backup
-- `proxy_connect_timeout 5s`, `proxy_timeout 10m`, `proxy_next_upstream on`
-
-### Использование
-
-| Контекст | Настройка |
-|---|---|
-| Браузер (Vivaldi/Chrome) | `--proxy-server="http://127.0.0.1:8080"` |
-| Переменная среды | `HTTPS_PROXY=http://127.0.0.1:8080` |
-| curl | `curl -x http://127.0.0.1:8080 https://example.com` |
-| Claude Code | переменная `HTTPS_PROXY` в env |
-| Любое приложение | HTTP proxy `127.0.0.1:8080` |
-
-### Браузеры — настройка прокси (TODO, не завершено)
-
-**Задача:** запускать Vivaldi и Яндекс Браузер через прокси Амстердам.
-
-**Пути к .exe:**
-- Vivaldi: `C:\Users\ssv55\AppData\Local\Vivaldi\Application\vivaldi.exe`
-- Яндекс: `C:\Users\ssv55\AppData\Local\Yandex\YandexBrowser\Application\browser.exe`
-
-**Способ:** ярлык с флагом `--proxy-server="http://127.0.0.1:8080"`
-
-**Статус:**
-- Прокси работает (проверено: `curl -x http://127.0.0.1:8080 https://ifconfig.me` → 94.103.80.11)
-- Vivaldi — не проверено
-- Яндекс — не работает с флагом `--proxy-server`, причина не выяснена. Вернуться к диагностике.
-
-### Управление сервисами
-
-```cmd
-:: Статус всех
-sc query claude-tunnel-grey
-sc query claude-tunnel-my
-sc query claude-tunnel-moscow
-sc query claude-proxy-router
-
-:: Перезапуск (через NSSM — корректно убивает дочерний процесс)
-nssm restart claude-tunnel-grey
-nssm restart claude-tunnel-my
-nssm restart claude-tunnel-moscow
-nssm restart claude-proxy-router
-
-:: Остановка / запуск
-nssm stop claude-tunnel-grey
-nssm start claude-tunnel-grey
-
-:: Посмотреть параметры сервиса
-nssm get claude-tunnel-grey Application
-nssm get claude-tunnel-grey AppParameters
-
-:: Редактировать сервис (GUI)
-nssm edit claude-tunnel-grey
-
-:: Удалить сервис
-nssm remove claude-tunnel-grey confirm
-
-:: Создать новый сервис (пример)
-nssm install claude-tunnel-new "C:\Program Files\Git\usr\bin\ssh.exe"
-nssm set claude-tunnel-new AppParameters "-N -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -o BatchMode=yes -L 8084:localhost:8888 <host>"
-nssm set claude-tunnel-new DisplayName "Claude Proxy: claude-tunnel-new"
-nssm set claude-tunnel-new Start SERVICE_AUTO_START
-nssm start claude-tunnel-new
-```
-
-```bash
-# Логи nginx
-cat "C:\Users\ssv55\.claude-proxy\logs\access.log"
-cat "C:\Users\ssv55\.claude-proxy\logs\error.log"
-
-# Проверка что прокси работает
-curl -x http://127.0.0.1:8080 https://ifconfig.me
-```
+Детали (структура Авто-профиля, таблица tolerance↔поведение, как менять, рекомендации) — в [vless_reality_claude.md](D:/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/docs/vless_reality_claude.md) → раздел «Fallback exit-ноды (Фаза 2)».
