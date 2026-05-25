@@ -1739,3 +1739,29 @@ echo "after: $(ls -d /d/Data/Tools/WindTerm_2.7.0 2>&1 | grep -v 'No such' || ec
 [2026-05-24 15:42:46] BLOCKED: ALLOWED by user: Move/rename (mv)
   Command: mv "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/.tmp/plan_abuse_admin_review.md" "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot/docs/todo/plan_abuse_admin_review.md"
 
+[2026-05-24 16:25:33] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add src/text-handlers.ts src/main.ts src/utils/utils.telegram.ts CLAUDE.md && git commit -m "$(cat <<'EOF'
+feat: abuse admin review system тАФ mute + admin vote before action
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)"
+
+[2026-05-24 16:25:45] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git pull --rebase && git push
+
+[2026-05-24 16:26:11] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git stash && git pull --rebase && git push && git stash pop
+
+[2026-05-25 06:56:05] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && git mv docs/todo/ui_form_field.md docs/todo/p3_2d_0h_0m__ui_form_field.md && git mv docs/todo/api_response_canon.md docs/todo/p2_3d_0h_0m__api_response_canon.md && ls docs/todo/p*
+
+[2026-05-25 06:56:20] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && mv docs/todo/ui_form_field.md docs/todo/p3_2d_0h_0m__ui_form_field.md && mv docs/todo/api_response_canon.md docs/todo/p2_3d_0h_0m__api_response_canon.md && ls docs/todo/p*
+
+[2026-05-25 19:13:56] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git mv docs/todo/email_migration.md docs/todo/p3_1d_0h_0m__email_migration.md && git mv docs/todo/infra_backup_moscow_dumps_missing_2026-05-16.md docs/todo/p2_0d_4h_0m__infra_backup_moscow_dumps_missing.md && git mv docs/todo/seo_static_routing.md docs/todo/p3_1d_0h_0m__seo_static_routing.md && git mv docs/todo/ui-gradient-settings.md docs/todo/p4_2d_0h_0m__ui_gradient_settings.md && git mv docs/todo/ui-themes-status-tokens.md docs/todo/p4_1d_0h_0m__ui_themes_status_tokens.md && git mv docs/todo/infra_autopilot_2026-05-10.md docs/archive/sessions/2026-05-10_infra_autopilot.md
+
+[2026-05-25 19:15:19] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git rm docs/todo/phase2_prod_deploy_plan.md && git mv docs/todo/infra_timeweb_server_setup.md docs/todo/p2_3d_0h_0m__infra_timeweb_server_setup.md
+

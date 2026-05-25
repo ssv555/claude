@@ -255,6 +255,130 @@ Verify after with `od -c <file>.cmd | head -3` — first line must end with `\r 
 ## No duplication of rules
 NEVER duplicate rules across CLAUDE.md, CLAUDE.local.md, and memory files. Each rule lives in exactly ONE place. Memory is only for things NOT already in CLAUDE.md files.
 
+## TODO files — Priority + Difficulty header — UNIVERSAL
+
+Every file in any project's `docs/todo/` (and `docs/suspended/`) MUST begin with a five-line metadata header **in English**, immediately after the H1 title:
+
+```markdown
+# <Task title>
+
+**Priority:** Medium
+**Difficulty:** 2d, 0h, 0m
+**Status:** Pending
+**Created:** 2026-05-25
+**Owner:** —
+```
+
+### `Priority` — six levels, ascending importance
+
+| Level | When to set | What it means for scheduling |
+|---|---|---|
+| `Suspend` | Idea on hold; may never ship. Waiting on external decision or value is unclear. | Not worked on. The file exists to preserve the thought. If you later disagree — re-prioritise to `Low`+ or move the file to `docs/suspended/`. |
+| `Low` | Nice-to-have, minor cleanup, cosmetics, low-impact refactor. | Backlog. Do when convenient or bundled into a nearby rewrite. |
+| `Medium` | Worthwhile refactor, obvious tech-debt, improvement that pays off. | Next sprint. Queued but not blocking. |
+| `High` | Roadmap feature for the current sprint. Regression on a key flow. Blocks the next goal. | Current sprint. Plan for 1–2 weeks. |
+| `Extra` | Pre-launch must-have, critical UX bug, contract/investor commitment with a near deadline. | Within days. Pre-empts unrelated minor work but does not freeze the sprint. |
+| `ASAP` | Active security incident, prod down, money leaking, PII leak in progress. | Drop other work. Hour-scale reaction. |
+
+### `Difficulty` — focused effort in `Nd, Nh, Nm`
+
+Always three components, zeros written explicitly. One **day = 8 working hours** (not 24 calendar hours). Examples:
+
+| Estimate | Header value |
+|---|---|
+| 30 minutes | `0d, 0h, 30m` |
+| 2 hours    | `0d, 2h, 0m` |
+| Half day   | `0d, 4h, 0m` |
+| 1 day      | `1d, 0h, 0m` |
+| 2.5 days   | `2d, 4h, 0m` |
+| 1 week     | `5d, 0h, 0m` |
+| 2 weeks    | `10d, 0h, 0m` |
+
+Why fixed three-field format: machine-parseable with a single regex (`(\d+)d, (\d+)h, (\d+)m`), eye-parseable in tables, no ambiguity between "1d" meaning calendar day vs work day.
+
+If the estimate is a range, write the **upper bound** (your worst-case finish). Add a body line if the range is wide: `Estimate range: 2d–5d, upper bound shown.`
+
+### `Status`
+
+| Value | Meaning |
+|---|---|
+| `Pending` | Not started. |
+| `In Progress` | Actively worked on; expect a working branch or PR. |
+| `Blocked` | Waiting on external decision or access — name the blocker in the body. |
+| `Done` | Move the file to `docs/archive/todo/` per project conventions. |
+
+### `Created` / `Owner`
+
+- `Created` — `YYYY-MM-DD` date the task was filed. Never use relative dates ("yesterday", "last week").
+- `Owner` — full name or short alias (`ssv`, `kirill`); use `—` if unassigned.
+
+### Why English
+
+The header is a triage signal for both future AI sessions and any returning developer. Russian field labels split that signal — an AI re-entering the project after weeks should triage at a glance without translation. The body of the file can be in whichever language fits the audience; only the header is fixed in English.
+
+### Filename convention
+
+TODO file names encode priority and difficulty as a sortable prefix so the file explorer is itself a triage view (sort by name → highest priority on top):
+
+```
+<priority>_<difficulty>__<slug>.md
+```
+
+- `<priority>` — `p0` … `p5`, mapping to the words in the header table below.
+- `<difficulty>` — same `Nd_Nh_Nm` as the header body, **underscores instead of commas and spaces**.
+- `__` (double underscore) separates metadata from slug.
+- `<slug>` — `snake_case` lowercase, no spaces, descriptive of the task. ASCII letters, digits, underscores only.
+- Extension always `.md`.
+
+| Header `Priority` | Filename prefix |
+|---|---|
+| `ASAP`    | `p0` |
+| `Extra`   | `p1` |
+| `High`    | `p2` |
+| `Medium`  | `p3` |
+| `Low`     | `p4` |
+| `Suspend` | `p5` |
+
+Examples:
+
+```
+p0_0d_2h_0m__fix_session_token_leak.md
+p1_5d_0h_0m__pre_launch_response_canon.md
+p3_2d_0h_0m__ui_form_field.md
+p5_0d_4h_0m__investigate_redis_streams_option.md
+```
+
+**The filename prefix and the header values MUST stay in sync.** When you bump `Priority: High` → `Extra` in the header, rename the file `p2_*` → `p1_*` in the same edit. Same for `Difficulty`.
+
+### Archive — strip the prefix on move
+
+When a task completes (or is intentionally killed and you move to `docs/archive/todo/`), **drop the `<priority>_<difficulty>__` prefix**. The archive cares about *what* was done, not its old urgency or estimate.
+
+```
+docs/todo/p2_3d_0h_0m__api_response_canon.md
+  → after merge, mv to:
+docs/archive/todo/api_response_canon.md
+```
+
+Same rule for `docs/suspended/` moves (intentional kills): strip the prefix.
+
+The estimate and priority at completion time are still preserved in the file's header inside — the body stays untouched on archive. Only the filename changes.
+
+### Application
+
+- **New TODO files** — header AND filename prefix are mandatory.
+- **Existing files without the header / prefix** — backfill on the next touch (the session where you edit the file for unrelated reasons). Do NOT batch-rewrite the whole `docs/todo/` directory just for headers — but DO rename via `git mv` when you do touch a file, so history is preserved.
+- **Skill / agent automation** — any skill that creates TODO files (e.g. session-archive flows) must emit the header AND name the file with the prefix.
+
+### `Suspend` vs `docs/suspended/`
+
+Both mean "not now", but differ in expected lifecycle:
+
+- `Priority: Suspend` in `docs/todo/` = on hold, **may revive** when blocker clears.
+- File moved to `docs/suspended/` = decision recorded that this is **parked indefinitely / abandoned**; revival requires a new TODO file.
+
+When in doubt, prefer `Priority: Suspend` first; only move to `docs/suspended/` after an explicit decision to kill.
+
 ## Data access — use dedicated modules
 NEVER write inline `db.select/insert/update` in routes, middleware, or handlers. Each DB table MUST have a dedicated data access module with ALL read and write functions. Routes call the module, not the ORM directly. Before adding a new query — check if the module already has a suitable function.
 ```
