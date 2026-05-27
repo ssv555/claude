@@ -1765,3 +1765,191 @@ EOF
 [2026-05-25 19:15:19] BLOCKED: ALLOWED by user: Move/rename (mv)
   Command: git rm docs/todo/phase2_prod_deploy_plan.md && git mv docs/todo/infra_timeweb_server_setup.md docs/todo/p2_3d_0h_0m__infra_timeweb_server_setup.md
 
+[2026-05-25 20:18:01] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git mv docs/todo/p2_3d_0h_0m__api_response_canon.md docs/todo/p2_5d_0h_0m__api_response_canon.md
+
+[2026-05-25 20:30:43] SEALED BLOCKED: group=auth
+  File: back/src/routes/authgoogle.ts
+
+[2026-05-25 21:23:58] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add src/main.ts src/menu-app.ts && git commit -m "$(cat <<'EOF'
+fix: add answerCbQuery to all callback handlers (stop button blinking)
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+EOF
+)" && git pull --rebase && git push
+
+[2026-05-25 21:24:09] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git stash && git pull --rebase && git push && git stash pop
+
+[2026-05-25 21:25:20] SEALED BLOCKED: group=security
+  File: back/src/middleware/csrf.ts
+
+[2026-05-25 22:21:00] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd d:/Data/Documents/Programming/Projects/WEB/VDole && ls docs/archive/todo/ | head -5 && echo "---" && mv docs/todo/p3_2d_0h_0m__ui_form_field.md docs/archive/todo/ui_form_field.md && ls docs/archive/todo/ui_form_field.md docs/todo/p4_1d_0h_0m__ui_form_field_rollout.md
+
+[2026-05-25 23:21:00] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mkdir -p docs/archive/todo && git mv "docs/todo/p4_1d_0h_0m__ui_form_field_rollout.md" "docs/archive/todo/ui_form_field_rollout.md" && git mv "docs/todo/p4_1d_0h_0m__frontend_mutations_tanstack_decision.md" "docs/archive/todo/frontend_mutations_tanstack_decision.md" && git mv "docs/todo/p4_0d_1h_0m__pd_consent_checkbox_unseal_migrate.md" "docs/archive/todo/pd_consent_checkbox_unseal_migrate.md" && ls docs/archive/todo/ | tail -5
+
+[2026-05-25 23:30:56] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git mv "docs/todo/p2_5d_0h_0m__api_response_canon.md" "docs/archive/todo/api_response_canon.md" && ls docs/archive/todo/api_response_canon.md
+
+[2026-05-27 09:34:10] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd /d/Data/Documents/Programming/Projects/WEB/VDole/.tmp/vdole-rewrite.git && git remote add origin https://github.com/ssv555/vdole.git && git push --force --mirror origin 2>&1 | tail -30
+
+[2026-05-27 09:34:46] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: git reset --hard origin/main 2>&1 | tail -3 && echo "---cherry-pick lost commit---" && git cherry-pick 5ec3e9f 2>&1 | tail -10
+
+[2026-05-27 09:35:20] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: git push origin main 2>&1 | tail -10
+
+[2026-05-27 09:37:44] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf /d/Data/Documents/Programming/Projects/WEB/VDole/.tmp/vdole-rewrite.git /d/Data/Documents/Programming/Projects/WEB/VDole/.tmp/mailmap.txt && ls /d/Data/Documents/Programming/Projects/WEB/VDole/.tmp/
+
+[2026-05-27 19:30:40] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: # Re-upload pre-receive + reinstall on bare repo + add spc user with VDole clone
+PUB=$(cat "D:/Data/Backup/Ubuntu-Servers/moscow_my/keys-client/spc/id_ed25519.pub")
+
+scp -q "$HOME/.claude/skills/dev/lib/pre-receive.sh" moscow_my:/tmp/pre-receive.sh
+ssh moscow_my "
+set -e
+sudo cp /tmp/pre-receive.sh /opt/dev-skill/pre-receive.sh
+sudo chown root:root /opt/dev-skill/pre-receive.sh
+sudo chmod 755 /opt/dev-skill/pre-receive.sh
+sudo install -m 755 /opt/dev-skill/pre-receive.sh /srv/git/VDole.git/hooks/pre-receive
+echo '=== pre-receive updated'
+"
+
+# Seed bare repo with VDole content from chief PC
+echo "=== seeding bare repo from chief PC..."
+cd "/d/Data/Documents/Programming/Projects/WEB/VDole"
+git remote get-url moscow 2>/dev/null || git remote add moscow ssh://ssv@moscow_my:53847/srv/git/VDole.git
+echo "=== pushing main to bare:"
+git push moscow main 2>&1 | tail -10
+
+[2026-05-27 19:31:15] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "/d/Data/Documents/Programming/Projects/WEB/VDole"
+git remote set-url moscow ssh://root@moscow_my:53847/srv/git/VDole.git
+echo "=== remote:"
+git remote -v | grep moscow
+echo "=== push:"
+git push moscow main 2>&1 | tail -15
+
+[2026-05-27 19:32:25] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: PUB=$(cat "D:/Data/Backup/Ubuntu-Servers/moscow_my/keys-client/spc/id_ed25519.pub")
+
+scp -q "$HOME/.claude/skills/dev/lib/add-user.sh" moscow_my:/tmp/add-user.sh
+ssh moscow_my "
+set -e
+sudo cp /tmp/add-user.sh /opt/dev-skill/add-user.sh
+sudo chown root:root /opt/dev-skill/add-user.sh
+sudo chmod 755 /opt/dev-skill/add-user.sh
+
+# Clean up the half-created spc
+if id -u spc >/dev/null 2>&1; then
+  sudo pkill -KILL -u spc 2>/dev/null || true
+  sudo userdel -r spc 2>/dev/null || true
+fi
+sudo rm -rf /home/spc
+
+echo '=== re-running add-user.sh:'
+sudo bash /opt/dev-skill/add-user.sh 'spc' 'SPC Test' 'spc@moscow.my' '$PUB' 'VDole' 2>&1 | tail -25
+"
+
+[2026-05-27 19:32:40] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: PUB=$(cat "D:/Data/Backup/Ubuntu-Servers/moscow_my/keys-client/spc/id_ed25519.pub")
+ssh moscow_my "
+set -e
+sudo groupdel spc 2>/dev/null || true
+sudo rm -rf /home/spc
+echo '=== running add-user again:'
+sudo bash /opt/dev-skill/add-user.sh 'spc' 'SPC Test' 'spc@moscow.my' '$PUB' 'VDole' 2>&1 | tail -25
+"
+
+[2026-05-27 19:33:25] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: # Sync allowlisted skills to /opt/claude-shared/skills/
+SKILLS_DIR="$HOME/.claude/skills"
+ALLOWED=(pre-deploy-check pre-deploy-autotests version-up session-archive dev-commit dev-push dev-reset dev-info)
+
+ssh moscow_my "sudo mkdir -p /opt/claude-shared/skills && sudo chown \$(id -u):\$(id -g) /opt/claude-shared/skills"
+
+for s in "${ALLOWED[@]}"; do
+  if [ -d "$SKILLS_DIR/$s" ]; then
+    echo "  syncing $s"
+    ssh moscow_my "sudo rm -rf /opt/claude-shared/skills/$s"
+    scp -qr "$SKILLS_DIR/$s" "moscow_my:/opt/claude-shared/skills/$s"
+  else
+    echo "  MISSING $s"
+  fi
+done
+
+# Re-run bootstrap so shared content (CLAUDE.md, codex.md, DEV_GUIDE.md, memory/) installs
+ssh moscow_my "
+echo n | sudo bash /opt/dev-skill/bootstrap-server.sh 2>&1 | grep -E 'CLAUDE.md|codex|DEV_GUIDE|memory|bootstrap complete' | head -10
+echo '=== shared dir:'
+sudo ls -la /opt/claude-shared/ | head -10
+echo '=== skills:'
+sudo ls /opt/claude-shared/skills/
+sudo chown -R root:root /opt/claude-shared/skills
+sudo chmod -R u=rwX,go=rX /opt/claude-shared/skills
+"
+
+[2026-05-27 19:34:04] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: ssh moscow_my "
+set -e
+echo '=== test 1: try to push main as dev (should FAIL via pre-receive)'
+cd /home/spc/projects/VDole
+sudo -u spc git -C /home/spc/projects/VDole config --global --add safe.directory '/home/spc/projects/VDole'
+sudo -u spc bash -c 'cd /home/spc/projects/VDole && echo \"dev test\" >> /tmp/spc-test.md && git add -A 2>&1 | tail -5'
+echo
+echo '=== make a real commit on a side branch to test mirror later:'
+sudo -u spc bash -c 'cd /home/spc/projects/VDole && echo \"# Test\" > .spc-test-marker && git checkout -b dev/spc/test-marker 2>&1 && git add .spc-test-marker && git -c user.email=spc@moscow.my -c user.name=SPC commit -m \"test: add spc marker\" 2>&1 | tail -5'
+echo
+echo '=== push dev branch:'
+sudo -u spc bash -c 'cd /home/spc/projects/VDole && git push -u origin dev/spc/test-marker 2>&1 | tail -8'
+echo
+echo '=== verify pre-receive rejects main:'
+sudo -u spc bash -c 'cd /home/spc/projects/VDole && git checkout main 2>&1 | tail -3 && git push origin main 2>&1 | tail -5' || echo '(push to main rejected as expected)'
+"
+
+[2026-05-27 19:34:24] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: ssh moscow_my "
+echo '=== test: spc tries to push commit to main (should be REJECTED):'
+sudo -u spc bash -c 'cd /home/spc/projects/VDole && git checkout main && echo evil >> .spc-evil-on-main && git add .spc-evil-on-main && git -c user.email=spc@moscow.my -c user.name=SPC commit -m \"evil on main\" && git push origin main 2>&1' | tail -15
+echo
+echo '=== mirror queue (should have entries from dev/spc/test-marker push):'
+sudo tail -5 /var/spool/vdole-mirror/queue
+echo
+echo '=== mirror service last run:'
+sudo journalctl -u vdole-mirror.service --no-pager -n 20 | tail -20
+"
+
+[2026-05-27 20:29:12] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: ssh moscow_my "
+set -e
+echo '=== before:'
+ls -la /srv/git/VDole.git/hooks /srv/git/VDole.git/config /srv/git/VDole.git/HEAD 2>&1 | head -8
+echo
+# Lock down: hooks/ + chief-controlled files (no group write)
+sudo chmod g-w /srv/git/VDole.git/hooks
+sudo chmod g-w /srv/git/VDole.git/config /srv/git/VDole.git/HEAD /srv/git/VDole.git/description 2>/dev/null || true
+# objects/ refs/ packed-refs need group-w for push тАФ leave alone
+echo '=== after:'
+sudo ls -ld /srv/git/VDole.git/hooks
+sudo ls -la /srv/git/VDole.git/config /srv/git/VDole.git/HEAD /srv/git/VDole.git/description 2>/dev/null | head -3
+"
+echo
+echo "=== retest spc:"
+ssh -i "D:/Data/Backup/Ubuntu-Servers/moscow_my/keys-client/spc/id_ed25519" -p 53847 spc@195.2.75.212 "
+echo '-- create hook file:'
+echo evil > /srv/git/VDole.git/hooks/test-evil 2>&1 || echo 'BLOCKED (good)'
+echo '-- delete pre-receive:'
+rm /srv/git/VDole.git/hooks/pre-receive 2>&1 || echo 'BLOCKED (good)'
+echo '-- modify config:'
+echo evil >> /srv/git/VDole.git/config 2>&1 || echo 'BLOCKED (good)'
+echo
+echo '-- can still push to own branch (push pipeline must still work):'
+cd /home/spc/projects/VDole
+git push origin dev/spc/test-marker 2>&1 | tail -3
+"
+

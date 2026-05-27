@@ -1,0 +1,19 @@
+[Unit]
+Description=Mirror VDole bare repo to GitHub via bot account
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=git-mirror
+Group=git-mirror
+ExecStart=/home/git-mirror/bin/mirror-push.sh
+Nice=10
+ProtectSystem=strict
+ReadWritePaths=/srv/git/VDole.git /var/log/vdole-mirror.log /var/spool/vdole-mirror
+ProtectHome=read-only
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target

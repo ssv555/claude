@@ -1,0 +1,33 @@
+- [feedback_dev_restart.md](feedback_dev_restart.md) — When to restart dev server vs rely on HMR/watch
+- [feedback_no_stupid_questions.md](feedback_no_stupid_questions.md) — Don't ask obvious questions — analyze and act
+- [feedback_clean_structure.md](feedback_clean_structure.md) — Script + output in one folder, short names
+- [user_no_python.md](user_no_python.md) — Prefer bun/TS/bash, not Python
+- [feedback_task_format.md](feedback_task_format.md) — Task lists: always show source file link BEFORE description
+- [feedback_docs_before_test.md](feedback_docs_before_test.md) — Always finalize docs before testing
+- [feedback_no_autonomous_skills.md](feedback_no_autonomous_skills.md) — Never run skills without explicit command
+- [feedback_dev_url.md](feedback_dev_url.md) — Test on dev URL, never localhost
+- [feedback_fix_all_errors.md](feedback_fix_all_errors.md) — Fix ALL errors, never dismiss as "not my changes"
+- [feedback_todo_last.md](feedback_todo_last.md) — TODO section must always be the LAST section of any document
+- [feedback_naming_general_first.md](feedback_naming_general_first.md) — File/topic naming: general first, specific last (Auth_VK)
+- [feedback_no_root_artifacts.md](feedback_no_root_artifacts.md) — Never create debug/temp artifacts in project root
+- [feedback_project_tmp_folder.md](feedback_project_tmp_folder.md) — VDole has project-local .tmp/ — use it for session temp files
+- [feedback_clear_russian_structure.md](feedback_clear_russian_structure.md) — Russian messages with multiple intents must use explicit headers
+- [feedback_schema_changes.md](feedback_schema_changes.md) — When adding DB columns, ask: ALTER migration or clean db:push
+- [feedback_app_prefix_rule.md](feedback_app_prefix_rule.md) — All SPA routes under /app/* prefix
+- [feedback_number_questions.md](feedback_number_questions.md) — Always number questions/options (1. 2. 3.)
+- [feedback_receive_analyze_approve.md](feedback_receive_analyze_approve.md) — Accept all inputs → analyze → WAIT for explicit approval
+- [feedback_commit_after_each_step.md](feedback_commit_after_each_step.md) — In multi-step sessions, commit after each approved step
+- [feedback_own_technical_decisions.md](feedback_own_technical_decisions.md) — During approved implementation, decide internal tech choices yourself
+- [feedback_number_format_ru.md](feedback_number_format_ru.md) — Russian: thousand separator is SPACE (24 256 316)
+- [feedback_red_mark_is_order.md](feedback_red_mark_is_order.md) — Red rectangle/arrow on screenshot = direct fix order
+- [feedback_no_defense_visual.md](feedback_no_defense_visual.md) — User's visual/UX observation is ground truth
+- [feedback_refactor_after_two_patches.md](feedback_refactor_after_two_patches.md) — Second complaint about same UI zone = architectural refactor
+- [feedback_verify_ui_before_claim.md](feedback_verify_ui_before_claim.md) — Before ANY claim about UI rendering: screenshot first
+- [feedback_naming_no_ambiguity.md](feedback_naming_no_ambiguity.md) — Script/command names: explicit prepositions (to/from/with)
+- [feedback_use_internal_infra.md](feedback_use_internal_infra.md) — USE existing CAS/auth infra, never push work to user
+- [feedback_short_qa_no_bloat.md](feedback_short_qa_no_bloat.md) — Short question (≤4 words) → answer ≤10 words
+- [feedback_all_means_all.md](feedback_all_means_all.md) — "ВСЕ"/"ALL"/"ПОЛНЫЙ" → enumerate full scope without filtering
+- [feedback_no_backend_edits_during_user_test.md](feedback_no_backend_edits_during_user_test.md) — back/src/** edits invalidate user's session — batch backend changes
+- [feedback_visible_input_transformations.md](feedback_visible_input_transformations.md) — Input normalization must be VISIBLE on blur, not silent at submit
+- [feedback_deprecated_paths_full_sweep.md](feedback_deprecated_paths_full_sweep.md) — Renamed URLs: project-wide grep, fix ALL active hits
+- [feedback_seal_auth_frontend.md](feedback_seal_auth_frontend.md) — After auth feature changes: seal frontend auth files too

@@ -1,0 +1,11 @@
+[Unit]
+Description=Stop all dev services on per-dev port range (40001-49999)
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/dev-skill/dev-services-cleanup.sh
+Nice=15
+ProtectSystem=strict
+ReadWritePaths=/var/log/dev-services-cleanup.log
+NoNewPrivileges=yes

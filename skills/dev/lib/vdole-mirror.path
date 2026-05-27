@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch VDole mirror queue for new push events
+After=network-online.target
+
+[Path]
+PathModified=/var/spool/vdole-mirror/queue
+Unit=vdole-mirror.service
+
+[Install]
+WantedBy=multi-user.target

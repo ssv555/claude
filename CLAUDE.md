@@ -595,6 +595,16 @@ Client-side diagnostic for the user's PC. Probes 14 services (5 RU + 9 INTL), pa
 - Runtime: separate copy on user's PC, synced by user (location varies per machine).
 - Run: double-click `check-vpn.cmd`; per-run log written to `logs/check-vpn_YYYY-MM-DD_HHmmss.log`.
 
+## Developer skills allowlist
+
+Devs running on `moscow_my` (managed via `/dev` skill) get a curated, shared set of skills — NOT the chief's full skill list. Source of truth:
+
+- **Allowlist:** [`developers/skills_allowlist.json`](developers/skills_allowlist.json) (chief PC) — JSON with `global` (skills synced into `/opt/claude-shared/skills/`) and `local_per_project` (skills bundled into specific project clones on the server).
+- **Sync command:** `/dev sync-skills` — rsync allowlisted skills from `~/.claude/skills/` to the server's `/opt/claude-shared/skills/`. Runs after every `/dev add` and on demand.
+- **Server runtime:** every dev's `~/.claude/skills` is a root-owned symlink to `/opt/claude-shared/skills/`; devs cannot add skills locally (write blocked by the setuid `claude` wrapper).
+
+Edit `skills_allowlist.json` then `/dev sync-skills` to propagate. Removing a skill from the list and re-running sync deletes it from `/opt/claude-shared/skills/` on next sync.
+
 ## TMP CLEANUP — UNIVERSAL
 
 В конце задачи или сессии — убирать за собой временные файлы из `.tmp/`, `tmp/`, `.playwright-mcp/`, отладочные скрипты в корне проекта.

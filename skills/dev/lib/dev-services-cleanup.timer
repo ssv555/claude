@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily 06:00 cleanup of dev services on ports 40001-49999
+
+[Timer]
+OnCalendar=*-*-* 06:00:00
+Persistent=true
+Unit=dev-services-cleanup.service
+
+[Install]
+WantedBy=timers.target
