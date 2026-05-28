@@ -1,3 +1,10 @@
+---
+**Архивировано:** 2026-05-28
+**Статус:** инфраструктура полностью снесена. Причина: нестабильное соединение, частые обрывы, провалы передачи изображений/эмодзи.
+**Сервера:** moscow_my (nginx SNI route), amsterdam_my (telemt+mtproxymax), amsterdam_grey (docker mtproxymax-telemt) — везде удалено.
+**Секреты redacted.** См. подробности в [_PC_SSH_TUNNEL_PROXY_REMOVED архив](../../../../D/Data/Backup/Ubuntu-Servers/INFRA/archive/2026-05_pc_ssh_tunnel_proxy_removed.md).
+---
+
 # MTProto Proxy — Moscow-front + Amsterdam (grey primary, my overflow)
 
 Telegram MTProto-прокси для обхода ограничений мобильных операторов РФ.
@@ -43,12 +50,12 @@ Phone HTTP/3 (UDP/443) → отдельная ветка, бьёт прямо в
 ## Telegram-ссылка для клиентов
 
 ```
-tg://proxy?server=195.2.75.212&port=443&secret=7vyjhKIsYEc7tr10sfz12R1jbG91ZGZsYXJlLmNvbQ
-https://t.me/proxy?server=195.2.75.212&port=443&secret=7vyjhKIsYEc7tr10sfz12R1jbG91ZGZsYXJlLmNvbQ
+tg://proxy?server=195.2.75.212&port=443&secret=<REDACTED-secret-removed-2026-05-28>
+https://t.me/proxy?server=195.2.75.212&port=443&secret=<REDACTED-secret-removed-2026-05-28>
 ```
 
 Секрет одинаковый на grey и my (FakeTLS под `cloudflare.com`).
-Hex: `eefca384a22c60473bb6bd74b1fcf5d91d636c6f7564666c6172652e636f6d`
+Hex: `<REDACTED-hex-removed-2026-05-28>`
 
 ## Конфигурация
 

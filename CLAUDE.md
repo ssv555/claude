@@ -245,12 +245,39 @@ cd "<project>" && unix2dos <file>.cmd
 Or if `unix2dos` isn't installed:
 
 ```bash
-powershell -nop -c "$p='<file>.cmd'; $c=[IO.File]::ReadAllText($p); $c=$c -replace \"`r`n\",\"`n\" -replace \"`n\",\"`r`n\"; [IO.File]::WriteAllText($p,$c)"
+pwsh -nop -c "$p='<file>.cmd'; $c=[IO.File]::ReadAllText($p); $c=$c -replace \"`r`n\",\"`n\" -replace \"`n\",\"`r`n\"; [IO.File]::WriteAllText($p,$c)"
 ```
 
 Verify after with `od -c <file>.cmd | head -3` — first line must end with `\r \n`, not just `\n`.
 
 **Why**: I edited `VDole/run_all_update.cmd` with Edit tool, the file ended up LF-only, CMD parsed it as garbage and ate the first chars of every command — entire script broken, user ran it and got a wall of `'X' is not recognized` errors. Completely wasted run.
+
+## PowerShell — `pwsh` only, NEVER `powershell` — UNIVERSAL
+
+On Windows, ALWAYS invoke PowerShell as `pwsh` (PowerShell 7+). NEVER invoke as `powershell` (legacy Windows PowerShell 5.1).
+
+**Applies to**:
+- Bash tool commands (`Bash` invocations spawning PowerShell)
+- Examples / snippets you write into `.md`, `.cmd`, `.bat`, `.ps1`, or anywhere else
+- Instructions you give the user to run
+
+**Why**: Windows PowerShell 5.1 writes stdout in OEM codepage (cp866 on RU locales, cp1251 elsewhere). The Bash tool reads as UTF-8 → output comes back as garbage (`���  �業�� ��� �믮��塞��`) — unreadable for both Claude and user, debugging blind. Also: 5.1 has broken argument parsing for `-Command "..."` with quoted variables like `$env:USERNAME` (strips the `$env:` prefix). `pwsh` 7+ is UTF-8 by default, modern parser, no surprises.
+
+**How to apply**:
+
+```bash
+# ✅ correct
+pwsh -NoProfile -Command "Write-Host \"hello $env:USERNAME\""
+pwsh -NoProfile -File path\to\script.ps1 arg1 arg2
+
+# ❌ wrong — DO NOT USE
+powershell -NoProfile -Command "..."
+powershell -nop -c "..."
+```
+
+If `pwsh` is genuinely missing on a machine (rare in 2026), STOP and tell the user — don't silently fall back to legacy `powershell`.
+
+**Why again, with an incident**: 2026-05-28 in `/dev add spc` flow I used `powershell -NoProfile -Command "if (-not ((\$env:USERNAME ...)))"` — 5.1's `-Command` parser ate the `$env:` and threw `:USERNAME : is not recognized`. Output was cp866 garbage on top. User couldn't read the error, I couldn't read the error, the chief-guard check silently passed when it shouldn't have. `pwsh` would have just worked.
 
 ## No duplication of rules
 NEVER duplicate rules across CLAUDE.md, CLAUDE.local.md, and memory files. Each rule lives in exactly ONE place. Memory is only for things NOT already in CLAUDE.md files.

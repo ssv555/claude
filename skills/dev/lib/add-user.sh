@@ -38,6 +38,15 @@ if id -u "$ALIAS" >/dev/null 2>&1; then
     exit 3
 fi
 
+# Orphan group cleanup: previous /dev del may have left group $ALIAS alive
+# (claude-runner still in it as supplementary member). adduser would fail with
+# "fatal: The group X already exists".
+if getent group "$ALIAS" >/dev/null 2>&1; then
+    log "orphaned group $ALIAS detected (no user) — cleaning up"
+    gpasswd -d claude-runner "$ALIAS" 2>/dev/null || true
+    groupdel "$ALIAS" 2>/dev/null || true
+fi
+
 # ============================================================================
 # 1. Create user + groups
 # ============================================================================
@@ -63,22 +72,33 @@ chmod 700 "$HOME_DIR/.ssh"
 chmod 600 "$HOME_DIR/.ssh/authorized_keys"
 
 # ============================================================================
-# 3. ~/.claude/ — root-owned top, dev cannot enter (only claude-runner via group)
+# 3. ~/.claude/ — owned by claude-runner so claude can fully manage its own
+#    workspace (create settings.json, hooks, write to memory, etc.).
+#    Dev (spc) is NOT in group claude-runner → falls into 'other' class → 0 perms → denied.
 # ============================================================================
 
 log "scaffolding ~/.claude/ for $ALIAS"
 CLAUDE_HOME="$HOME_DIR/.claude"
 mkdir -p "$CLAUDE_HOME"
+
+# Read-only chief-managed config: symlinks to /opt/claude-shared/ (root:root 755).
+# Devs and their claude cannot modify these — central rules of conduct.
 ln -sfn "$SHARED_DIR/skills"     "$CLAUDE_HOME/skills"
 ln -sfn "$SHARED_DIR/CLAUDE.md"  "$CLAUDE_HOME/CLAUDE.md"
 [ -f "$SHARED_DIR/DEV_GUIDE.md" ] && ln -sfn "$SHARED_DIR/DEV_GUIDE.md" "$CLAUDE_HOME/DEV_GUIDE.md"
 [ -f "$SHARED_DIR/codex.md" ]     && ln -sfn "$SHARED_DIR/codex.md"     "$CLAUDE_HOME/codex.md"
+
+# Per-dev memory: real directory (NOT symlink) so claude can update it freely.
+# Seeded once from chief's curated memory; from then on each dev's memory diverges.
+mkdir -p "$CLAUDE_HOME/memory"
 if [ -d "$SHARED_DIR/memory" ]; then
-    ln -sfn "$SHARED_DIR/memory" "$CLAUDE_HOME/memory"
+    cp -a "$SHARED_DIR/memory/." "$CLAUDE_HOME/memory/" 2>/dev/null || true
 fi
 
-chown root:claude-runner "$CLAUDE_HOME"
+# claude-runner is owner of .claude/ top-level — can create settings.json, hooks, etc.
+chown -R claude-runner:claude-runner "$CLAUDE_HOME"
 chmod 750 "$CLAUDE_HOME"
+chmod 700 "$CLAUDE_HOME/memory"
 
 for sub in projects sessions; do
     mkdir -p "$CLAUDE_HOME/$sub"
@@ -113,9 +133,11 @@ sudo -u "$ALIAS" git config --global pull.rebase 'true'
 # ============================================================================
 
 if [ -n "$REPO_NAME" ]; then
-    BARE="$GIT_BARE_ROOT/$REPO_NAME.git"
-    if [ ! -d "$BARE" ]; then
-        err "bare repo not found: $BARE — skip clone"
+    # Case-insensitive lookup: dev.ps1 lowercases repo arg, but bare repo on disk
+    # may be CamelCase (e.g. /srv/git/VDole.git). Match by -iname.
+    BARE=$(find "$GIT_BARE_ROOT" -maxdepth 1 -type d -iname "${REPO_NAME}.git" 2>/dev/null | head -1)
+    if [ -z "$BARE" ] || [ ! -d "$BARE" ]; then
+        err "bare repo not found: $GIT_BARE_ROOT/${REPO_NAME}.git (case-insensitive) — skip clone"
     else
         log "cloning $REPO_NAME from $BARE into ~/projects/$REPO_NAME"
         sudo -u "$ALIAS" git config --global --add safe.directory "$BARE"
@@ -159,8 +181,9 @@ if [ -n "$REPO_NAME" ]; then
         if command -v psql >/dev/null 2>&1; then
             # Check template DB exists
             if sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='$TEMPLATE_DB'" 2>/dev/null | grep -q 1; then
-                # Generate random 32-char password
-                DB_PASS=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
+                # Generate random 32-char password (hex). Use openssl to avoid
+                # `tr | head` SIGPIPE under `set -euo pipefail` (exit 141).
+                DB_PASS=$(openssl rand -hex 16)
 
                 log "creating PG role $DB_USER + database $DB_NAME (template-cloned from $TEMPLATE_DB)"
                 # Create role (with password)
@@ -197,12 +220,13 @@ if [ -n "$REPO_NAME" ]; then
         # ====================================================================
         ENV_TEMPLATE='/opt/dev-skill/.env.development'
         if [ -n "$PORT_BASE" ] && [ -f "$ENV_TEMPLATE" ]; then
-            JWT_SECRET=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 64)
-            COOKIE_SECRET=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 64)
-            SESSION_SECRET=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 64)
-            BOT_SECRET=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 64)
-            DATA_ENCRYPTION_KEY=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 64)
-            EMAIL_WEBHOOK_SECRET=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 64)
+            # openssl rand -hex 32 → 64 hex chars (256 bits). Avoids `tr|head` SIGPIPE under pipefail.
+            JWT_SECRET=$(openssl rand -hex 32)
+            COOKIE_SECRET=$(openssl rand -hex 32)
+            SESSION_SECRET=$(openssl rand -hex 32)
+            BOT_SECRET=$(openssl rand -hex 32)
+            DATA_ENCRYPTION_KEY=$(openssl rand -hex 32)
+            EMAIL_WEBHOOK_SECRET=$(openssl rand -hex 32)
             # DB_PASS already generated in step 6b above
 
             ENV_OUT="$REPO_DIR/.env.development"
@@ -214,6 +238,8 @@ if [ -n "$REPO_NAME" ]; then
                 s|\{\{ALIAS\}\}|$ALIAS|g;
                 s|\{\{PORT_API\}\}|$API_PORT|g;
                 s|\{\{PORT_HMR\}\}|$HMR_PORT|g;
+                s|\{\{PORT_BOT_TG\}\}|$TG_BOT_PORT|g;
+                s|\{\{PORT_BOT_MAX\}\}|$MAX_BOT_PORT|g;
                 s|\{\{DB_PASSWORD\}\}|$DB_PASS|g;
                 s|\{\{JWT_SECRET\}\}|$JWT_SECRET|g;
                 s|\{\{COOKIE_SECRET\}\}|$COOKIE_SECRET|g;

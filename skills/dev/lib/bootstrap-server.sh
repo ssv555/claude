@@ -104,6 +104,44 @@ if [ -f "$HARDENING" ]; then
 fi
 
 # ============================================================================
+# 1c. bun + bunx in /usr/local/bin/ — readable by all (not chief-home symlinks)
+# ============================================================================
+# /usr/local/bin/bunx is often a symlink into chief's ~/.bun/bin/bunx after a
+# chief-initiated `curl -fsSL https://bun.sh/install | bash` — that path is
+# /home/<chief>/ 750, so claude-runner and devs get "Permission denied" when
+# running `bunx <anything>`. Replace symlinks with real binaries in /usr/local.
+
+fix_bun_link() {
+    local name="$1"          # bun | bunx
+    local p="/usr/local/bin/$name"
+    if [ ! -e "$p" ]; then
+        warn "$p missing — install bun manually, then rerun bootstrap"
+        return
+    fi
+    # If it's a symlink to a chief-home path → resolve target and copy real binary in place.
+    if [ -L "$p" ]; then
+        local target
+        target=$(readlink -f "$p")
+        if [ -z "$target" ] || [ ! -r "$target" ]; then
+            warn "$p is a dead symlink (target=$target) — install bun globally"
+            return
+        fi
+        case "$target" in
+            /home/*)
+                log "$p is symlink into chief-home ($target) — replacing with real binary"
+                rm "$p"
+                cp "$target" "$p"
+                chown root:root "$p"
+                chmod 755 "$p"
+                ;;
+        esac
+    fi
+}
+
+fix_bun_link bun
+fix_bun_link bunx
+
+# ============================================================================
 # 2. claude CLI — install into /opt/claude/ (isolated bun prefix)
 # ============================================================================
 

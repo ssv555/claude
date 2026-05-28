@@ -12,9 +12,11 @@ CLI — твой shell-юзер не имеет доступа к `~/.claude/`).
 - Сервер: `moscow_my`
 - Юзер: твой alias (Linux account)
 - Claude Code: уже установлен, общий бинарь `/usr/local/bin/claude` (setuid wrapper)
-- Скилы / правила / память: shared, read-only (через симлинки в `~/.claude/`)
-- Твоя рабочая папка: `~/projects/` (твой полный доступ)
-- Сессии и проекты Claude: `~/.claude/projects/`, `~/.claude/sessions/` (Claude пишет, ты только читаешь)
+- Скилы / правила (`skills/`, `CLAUDE.md`, `codex.md`, `DEV_GUIDE.md`): **shared, read-only** через симлинки на `/opt/claude-shared/` — шеф централизованно управляет
+- Память Claude (`~/.claude/memory/`): **per-dev, writable** — Claude обновляет твою личную память (seeded при создании юзера копией из chief's curated memory)
+- Сессии и проекты Claude (`~/.claude/projects/`, `~/.claude/sessions/`, `.credentials.json`): полностью приватны Claude (`claude-runner:claude-runner 700/600`) — **твой shell-юзер не имеет доступа** (Permission denied), писать может только сам Claude
+- Сама `~/.claude/` (top-level): `claude-runner:claude-runner 750` — Claude может создавать тут settings.json, hooks/, любые служебные файлы. Ты как shell-юзер вообще не заходишь
+- Твоя рабочая папка: `~/projects/` (твой полный доступ + claude-runner может писать туда же когда работаешь через claude)
 
 ---
 

@@ -1980,3 +1980,183 @@ sudo systemctl is-active vdole vdole-bot vdole-bot-max" 2>&1 | tail -25
 [2026-05-28 17:55:27] BLOCKED: ALLOWED by user: Move/rename (mv)
   Command: scp -q 'C:\Users\ssv55\.claude\skills\dev\lib\mirror-push.sh' 'moscow_my:/tmp/mirror-push.sh' && ssh moscow_my "sudo mv /tmp/mirror-push.sh /home/git-mirror/bin/mirror-push.sh && sudo chown root:root /home/git-mirror/bin/mirror-push.sh && sudo chmod 755 /home/git-mirror/bin/mirror-push.sh && echo OK_INSTALLED && sudo -u git-mirror /home/git-mirror/bin/mirror-push.sh 2>&1 | tail -10"
 
+[2026-05-28 18:37:55] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: powershell -nop -c "Remove-Item -Recurse -Force 'D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\spc'; Test-Path 'D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\spc'"
+
+[2026-05-28 18:43:19] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: ssh amsterdam_my "
+echo '=== STOP service ==='
+sudo systemctl stop mtproxymax
+sudo systemctl disable mtproxymax 2>&1
+sudo systemctl disable mtg 2>&1
+echo '=== verify dead ==='
+sudo systemctl is-active mtproxymax
+sudo systemctl is-active mtg
+sudo ss -tlnp 2>/dev/null | grep -E ':8443\b' || echo 'OK тАФ 8443 not listening'
+pgrep -af 'telemt|mtproxy|mtg' || echo 'OK тАФ no mtproxy processes'
+echo '=== remove unit files ==='
+sudo rm -f /etc/systemd/system/mtproxymax.service
+sudo rm -f /etc/systemd/system/mtg.service
+sudo rm -f /etc/systemd/system/multi-user.target.wants/mtproxymax.service
+sudo rm -f /etc/systemd/system/multi-user.target.wants/mtg.service
+sudo systemctl daemon-reload
+sudo systemctl reset-failed
+echo '=== remove binaries + configs ==='
+sudo rm -f /usr/local/bin/mtg
+sudo rm -f /usr/local/bin/mtproxymax
+sudo rm -rf /opt/mtproxymax
+sudo rm -rf /etc/mtg
+echo '=== check user mtg ==='
+id mtg 2>/dev/null && sudo userdel mtg && echo 'mtg user deleted' || echo 'no mtg user'
+echo '=== verify trace-free ==='
+sudo find /etc /opt /usr/local /root -iname '*mtg*' -o -iname '*mtproxy*' -o -iname '*telemt*' 2>/dev/null | head -20 || echo 'clean'
+sudo systemctl list-units --type=service --all 2>/dev/null | grep -iE 'mtg|mtproxy' || echo 'no units'
+sudo ss -tlnp 2>/dev/null | grep -E ':8443\b' || echo 'OK тАФ port free'
+echo '=== logs (review only, will not delete) ==='
+sudo journalctl -u mtproxymax --since '2 days ago' 2>/dev/null | tail -3
+sudo ls /var/log/ 2>/dev/null | grep -iE 'mtg|mtproxy|telemt' || echo 'no log files'"
+
+[2026-05-28 18:49:06] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: ssh amsterdam_grey_root "
+echo '=== check PPID ==='
+ps -p 2016776 -o pid,ppid,user,cmd 2>/dev/null || echo 'parent dead (init adopted)'
+echo '=== find telemt binary ==='
+which telemt 2>/dev/null
+find / -name 'telemt' -type f 2>/dev/null | head -5
+echo '=== /etc/telemt.toml exists? ==='
+ls -la /etc/telemt.toml 2>/dev/null
+
+echo '=== STOP everything ==='
+systemctl stop mtproxymax 2>&1
+systemctl disable mtproxymax 2>&1
+systemctl disable mtg 2>&1
+echo '--- kill telemt orphan ---'
+pkill -TERM -f '^telemt' 2>&1
+sleep 1
+pgrep -af telemt && pkill -KILL -f '^telemt' 2>&1 || echo 'telemt gone'
+sleep 1
+echo '--- verify killed ---'
+pgrep -af telemt || echo 'no telemt'
+ss -tln 2>/dev/null | grep -E ':8443\b' || echo 'OK тАФ 8443 free'
+
+echo '=== remove unit files ==='
+rm -f /etc/systemd/system/mtproxymax.service
+rm -f /etc/systemd/system/mtg.service
+rm -f /etc/systemd/system/multi-user.target.wants/mtproxymax.service
+rm -f /etc/systemd/system/multi-user.target.wants/mtg.service
+systemctl daemon-reload
+systemctl reset-failed
+
+echo '=== remove binaries + configs + dirs ==='
+rm -f /usr/local/bin/mtg
+rm -f /usr/local/bin/mtproxymax
+rm -rf /opt/mtproxymax
+rm -rf /etc/mtg
+rm -f /etc/telemt.toml
+# remove the telemt binary if found above (handled below if exists in /usr/local/sbin etc)
+find / -name 'telemt' -type f 2>/dev/null | xargs -r rm -f
+# wrapper /opt/mtproxymax/mtproxy binary lived inside /opt тАФ already gone
+
+echo '=== remove mtg user ==='
+id mtg 2>/dev/null && userdel mtg && echo 'mtg user deleted' || echo 'no mtg user'
+
+echo '=== verify trace-free ==='
+echo '--- find ---'
+find /etc /opt /usr/local /root -iname '*mtg*' -o -iname '*mtproxy*' -o -iname '*telemt*' 2>/dev/null | head -20 || echo 'clean'
+echo '--- units ---'
+systemctl list-units --type=service --all 2>/dev/null | grep -iE 'mtg|mtproxy' || echo 'no units'
+echo '--- ports ---'
+ss -tln 2>/dev/null | grep -E ':8443\b' || echo 'OK port free'
+echo '--- processes ---'
+pgrep -af 'telemt|mtproxy|mtg' | grep -vE 'pgrep|grep' || echo 'no procs'
+echo '--- /var/log refs ---'
+ls /var/log/ 2>/dev/null | grep -iE 'mtg|mtproxy|telemt' || echo 'no log files'
+"
+
+[2026-05-28 18:49:06] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:/Data/Backup/Ubuntu-Servers/vdole_pro_timeweb_moscow/keys-client" && for u in devops ssv; do
+  echo "=== $u ==="
+  cd "/d/Data/Backup/Ubuntu-Servers/vdole_pro_timeweb_moscow/keys-client/$u"
+  mv id_ed25519 id_ed25519.old-2026-05-28
+  mv id_ed25519.pub id_ed25519.pub.old-2026-05-28
+  mv id_ed25519.ppk id_ed25519.ppk.old-2026-05-28
+  mv id_ed25519.new-2026-05-28 id_ed25519
+  mv id_ed25519.new-2026-05-28.pub id_ed25519.pub
+  ls -la
+done
+
+[2026-05-28 18:50:44] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git remote -v | grep moscow_my; if ! git remote | grep -q moscow_my_bare; then git remote add moscow_my_bare ssh://ssv@195.2.75.212:53847/srv/git/VDole.git; fi; git push moscow_my_bare main 2>&1 | tail -10
+
+[2026-05-28 19:02:19] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: ssh moscow_my "
+echo '=== before ==='
+sudo ls -la /etc/nginx/ | grep -E 'backup|bak|stream.conf'
+echo '=== remove ==='
+sudo rm -f /etc/nginx/stream.conf.pre-mtproto-removal-2026-05-28
+sudo rm -f /etc/nginx/stream.conf.bak2
+sudo rm -f /etc/nginx/stream.conf.bak-20260428_011328
+sudo rm -rf /etc/nginx/_backup_20260518-030354
+sudo rm -rf /etc/nginx/_backup_pre-awg_2026-05-18_124500
+echo '=== verify ==='
+sudo ls -la /etc/nginx/ | grep -E 'backup|bak'  || echo 'no backups left'
+echo '--- final grep across /etc/nginx ---'
+sudo grep -rliE 'mtproto|mtproxy|mtg|11443' /etc/nginx/ 2>/dev/null || echo 'nginx tree clean'
+echo '--- nginx still works ---'
+sudo nginx -t 2>&1 | tail -2
+sudo systemctl is-active nginx"
+
+[2026-05-28 19:46:31] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && git mv docs/todo/p1_0d_3h_0m__post_ddos_credential_rotation.md docs/archive/todo/post_ddos_credential_rotation.md && echo OK && git status --short | head -10
+
+[2026-05-28 19:46:59] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && mkdir -p docs/archive/todo && mv -v docs/todo/p1_0d_3h_0m__post_ddos_credential_rotation.md docs/archive/todo/post_ddos_credential_rotation.md 2>&1 && echo "---" && ls docs/archive/todo/post_ddos_credential_rotation.md && echo "---" && git status --short 2>&1 | grep -E "post_ddos|p1_0d" | head -5
+
+[2026-05-28 19:55:40] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && mv -v docs/todo/p2_0d_1h_0m__vdole_pro_domain_restore_check.md docs/archive/todo/vdole_pro_domain_restore_check.md 2>&1 && echo "---" && ls docs/archive/todo/ | grep -i "vdole_pro_domain\|post_ddos"
+
+[2026-05-28 20:05:52] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: \
+  echo '=== Move conf to runtime folder ===' && \
+  mv -v .tmp/awg-work-keys/msc-ams-my-awg-work.conf "/d/Data/Backup/Ubuntu-Servers/moscow_my/awg/msc-ams-my-awg-work.conf" && \
+  echo '' && \
+  echo '=== Delete privkey + pubkey ===' && \
+  rm -v .tmp/awg-work-keys/awg-work_priv.key .tmp/awg-work-keys/awg-work_pub.key && \
+  echo '' && \
+  echo '=== Remove now-empty .tmp/awg-work-keys/ ===' && \
+  rmdir -v .tmp/awg-work-keys/ && \
+  echo '' && \
+  echo '=== Verify destination ===' && \
+  ls -la "/d/Data/Backup/Ubuntu-Servers/moscow_my/awg/" | grep awg-work
+
+[2026-05-28 20:32:33] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git push 2>&1
+
+[2026-05-28 20:36:06] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git mv docs/__migration_instruction.md docs/archive/__migration_instruction_old.md 2>&1
+
+[2026-05-28 21:21:17] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf "d:\Data\Documents\Programming\Projects\WEB\VDole\.tmp\cert-migration" && echo "local tmp cleaned"
+
+[2026-05-28 21:24:35] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf "d:\Data\Documents\Programming\Projects\WEB\VDole\.tmp\cert-migration" && echo "local tmp cleaned"
+
+[2026-05-28 21:37:50] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git mv docs/todo/p3_0d_4h_0m__vdole_pro_round_robin.md docs/archive/todo/vdole_pro_round_robin.md 2>&1 && echo "OK moved"
+
+[2026-05-28 21:38:03] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && mv docs/todo/p3_0d_4h_0m__vdole_pro_round_robin.md docs/archive/todo/vdole_pro_round_robin.md 2>&1 && echo "OK moved" && ls -la docs/archive/todo/vdole_pro_round_robin.md
+
+[2026-05-28 22:14:51] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: mv "/d/Data/Documents/Programming/Projects/WEB/VDole/.tmp/snapshot-2026-05-29/moscow_my/"* "/d/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/snapshots/2026-05-29_ssh-port-fix-and-config-cleanup/" && mv "/d/Data/Documents/Programming/Projects/WEB/VDole/.tmp/snapshot-2026-05-29/vdole_pro/"* "/d/Data/Backup/Ubuntu-Servers/INFRA/servers/vdole_pro_timeweb_moscow/snapshots/2026-05-29_ssh-port-fix/" && rm -rf "/d/Data/Documents/Programming/Projects/WEB/VDole/.tmp/snapshot-2026-05-29" && echo '=== moscow_my snapshot ===' && ls -la "/d/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/snapshots/2026-05-29_ssh-port-fix-and-config-cleanup/" && echo && echo '=== vdole_pro snapshot ===' && ls -la "/d/Data/Backup/Ubuntu-Servers/INFRA/servers/vdole_pro_timeweb_moscow/snapshots/2026-05-29_ssh-port-fix/"
+
+[2026-05-28 22:18:29] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "/d/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/snapshots/" && for d in */; do
+  name="${d%/}"
+  echo "=== packing $name ==="
+  tar -czf "${name}.tar.gz" "$d" && rm -rf "$d" && echo "  -> ${name}.tar.gz $(du -h "${name}.tar.gz" | cut -f1)"
+done
+echo
+echo '=== final state ==='
+ls -la
+

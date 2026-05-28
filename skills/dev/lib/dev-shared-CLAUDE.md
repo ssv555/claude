@@ -92,11 +92,19 @@ Each step verified before moving on. Bug fixes: reproduce first, then fix.
 
 ## Files
 
-- `~/.claude/skills/` — read-only, managed by the chief. You cannot add
-  skills locally.
-- `~/.claude/projects/`, `~/.claude/sessions/` — Claude writes; you can
-  read but not modify directly.
-- `~/projects/` — your workspace, fully yours.
+- `~/.claude/skills/`, `~/.claude/CLAUDE.md`, `~/.claude/codex.md`,
+  `~/.claude/DEV_GUIDE.md` — symlinks to `/opt/claude-shared/` —
+  read-only, managed by the chief. You cannot edit these.
+- `~/.claude/memory/` — your private memory, real per-dev directory.
+  You (Claude) can append/update entries here. Seeded once from chief's
+  curated memory; from then on it's your own.
+- `~/.claude/projects/`, `~/.claude/sessions/`, `~/.claude/.credentials.json`
+  — Claude private state. You (Claude) own and manage these; the dev's
+  shell user has no access at all (Permission denied).
+- `~/.claude/` itself — owned by you (claude-runner). Feel free to
+  create `settings.json`, `hooks/`, or any service file you need.
+- `~/projects/` — dev's workspace, you (Claude) write into it via the
+  shared `claude-runner` group + setgid on the project directory.
 
 ## Don't
 

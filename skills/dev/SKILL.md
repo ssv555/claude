@@ -134,8 +134,9 @@ Bootstrap триггерится автоматически при первом 
 4. **Server (`add-user.sh`):**
    - `adduser --disabled-password` + `usermod -aG developers` + `usermod -aG <alias> claude-runner`
    - `~/.ssh/authorized_keys` (pub-half from chief)
-   - `~/.claude/` (root:claude-runner 750) + симлинки на shared (skills/CLAUDE.md/codex.md/DEV_GUIDE.md/memory)
-   - `~/.claude/projects` + `~/.claude/sessions` + `~/.claude/.credentials.json` (claude-runner:claude-runner 700/600 — дев НЕ читает)
+   - `~/.claude/` (**claude-runner:claude-runner 750** — claude полный owner, может писать settings.json/hooks/любые служебные файлы) + симлинки read-only на shared (skills/CLAUDE.md/codex.md/DEV_GUIDE.md)
+   - `~/.claude/memory/` — **per-dev директория** (НЕ симлинк), claude-runner:claude-runner 700, seeded `cp -a /opt/claude-shared/memory/. ~/.claude/memory/` (дальше каждый дев пишет в свою память изолированно)
+   - `~/.claude/projects` + `~/.claude/sessions` + `~/.claude/.credentials.json` (claude-runner:claude-runner 700/600 — дев НЕ читает, sentinels приватны Claude'у)
    - `~/projects/` (`<alias>:<alias>` 755)
    - git config user.name/user.email
 5. **Server (clone + tweak):**
@@ -227,13 +228,15 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
 
 /home/<dev>/                            <dev>:<dev>             750       ← НЕ 755, дев приватен
   .ssh/                                 <dev>:<dev> 700
-  .claude/                              root:claude-runner 750            ← дев НЕ заходит
-    skills    → /opt/claude-shared/skills    (root-symlink)
-    CLAUDE.md → /opt/claude-shared/CLAUDE.md
-    codex.md, DEV_GUIDE.md, memory       → /opt/claude-shared/...
-    projects/                           claude-runner:claude-runner 700   ← claude пишет
-    sessions/                           claude-runner:claude-runner 700
+  .claude/                              claude-runner:claude-runner 750   ← дев НЕ заходит (other class=0), claude полный owner
+    skills    → /opt/claude-shared/skills    (root-symlink, read-only)
+    CLAUDE.md → /opt/claude-shared/CLAUDE.md (root-symlink, read-only — chief manages)
+    codex.md, DEV_GUIDE.md               → /opt/claude-shared/... (read-only)
+    memory/                             claude-runner:claude-runner 700   ← per-dev (НЕ симлинк), seeded из shared
+    projects/                           claude-runner:claude-runner 700   ← claude пишет conversation data
+    sessions/                           claude-runner:claude-runner 700   ← claude пишет session metadata
     .credentials.json                   claude-runner:claude-runner 600
+    (settings.json, hooks/, и т.п.)     claude может создавать на top-level (owner=claude-runner)
   projects/                             <dev>:<dev>             755
     <repo>/                             <dev>:claude-runner     2775      ← setgid, claude может писать
       .env.development                  claude-runner:claude-runner 600   ← дев НЕ читает
@@ -262,7 +265,7 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
 - `/etc/nginx` (750 root:root)
 - Чужие процессы в `ps aux` (`hidepid=invisible` на `/proc`)
 - Чужие SSH/auth логи (`/var` blocked)
-- Свой `~/.claude/` (root:claude-runner — дев НЕ в claude-runner группе)
+- Свой `~/.claude/` (claude-runner:claude-runner 750 — дев НЕ в claude-runner группе, попадает в other class = 0 прав)
 - `.env.development` (claude-runner:claude-runner 600)
 
 ## Что НЕ делать

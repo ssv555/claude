@@ -352,7 +352,17 @@ function Cmd-Add {
         Sync-EnvTemplate -Repo $repo
     }
 
-    # 2c. Create user on server (uploads pubkey via stdin)
+    # 2c. Fast-forward bare repo from GitHub origin (mirror_push is one-way bare→GitHub,
+    #     so chief's GitHub-direct commits aren't in bare → devs would clone stale main).
+    if ($repo) {
+        Write-Host "[bare-sync] fetching latest $repo from GitHub into bare repo" -ForegroundColor DarkGray
+        & ssh $SSH_HOST "sudo -u git-mirror git -C /srv/git/VDole.git fetch origin main:main 2>&1 | tail -5"
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[bare-sync] WARN: fetch failed — bare may be stale. Dev's clone may miss recent chief commits." -ForegroundColor Yellow
+        }
+    }
+
+    # 2d. Create user on server (uploads pubkey via stdin)
     Write-Host "[server] creating user $alias ..." -ForegroundColor DarkGray
     $pubKeyEscaped = $pubKey.Trim().Replace("'", "'\''")
     & ssh $SSH_HOST "sudo bash $SERVER_SKILL_DIR/add-user.sh '$alias' '$($fullName.Replace("'","'\''"))' '$email' '$pubKeyEscaped' '$repo' '$portBase'"

@@ -127,7 +127,13 @@ if command -v psql >/dev/null 2>&1 && command -v pg_dump >/dev/null 2>&1; then
     sudo -u postgres psql -c "DROP ROLE IF EXISTS \"$DB_USER\";" >/dev/null 2>&1 || true
 fi
 
-# 8. userdel -r
+# 8. Remove claude-runner from dev's group (otherwise group persists after userdel
+#    because claude-runner is a supplementary member → next /dev add same alias fails
+#    with "fatal: The group X already exists").
+log "removing claude-runner from group $ALIAS (so userdel can drop the group)"
+gpasswd -d claude-runner "$ALIAS" 2>/dev/null || true
+
+# 9. userdel -r
 log "userdel -r $ALIAS"
 userdel -r "$ALIAS" 2>&1 || {
     err "userdel failed, possibly residual processes — retrying"
@@ -136,5 +142,10 @@ userdel -r "$ALIAS" 2>&1 || {
     userdel -r "$ALIAS"
 }
 
-# Remove from claude-runner's supplementary groups (group itself was wiped by userdel)
+# 10. Safety net: explicit groupdel in case userdel didn't drop it (older util-linux behavior)
+if getent group "$ALIAS" >/dev/null 2>&1; then
+    log "group $ALIAS still present after userdel — explicit groupdel"
+    groupdel "$ALIAS" 2>/dev/null || true
+fi
+
 log "user $ALIAS deleted; archives at $ARCHIVE_DIR/"
