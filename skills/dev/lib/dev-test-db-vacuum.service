@@ -1,0 +1,11 @@
+[Unit]
+Description=Nightly VACUUM ANALYZE for per-dev test databases (vdole_*_test)
+After=postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/dev-skill/dev-test-db-vacuum.sh
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=30m

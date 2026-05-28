@@ -1,0 +1,11 @@
+[Unit]
+Description=Run nightly per-dev test-DB VACUUM at 04:00 MSK
+Requires=dev-test-db-vacuum.service
+
+[Timer]
+OnCalendar=*-*-* 04:00:00
+Persistent=true
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

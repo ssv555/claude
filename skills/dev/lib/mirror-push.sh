@@ -38,16 +38,19 @@ if ! git remote get-url origin >/dev/null 2>&1; then
     exit 2
 fi
 
-# Push all refs in mirror mode (overwrites remote heads — bot has write access)
+# Push heads + tags explicitly + --prune (deletes branches on origin that no longer
+# exist locally). Avoids --mirror which also tries refs/remotes/* / refs/notes/* and
+# spams "cannot lock ref refs/remotes/origin/..." warnings on every push (bare has
+# no such refs — git --mirror tries to delete them on origin → noise without effect).
 ORIGIN_URL=$(git remote get-url origin)
-log "pushing all refs to $ORIGIN_URL"
+log "pushing heads+tags to $ORIGIN_URL"
 attempt=0
 max_attempts=3
 backoff=2
 
 while : ; do
     attempt=$((attempt + 1))
-    if git push --mirror origin 2>&1 | tee -a "$LOG_FILE"; then
+    if git push --prune origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' 2>&1 | tee -a "$LOG_FILE"; then
         log "push OK (attempt $attempt)"
         exit 0
     fi

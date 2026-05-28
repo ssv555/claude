@@ -207,6 +207,11 @@ if ! git -C "$BARE_REPO" remote get-url origin >/dev/null 2>&1; then
 else
     git -C "$BARE_REPO" remote set-url origin "$GITHUB_REMOTE"
 fi
+# Bare doesn't track remotes — remove fetch refspec entirely to prevent
+# "cannot lock ref refs/remotes/origin/*" warnings on every push (git tries to
+# update remote-tracking refs after push, but bare has no refs/remotes/ dir
+# AND git-mirror has no write perms on refs/heads either).
+git -C "$BARE_REPO" config --unset-all remote.origin.fetch 2>/dev/null || true
 
 # Always refresh hooks (idempotent — overwrites)
 log "installing git hooks"
@@ -285,23 +290,39 @@ install -o root -g root -m 644 "$SKILL_DIR/vdole-mirror.path"    /etc/systemd/sy
 
 # Daily 06:00 cleanup of dev services on 40001-49999
 log "installing dev-services-cleanup units (06:00 daily)"
-install -o root -g root -m 755 "$SKILL_DIR/dev-services-cleanup.sh"      /opt/dev-skill/dev-services-cleanup.sh
+# .sh already at $SKILL_DIR via Sync-LibToServer — only ensure perms
+chown root:root "$SKILL_DIR/dev-services-cleanup.sh"
+chmod 755       "$SKILL_DIR/dev-services-cleanup.sh"
 install -o root -g root -m 644 "$SKILL_DIR/dev-services-cleanup.service" /etc/systemd/system/dev-services-cleanup.service
 install -o root -g root -m 644 "$SKILL_DIR/dev-services-cleanup.timer"   /etc/systemd/system/dev-services-cleanup.timer
 
-# Pre-create log file (systemd ReadWritePaths)
+# Nightly 04:00 VACUUM ANALYZE on per-dev test DBs (vdole_*_test)
+log "installing dev-test-db-vacuum units (04:00 nightly)"
+chown root:root "$SKILL_DIR/dev-test-db-vacuum.sh"
+chmod 755       "$SKILL_DIR/dev-test-db-vacuum.sh"
+install -o root -g root -m 644 "$SKILL_DIR/dev-test-db-vacuum.service" /etc/systemd/system/dev-test-db-vacuum.service
+install -o root -g root -m 644 "$SKILL_DIR/dev-test-db-vacuum.timer"   /etc/systemd/system/dev-test-db-vacuum.timer
+
+# Pre-create log files (systemd ReadWritePaths)
 if [ ! -f /var/log/dev-services-cleanup.log ]; then
     touch /var/log/dev-services-cleanup.log
     chmod 644 /var/log/dev-services-cleanup.log
+fi
+if [ ! -f /var/log/dev-test-db-vacuum.log ]; then
+    touch /var/log/dev-test-db-vacuum.log
+    chmod 644 /var/log/dev-test-db-vacuum.log
 fi
 
 systemctl daemon-reload
 systemctl enable --now vdole-mirror.path
 systemctl enable --now dev-services-cleanup.timer
+systemctl enable --now dev-test-db-vacuum.timer
 log "systemctl status vdole-mirror.path:"
 systemctl status --no-pager vdole-mirror.path || true
 log "systemctl status dev-services-cleanup.timer:"
 systemctl status --no-pager dev-services-cleanup.timer || true
+log "systemctl status dev-test-db-vacuum.timer:"
+systemctl status --no-pager dev-test-db-vacuum.timer || true
 
 # ============================================================================
 # 7. sudoers — %developers may invoke mirror-push.sh as git-mirror (NOPASSWD)

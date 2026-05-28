@@ -40,8 +40,10 @@ if (-not (($env:USERNAME -eq 'ssv555') -or ($env:COMPUTERNAME -eq 'PC-SKY'))) {
 | `/dev help` (`-h`, `--help`) | Краткая справка (прямой вывод без SSH) |
 | `/dev` или `/dev list` | Таблица всех dev'ов: alias, created_at, last activity, session count, home size |
 | `/dev <alias>` или `/dev show <alias>` | Детали по одному dev'у |
-| `/dev add <alias> [<repo>]` | Полностью авто-провизия: SSH-ключ, Linux-юзер, nginx+cert, PG role+DB, .env с секретами, bun install |
-| `/dev del <alias>` | Подтверждение → kill → tar архивов → drop DB+role+nginx+cert → `userdel -r` |
+| `/dev add <alias> <repo> <full_name>` | Полностью авто-провизия: SSH-ключ, Linux-юзер, nginx+cert, PG role+DB, .env из template, bun install. Пример: `/dev add alx vdole "Alex Smirnov"` |
+| `/dev del <alias>` | Подтверждение → kill → tar архивов → drop DB+role+nginx+cert → `userdel -r` + удаление SSH-ключа с PC |
+| `/dev ssh block <alias>` | Временно отключить SSH-логин: `mv authorized_keys → .blocked` + `pkill -KILL -u <alias>` (кикнуть активные сессии) |
+| `/dev ssh unblock <alias>` | Восстановить SSH-логин: `mv authorized_keys.blocked → authorized_keys` |
 | `/dev sync-skills [<alias>\|all]` | Пересинхрон allowlisted скилов в `/opt/claude-shared/skills/` |
 | `/dev bootstrap` | Ручной запуск bootstrap (обычно авто при первом `add`) |
 
@@ -92,6 +94,39 @@ Bootstrap триггерится автоматически при первом 
 ## `/dev add <alias> [<repo>]` — полный flow
 
 При указании `<repo>` — полностью авто-настроенная среда. Без `<repo>` — только Linux-юзер.
+
+### ⚠️ Ручная подготовка ПЕРЕД `/dev add <alias>`
+
+Шеф ОБЯЗАН зарегистрировать OAuth redirect URI для нового дев-стенда во всех провайдер-консолях, ИНАЧЕ OAuth-flow у дева упадёт на проверке callback'а:
+
+- Google Cloud Console → OAuth 2.0 Client → Authorized redirect URIs → `+ https://dev-<alias>.it-joy.ru/auth/google/callback`
+- VK Dev (id.vk.com) → приложение → Redirect URIs → `+ https://dev-<alias>.it-joy.ru/auth/vk/callback`
+- Yandex OAuth (oauth.yandex.ru) → приложение → Callback URI → `+ https://dev-<alias>.it-joy.ru/auth/yandex/callback`
+- MailRu Tech (o2.mail.ru) → приложение → Redirect URL → `+ https://dev-<alias>.it-joy.ru/auth/mailru/callback`
+
+Уже зарегистрированные стенды (на 2026-05-27): `dev-alx.it-joy.ru`, `dev-spc.it-joy.ru`.
+
+### Env template — `.env.outstaffers`
+
+Шаблон environment'а для девов хранится локально на PC шефа:
+- **VDole:** `d:\Data\Documents\Programming\Projects\WEB\VDole\.env.outstaffers`
+
+Файл генерится скриптом `_infra/scripts/dev/make-env-outstaffers.ps1` (под SVN) из шефского `.env.development`:
+- Per-dev placeholders: `{{ALIAS}}`, `{{PORT_API}}`, `{{PORT_HMR}}`, `{{DB_PASSWORD}}`, `{{JWT_SECRET}}`, `{{COOKIE_SECRET}}`, `{{SESSION_SECRET}}`, `{{BOT_SECRET}}`, `{{DATA_ENCRYPTION_KEY}}`, `{{EMAIL_WEBHOOK_SECRET}}`
+- DUMMY-замена для production-секретов: `BOT_TG_TOKEN`, `BOT_MAX_TOKEN`, `SMSAERO_API_KEY`, `SMSRU_API_ID`, `UNISENDER_GO_API_KEY`, `*_CLIENT_SECRET` (Google/VK/Yandex/MailRu), `YANDEX_SMARTCAPTCHA_SERVER_KEY` — дев получает DUMMY по умолчанию
+- DROPPED: `SMTP_TUNNEL_PORT` (атавизм после миграции на REG.ru + Unisender Go)
+- ADDED: `DISABLE_BOTS=true` — TG/MAX боты в dev-env спят (не делают long-polling) → нет 409 Conflict с прод-ботом шефа
+- KEPT: публичные client_id, VITE_* флаги, ADMINS, статические порты, *_FROM_EMAIL
+- БЕЗ комментариев и пустых строк (защита от утечки секретов через комменты шефа)
+
+Если деву нужны реальные креды (OAuth, SMS, Email, реальный test-bot) — шеф передаёт через TG и дев патчит через claude (claude-runner может писать в `.env.development`).
+
+При `/dev add <alias> vdole` диспетчер `dev.ps1`:
+1. Копирует локальный `.env.outstaffers` → `/opt/dev-skill/.env.development` (root:root 600)
+2. `add-user.sh` рендерит шаблон через `perl -pe` → подставляет per-dev значения
+3. Результат пишется в `/home/<alias>/projects/vdole/.env.development` (claude-runner:claude-runner 600 — дев не читает)
+
+### Auto-flow
 
 1. **Chief PC:** ssh-keygen → `D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\<alias>\id_ed25519`
 2. **Chief PC:** `Get-NextPortBlock` сканит `/etc/nginx/conf.d/dev-*.it-joy.ru.conf`, ищет следующий свободный 10-блок в `40001..49991`. Шаг **10** — до 100 девов.

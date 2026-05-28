@@ -1953,3 +1953,30 @@ cd /home/spc/projects/VDole
 git push origin dev/spc/test-marker 2>&1 | tail -3
 "
 
+[2026-05-27 22:38:53] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\Telegram\ai_sky_net_bot" && git add -A && git commit -m "fix: amg-invite тАФ don't expire active applications on deep link re-click" && git pull --rebase && git push 2>&1
+
+[2026-05-27 22:40:24] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf 'D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\spc' && echo PC_OK && ls 'D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\' 2>&1 | head -10
+
+[2026-05-28 07:39:40] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mv 'd:\Data\Documents\Programming\Projects\WEB\VDole\.env.development.dev' 'd:\Data\Documents\Programming\Projects\WEB\VDole\.env.outstaffers' && echo RENAMED && ls -la 'd:\Data\Documents\Programming\Projects\WEB\VDole\.env.outstaffers'
+
+[2026-05-28 17:38:53] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && KEY="D:/Data/Backup/Ubuntu-Servers/vdole_pro_timeweb_moscow/keys-client/devops/id_ed25519" && echo "=== scp .env.production to /tmp on server ===" && scp -o ConnectTimeout=10 -P 53847 -i "$KEY" ".env.production.vdole.pro" devops@45.129.128.159:/tmp/.env.production && echo "=== move into place + perms + verify ===" && ssh -p 53847 -i "$KEY" devops@45.129.128.159 "
+sudo mv /tmp/.env.production /var/www/vdole.pro/.env.production && \
+sudo chown www-data:www-data /var/www/vdole.pro/.env.production && \
+sudo chmod 600 /var/www/vdole.pro/.env.production && \
+echo '--- file in place ---' && \
+sudo ls -la /var/www/vdole.pro/.env.production && \
+echo '--- key names present (values hidden) ---' && \
+sudo cut -d= -f1 /var/www/vdole.pro/.env.production | grep -v '^$\\|^#' && \
+echo '--- restart services NOW ---' && \
+sudo systemctl restart vdole vdole-bot vdole-bot-max && \
+sleep 4 && \
+echo '--- status ---' && \
+sudo systemctl is-active vdole vdole-bot vdole-bot-max" 2>&1 | tail -25
+
+[2026-05-28 17:55:27] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: scp -q 'C:\Users\ssv55\.claude\skills\dev\lib\mirror-push.sh' 'moscow_my:/tmp/mirror-push.sh' && ssh moscow_my "sudo mv /tmp/mirror-push.sh /home/git-mirror/bin/mirror-push.sh && sudo chown root:root /home/git-mirror/bin/mirror-push.sh && sudo chmod 755 /home/git-mirror/bin/mirror-push.sh && echo OK_INSTALLED && sudo -u git-mirror /home/git-mirror/bin/mirror-push.sh 2>&1 | tail -10"
+

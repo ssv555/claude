@@ -74,10 +74,11 @@ MODEL:  opus
 
 10. **Очистка:**
     - `git branch -D review/<alias>/<slug>` (локальная review-ветка).
-    - На moscow_my: удалить ветку из bare-репо:
+    - На moscow_my: удалить ветку из bare-репо + триггернуть mirror (иначе ветка останется висеть на GitHub — `update-ref -d` не запускает post-receive хук автоматически):
       ```bash
-      ssh moscow_my "cd /srv/git/VDole.git && git update-ref -d refs/heads/dev/<alias>/<slug>"
+      ssh moscow_my "sudo git -C /srv/git/VDole.git update-ref -d refs/heads/dev/<alias>/<slug> && sudo touch /var/spool/vdole-mirror/queue"
       ```
+      vdole-mirror.path watcher отловит touch → запустит mirror-push.sh → `git push --prune` удалит ветку и на GitHub.
     - У дева в его рабочей копии ветка остаётся — он сам почистит после `/dev-reset`.
 
 11. **Уведомить шефа:** branch, commits merged, line-count, status.

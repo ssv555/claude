@@ -33,3 +33,6 @@ telemetry/
 
 # Old skills .git (if leftover)
 skills/.git/
+
+# Dev archives (server-side dumps, too large for git — keep on local disk only)
+developers/*/_archive/

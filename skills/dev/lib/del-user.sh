@@ -94,11 +94,25 @@ log "dumping activity log"
 log "archive contents:"
 ls -lh "$ARCHIVE_DIR/"
 
-# 7. PostgreSQL cleanup — drop per-dev DB and role
+# 7. PostgreSQL — backup (pg_dump) BEFORE drop, then drop role+DBs
 DB_USER="user_${ALIAS}"
-if command -v psql >/dev/null 2>&1; then
+if command -v psql >/dev/null 2>&1 && command -v pg_dump >/dev/null 2>&1; then
+    # 7a. pg_dump every DB owned by the role into archive (gzipped custom format)
+    log "pg_dump-ing databases owned by $DB_USER into archive"
+    sudo -u postgres psql -tAc \
+        "SELECT datname FROM pg_database WHERE pg_catalog.pg_get_userbyid(datdba)='$DB_USER';" 2>/dev/null | while read -r db; do
+        [ -n "$db" ] || continue
+        DUMP_FILE="$ARCHIVE_DIR/pgdump_${db}.dump"
+        log "  dumping $db -> $(basename "$DUMP_FILE")"
+        if sudo -u postgres pg_dump -Fc -f "$DUMP_FILE" "$db" 2>>"$ARCHIVE_DIR/pgdump.log"; then
+            log "    OK ($(du -h "$DUMP_FILE" | cut -f1))"
+        else
+            err "    pg_dump $db failed (see $ARCHIVE_DIR/pgdump.log) — continuing"
+        fi
+    done
+
+    # 7b. Drop databases (with active-connection termination)
     log "dropping PG databases owned by $DB_USER"
-    # Drop any DB owned by the role (typically <repo>_<alias>)
     sudo -u postgres psql -tAc \
         "SELECT datname FROM pg_database WHERE pg_catalog.pg_get_userbyid(datdba)='$DB_USER';" 2>/dev/null | while read -r db; do
         [ -n "$db" ] || continue
@@ -107,6 +121,8 @@ if command -v psql >/dev/null 2>&1; then
         sudo -u postgres psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='$db';" >/dev/null 2>&1 || true
         sudo -u postgres psql -c "DROP DATABASE IF EXISTS \"$db\";" >/dev/null 2>&1 || true
     done
+
+    # 7c. Drop role
     log "dropping PG role $DB_USER"
     sudo -u postgres psql -c "DROP ROLE IF EXISTS \"$DB_USER\";" >/dev/null 2>&1 || true
 fi

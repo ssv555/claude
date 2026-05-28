@@ -14,7 +14,8 @@
 param(
     [string]$Subcommand = 'list',
     [string]$Arg1 = '',
-    [string]$Arg2 = ''
+    [string]$Arg2 = '',
+    [string]$Arg3 = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -30,6 +31,12 @@ $ALLOWLIST_PATH     = Join-Path $DEVELOPERS_DIR 'skills_allowlist.json'
 $KEYS_CLIENT_ROOT   = 'D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client'
 $SSH_INVENTORY_PATH = 'D:\Data\Backup\Ubuntu-Servers\moscow_my\SSH_KEYS_INVENTORY.md'
 $DIALOG_PS1         = Join-Path $env:USERPROFILE '.claude\scripts\dialog.ps1'
+
+# Map: <repo> => local path to .env.outstaffers template
+# Adding a new project: add a row here AND ensure /dev add picks the right one.
+$ENV_TEMPLATES = @{
+    'vdole' = 'd:\Data\Documents\Programming\Projects\WEB\VDole\.env.outstaffers'
+}
 
 $LIB_DIR = Join-Path $PSScriptRoot 'lib'
 
@@ -57,6 +64,25 @@ function Sync-LibToServer {
 
     & ssh $SSH_HOST "sudo chown -R root:root $SERVER_SKILL_DIR && sudo chmod 755 $SERVER_SKILL_DIR/*.sh"
     if ($LASTEXITCODE -ne 0) { throw "Failed to chown/chmod $SERVER_SKILL_DIR/" }
+}
+
+function Sync-EnvTemplate {
+    # Upload local .env.outstaffers template -> server /opt/dev-skill/.env.development (root:root 600).
+    # add-user.sh substitutes placeholders into per-dev .env.development.
+    param([string]$Repo)
+    if (-not $ENV_TEMPLATES.ContainsKey($Repo)) {
+        Write-Host "[env-template] no template registered for repo '$Repo' — skipping" -ForegroundColor Yellow
+        return
+    }
+    $local = $ENV_TEMPLATES[$Repo]
+    if (-not (Test-Path $local)) {
+        throw "env template not found locally: $local — regenerate via _infra\scripts\dev\make-env-outstaffers.ps1"
+    }
+    Write-Host "[env-template] uploading $local -> ${SSH_HOST}:${SERVER_SKILL_DIR}/.env.development ..." -ForegroundColor DarkGray
+    & scp -q $local "${SSH_HOST}:/tmp/env-template-upload"
+    if ($LASTEXITCODE -ne 0) { throw "scp of env template failed" }
+    & ssh $SSH_HOST "sudo mv /tmp/env-template-upload $SERVER_SKILL_DIR/.env.development && sudo chown root:root $SERVER_SKILL_DIR/.env.development && sudo chmod 600 $SERVER_SKILL_DIR/.env.development"
+    if ($LASTEXITCODE -ne 0) { throw "Failed to install env template" }
 }
 
 function Ensure-Bootstrap {
@@ -244,45 +270,54 @@ function Cmd-Show {
 }
 
 function Cmd-Add {
+    # All args required on CLI — dialog.ps1 has no text-input mode, so
+    # interactive Ask() prompts were broken. Use:
+    #   /dev add <alias> <repo> <full_name>
+    # Examples:
+    #   /dev add alx vdole "Alex Smirnov"
+    #   /dev add kir vdole "Кирилл Иванов"
     param(
         [string]$PreAlias = '',
-        [string]$RepoName = ''
+        [string]$RepoName = '',
+        [string]$FullName = ''
     )
+    if (-not $PreAlias -or -not $RepoName -or -not $FullName) {
+        Write-Host "Usage: /dev add <alias> <repo> <full_name>" -ForegroundColor Red
+        Write-Host "  alias     — 3-16 lowercase letters/digits/underscore, starts with letter"
+        Write-Host "  repo      — bare repo name in /srv/git/ (e.g. 'vdole')"
+        Write-Host "  full_name — RU or EN, in quotes (e.g. ""Alex Smirnov"")"
+        Write-Host ""
+        Write-Host "Example: /dev add alx vdole ""Alex Smirnov"""
+        throw "missing required args"
+    }
     Sync-LibToServer
     Ensure-Bootstrap
 
-    if ($PreAlias -and $PreAlias -match '^[a-z][a-z0-9_]{2,15}$') {
-        $alias = $PreAlias
-        Write-Host "[add] alias: $alias" -ForegroundColor DarkGray
-    } else {
-        $alias = Ask -Question 'Alias (Linux username, 3-16 lowercase letters)'
-        if (-not $alias -or $alias -notmatch '^[a-z][a-z0-9_]{2,15}$') {
-            throw "Invalid alias: '$alias'. Must match ^[a-z][a-z0-9_]{2,15}$"
-        }
+    $alias = $PreAlias.ToLower()
+    if ($alias -notmatch '^[a-z][a-z0-9_]{2,15}$') {
+        throw "Invalid alias: '$alias'. Must match ^[a-z][a-z0-9_]{2,15}$"
     }
+    Write-Host "[add] alias: $alias" -ForegroundColor DarkGray
 
     # Reject duplicates
     $existing = & ssh $SSH_HOST "id -u $alias 2>/dev/null"
     if ($LASTEXITCODE -eq 0) { throw "User $alias already exists on $SSH_HOST" }
 
-    $fullName = Ask -Question 'Full name (RU or EN)'
+    $fullName = $FullName.Trim()
     if (-not $fullName) { throw "Full name required" }
 
     # Auto-gen email: <alias>@moscow.my
     $email = "$alias@moscow.my"
 
-    # Repo to clone
-    if ($RepoName) {
-        $repo = $RepoName.ToLower()
-    } else {
-        $repo = (Ask -Question "Clone repo into /home/$alias/projects/? (empty = skip, e.g. 'vdole')" -Default '').ToLower().Trim()
-    }
-    if ($repo -and $repo -notmatch '^[a-z][a-z0-9_-]{1,30}$') {
+    $repo = $RepoName.ToLower().Trim()
+    if ($repo -notmatch '^[a-z][a-z0-9_-]{1,30}$') {
         throw "Invalid repo name: '$repo'"
     }
 
-    $confirm = Ask -Question "Create dev '$alias' ($fullName <$email>)$(if($repo){" + clone $repo"})? [y/N]" -Default 'N'
-    if ($confirm -notmatch '^[Yy]') {
+    # Confirmation via dialog.ps1 (simple YesNo MessageBox)
+    $confirmMsg = "Create dev '$alias' ($fullName <$email>) + clone $repo?"
+    $confirm = & $DIALOG_PS1 -Mode simple -Title "Create dev" -Message $confirmMsg -Buttons YesNo -Icon Question -Agent 'dev skill'
+    if ($confirm -ne 'Yes') {
         Write-Host "Cancelled." -ForegroundColor DarkGray
         return
     }
@@ -312,7 +347,12 @@ function Cmd-Add {
         }
     }
 
-    # 2b. Create user on server (uploads pubkey via stdin)
+    # 2b. Upload .env.outstaffers template to server (if repo is being cloned)
+    if ($repo) {
+        Sync-EnvTemplate -Repo $repo
+    }
+
+    # 2c. Create user on server (uploads pubkey via stdin)
     Write-Host "[server] creating user $alias ..." -ForegroundColor DarkGray
     $pubKeyEscaped = $pubKey.Trim().Replace("'", "'\''")
     & ssh $SSH_HOST "sudo bash $SERVER_SKILL_DIR/add-user.sh '$alias' '$($fullName.Replace("'","'\''"))' '$email' '$pubKeyEscaped' '$repo' '$portBase'"
@@ -418,9 +458,9 @@ function Cmd-Del {
     $existing = & ssh $SSH_HOST "id -u $Alias 2>/dev/null"
     if ($LASTEXITCODE -ne 0) { throw "No such dev: $Alias" }
 
-    $confirm = Ask -Question "DELETE dev '$Alias' (archive home, then userdel -r). Type the alias to confirm" -Default ''
-    if ($confirm -ne $Alias) {
-        Write-Host "Cancelled (confirmation did not match)." -ForegroundColor DarkGray
+    $confirm = & $DIALOG_PS1 -Mode simple -Title "Delete dev" -Message "Удалить dev '$Alias'?`n`nАрхив home/projects/.claude + drop DB+role + nginx/cert + userdel -r" -Buttons YesNo -Icon Warning -Agent 'dev skill'
+    if ($confirm -ne 'Yes') {
+        Write-Host "Cancelled." -ForegroundColor DarkGray
         return
     }
 
@@ -444,6 +484,13 @@ function Cmd-Del {
 
     # 3a. Remove nginx conf + cert + webroot for dev
     Remove-NginxConfForDev -Alias $Alias
+
+    # 3b. Delete SSH keypair from PC (server-side authorized_keys already gone via userdel -r)
+    $keyDir = Join-Path $KEYS_CLIENT_ROOT $Alias
+    if (Test-Path $keyDir) {
+        Remove-Item -Recurse -Force $keyDir
+        Write-Host "[ssh-key] deleted $keyDir" -ForegroundColor DarkGray
+    }
 
     # 4. Update local meta
     $infoPath = Join-Path $DEVELOPERS_DIR "$Alias\info.json"
@@ -503,6 +550,62 @@ function Cmd-Bootstrap {
     Write-Host "[bootstrap] OK" -ForegroundColor Green
 }
 
+function Cmd-Ssh {
+    param([string]$Action, [string]$Alias)
+    if (-not $Action -or -not $Alias) {
+        throw "Usage: dev.ps1 ssh block|unblock <alias>"
+    }
+    if ($Action -notin @('block', 'unblock')) {
+        throw "Unknown ssh action: '$Action'. Use 'block' or 'unblock'."
+    }
+    $existing = & ssh $SSH_HOST "id -u $Alias 2>/dev/null"
+    if ($LASTEXITCODE -ne 0) { throw "No such dev: $Alias" }
+
+    if ($Action -eq 'block') {
+        Write-Host "[ssh-block] blocking SSH for $Alias and killing active sessions ..." -ForegroundColor DarkGray
+        $cmd = @"
+set -e
+AK=/home/$Alias/.ssh/authorized_keys
+if [ -f "`$AK" ]; then
+    mv "`$AK" "`$AK.blocked"
+    echo "[ssh-block] authorized_keys -> authorized_keys.blocked"
+elif [ -f "`$AK.blocked" ]; then
+    echo "[ssh-block] already blocked"
+else
+    echo "[ssh-block] WARN: no authorized_keys found for $Alias"
+fi
+# Kick active sessions (SSH + any dev-owned processes)
+if pgrep -u $Alias >/dev/null 2>&1; then
+    pkill -KILL -u $Alias || true
+    echo "[ssh-block] killed active processes of $Alias"
+else
+    echo "[ssh-block] no active processes"
+fi
+"@
+        & ssh $SSH_HOST "sudo bash -c '$($cmd.Replace("'", "'\''"))'"
+        if ($LASTEXITCODE -ne 0) { throw "ssh-block failed" }
+        Write-Host "[ssh-block] $Alias is SSH-locked. Reverse with: /dev ssh unblock $Alias" -ForegroundColor Green
+    }
+    else {
+        Write-Host "[ssh-unblock] restoring SSH for $Alias ..." -ForegroundColor DarkGray
+        $cmd = @"
+set -e
+AK=/home/$Alias/.ssh/authorized_keys
+if [ -f "`$AK.blocked" ]; then
+    mv "`$AK.blocked" "`$AK"
+    echo "[ssh-unblock] authorized_keys restored"
+elif [ -f "`$AK" ]; then
+    echo "[ssh-unblock] already unblocked"
+else
+    echo "[ssh-unblock] WARN: no authorized_keys or .blocked found for $Alias"
+fi
+"@
+        & ssh $SSH_HOST "sudo bash -c '$($cmd.Replace("'", "'\''"))'"
+        if ($LASTEXITCODE -ne 0) { throw "ssh-unblock failed" }
+        Write-Host "[ssh-unblock] $Alias can SSH again." -ForegroundColor Green
+    }
+}
+
 function Cmd-Help {
     Write-Host ""
     Write-Host "/dev — manage developers on moscow_my (chief-only)" -ForegroundColor Cyan
@@ -512,10 +615,16 @@ function Cmd-Help {
     Write-Host "  /dev list                     List all devs"
     Write-Host "  /dev <alias>                  Show details for one dev"
     Write-Host "  /dev show <alias>             Show details for one dev"
-    Write-Host "  /dev add                      Interactive: create new dev (alias, name, email)"
-    Write-Host "                                + SSH key + auto-bootstrap on first run"
+    Write-Host "  /dev add <alias> <repo> <full_name>"
+    Write-Host "                                Create new dev: SSH key + Linux user + nginx+cert"
+    Write-Host "                                + per-dev PG DB + .env from .env.outstaffers template"
+    Write-Host "                                + bun install. Confirmation via dialog."
+    Write-Host "                                Example: /dev add alx vdole `"Alex Smirnov`""
     Write-Host "  /dev del <alias>              Kill processes, archive home/projects/claude data,"
     Write-Host "                                userdel -r (with confirmation)"
+    Write-Host "  /dev ssh block <alias>        Block SSH: mv authorized_keys -> .blocked + kick"
+    Write-Host "                                active sessions (reversible)"
+    Write-Host "  /dev ssh unblock <alias>      Restore SSH: mv .blocked -> authorized_keys"
     Write-Host "  /dev sync-skills [<alias>|all]   Re-sync allowlisted skills into"
     Write-Host "                                   /opt/claude-shared/skills/"
     Write-Host "  /dev bootstrap                Manual server bootstrap (usually auto on first 'add')"
@@ -544,13 +653,14 @@ switch ($Subcommand.ToLower()) {
     'list'         { Cmd-List }
     ''             { Cmd-List }
     'show'         { Cmd-Show -Alias $Arg1 }
-    'add'          { Cmd-Add -PreAlias $Arg1 -RepoName $Arg2 }
+    'add'          { Cmd-Add -PreAlias $Arg1 -RepoName $Arg2 -FullName $Arg3 }
     'del'          { Cmd-Del -Alias $Arg1 }
     'sync-skills'  {
         $a = if ($Arg1) { $Arg1 } else { 'all' }
         Sync-Skills -Alias $a
     }
     'bootstrap'    { Cmd-Bootstrap }
+    'ssh'          { Cmd-Ssh -Action $Arg1 -Alias $Arg2 }
     'help'         { Cmd-Help }
     '--help'       { Cmd-Help }
     '-h'           { Cmd-Help }
