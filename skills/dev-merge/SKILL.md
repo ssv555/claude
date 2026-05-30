@@ -1,13 +1,13 @@
 ---
 name: dev-merge
-description: Chief-only — review and merge a developer's branch into main. Runs pre-deploy-check + pre-deploy-autotests on the branch, merges to main, pushes, deletes the dev branch. Use when user says "/dev-merge <alias>", "слить ветку <alias>", "принять работу <alias>".
+description: Chief-only — review and merge a developer's branch into main. Two modes: (1) /dev-merge <alias> lists all open unmerged branches for that dev; (2) /dev-merge <sha> finds branch by HEAD sha and runs full merge pipeline (pre-deploy-check + autotests + merge + push + cleanup). Use when user says "/dev-merge <alias>", "/dev-merge <sha>", "слить ветку", "принять работу".
 model: opus
 allowed-tools: Bash(*), Read(*), Grep(*), Glob(*), Edit(*), Write(*)
 ---
 
 # dev-merge
 
-Принять и влить ветку разработчика в `main`. **Только шеф (ssv555 / PC-SKY).**
+Принять ветку разработчика. **Только шеф (ssv555 / PC-SKY).**
 
 ## Status block
 
@@ -18,80 +18,121 @@ MODEL:  opus
 
 ## Доступ — только шеф
 
-```bash
-[ "$(whoami)" = "ssv555" ] || [ "$(hostname)" = "PC-SKY" ] || {
-    echo "Forbidden: chief-only skill"; exit 1
+```powershell
+if (-not (($env:USERNAME -eq 'ssv555') -or ($env:COMPUTERNAME -eq 'PC-SKY'))) {
+    Write-Error "Forbidden: chief-only skill"
+    exit 1
 }
 ```
 
-## Аргумент
+## Два режима
 
-`/dev-merge <alias>` — alias разработчика (3–16 латинских строчных).
+### Режим 1 — `/dev-merge <alias>` → список открытых веток
 
-Если alias не передан — запросить через `dialog.ps1` или интерактивно.
+Аргумент соответствует паттерну `[a-z][a-z0-9_]{2,15}` (нет `/`, нет `[0-9a-f]{7,}`).
 
-## Алгоритм
+1. SSH на moscow_my, получить все незамердженные ветки этого дева:
+   ```bash
+   ssh moscow_my "git -C /srv/git/VDole.git for-each-ref \
+     --format='%(objectname:short) %(refname:short) %(committerdate:relative) %(authorname)' \
+     'refs/heads/dev/<alias>/' \
+     --sort=-committerdate"
+   ```
+   Фильтр «незамердженные»: ветки, которые ещё существуют в bare-репо = незамердженные (merged → /dev-merge удаляет их).
+
+2. Для каждой ветки добавить stat:
+   ```bash
+   git -C /srv/git/VDole.git log --oneline "refs/heads/dev/<alias>/<slug>" "^refs/heads/main" | wc -l
+   git -C /srv/git/VDole.git diff --shortstat "refs/heads/main" "refs/heads/dev/<alias>/<slug>"
+   ```
+
+3. Вывести таблицу:
+   ```
+   Open branches for dev: <alias>
+
+   sha      branch                      date          commits   diff
+   ───────────────────────────────────────────────────────────────────
+   abc1234  dev/spc/add-email-field     2 hours ago   3         +45/-12
+   def5678  dev/spc/fix-login-redirect  1 day ago     1         +8/-3
+
+   To merge: /dev-merge <sha>
+   To analyze: /dev-changelog <sha>
+   ```
+
+4. Если веток нет → «нет открытых веток у <alias>».
+
+---
+
+### Режим 2 — `/dev-merge <sha>` → полный merge pipeline
+
+Аргумент — short sha (7+ hex chars) из TG-нотификации или из таблицы выше.
 
 1. **Chief-identity guard** (см. выше).
 
-2. **Найти open-ветки дева на bare-репо moscow_my:**
+2. **Найти ветку по sha** на moscow_my:
    ```bash
-   ssh moscow_my "cd /srv/git/VDole.git && git for-each-ref --format='%(refname:short) %(committerdate:iso) %(authorname)' refs/heads/dev/<alias>/"
+   ssh moscow_my "git -C /srv/git/VDole.git for-each-ref \
+     --format='%(objectname:short) %(refname:short)' refs/heads/dev/ | grep '^<sha>'"
    ```
-   Если веток нет → выйти, сказать «у дева нет open dev-веток».
-   Если веток >1 → показать список, спросить какую мерджить.
+   Нет совпадений → «ветка с sha `<sha>` не найдена в bare-репо — возможно уже смерджена».
+   Несколько совпадений (sha collision) → показать все, попросить уточнить.
+   Одно совпадение → взять `refname:short` как `BRANCH`.
 
-3. **Подготовить рабочую копию шефа (в `D:\Data\Documents\Programming\Projects\WEB\VDole`):**
-   - Проверить, что текущая ветка = `main`, чисто без uncommitted.
-   - Если нет — отказать.
-   - `git fetch origin` (origin шефа = GitHub).
-   - `git pull --rebase origin main`.
+3. **SHA-pin check** — сравнить текущий HEAD ветки на bare-репо с sha из аргумента:
+   ```bash
+   CURRENT_HEAD=$(ssh moscow_my "git -C /srv/git/VDole.git rev-parse --short refs/heads/${BRANCH}")
+   ```
+   Если `CURRENT_HEAD != <sha>` → предупреждение:
+   > «Ветка `<BRANCH>` ушла вперёд после /dev-09-finish.
+   > Было: `<sha>` (из TG/finish-log)
+   > Сейчас: `<CURRENT_HEAD>` (N коммитов вперёд)
+   > 1. Мердж current HEAD `<CURRENT_HEAD>` — дев добавил что-то после finish
+   > 2. Отмена — скажи деву пересоздать /dev-09-finish»
+   На «1» → продолжить с CURRENT_HEAD. На «2» → выйти.
 
-4. **Получить ветку дева напрямую из bare на moscow_my:**
-   - Добавить временный remote: `git remote add moscow ssh://ssv@moscow_my:53847/srv/git/VDole.git` (если ещё нет).
-   - `git fetch moscow dev/<alias>/<slug>`.
-   - Создать локальную ветку для review: `git checkout -b review/<alias>/<slug> moscow/dev/<alias>/<slug>`.
+4. **Подготовить рабочую копию шефа** (`D:\Data\Documents\Programming\Projects\WEB\VDole`):
+   - Текущая ветка = `main`, WC чистый → иначе отказ.
+   - `git fetch origin && git pull --rebase origin main`.
 
-5. **Запустить pre-deploy-check** на ветке дева:
-   - Если падает — остановить merge, показать ошибки, предложить шефу решить (исправить самому / отдать обратно деву / merge force).
+5. **Получить ветку дева из bare-репо на moscow_my:**
+   ```bash
+   git remote add moscow ssh://ssv@moscow_my:53847/srv/git/VDole.git  # если нет
+   git fetch moscow dev/<alias>/<slug>
+   git checkout -B review/<alias>/<slug> moscow/dev/<alias>/<slug>
+   ```
 
-6. **Запустить pre-deploy-autotests** на ветке дева:
-   - Падает — то же поведение.
+6. **pre-deploy-check** → падает = стоп, показать ошибки.
 
-7. **Code review (опционально, по запросу шефа):** запустить `code-reviewer`.
+7. **pre-deploy-autotests** → падает = стоп.
 
-8. **Merge в main:**
+8. **Code review** (опционально, по явному запросу шефа): `code-reviewer`.
+
+9. **Merge:**
    ```bash
    git checkout main
-   git merge --no-ff review/<alias>/<slug> -m "Merge dev/<alias>/<slug>: <summary>"
+   git merge --no-ff review/<alias>/<slug> -m "Merge dev/<alias>/<slug>: <last subject>"
    ```
-   - При conflict — остановить, дать шефу решить.
+   Конфликт → стоп, дать шефу решить.
 
-9. **Push в GitHub:**
-   ```bash
-   git push origin main
-   ```
+10. **Push на GitHub:**
+    ```bash
+    git push origin main
+    ```
 
-10. **Очистка:**
-    - `git branch -D review/<alias>/<slug>` (локальная review-ветка).
-    - На moscow_my: удалить ветку из bare-репо + триггернуть mirror (иначе ветка останется висеть на GitHub — `update-ref -d` не запускает post-receive хук автоматически):
+11. **Очистка:**
+    - `git branch -D review/<alias>/<slug>` (локальная review-ветка шефа).
+    - На moscow_my удалить ветку + триггернуть mirror:
       ```bash
-      ssh moscow_my "sudo git -C /srv/git/VDole.git update-ref -d refs/heads/dev/<alias>/<slug> && sudo touch /var/spool/vdole-mirror/queue"
+      ssh moscow_my "sudo git -C /srv/git/VDole.git update-ref -d refs/heads/dev/<alias>/<slug> \
+        && sudo touch /var/spool/vdole-mirror/queue"
       ```
-      vdole-mirror.path watcher отловит touch → запустит mirror-push.sh → `git push --prune` удалит ветку и на GitHub.
-    - У дева в его рабочей копии ветка остаётся — он сам почистит после `/dev-reset`.
 
-11. **Уведомить шефа:** branch, commits merged, line-count, status.
+12. **Итог:** branch, commits merged, +/- lines, status.
 
 ## Что НЕ делать
 
-- Не merge'ить без прохождения checks (если шеф не сказал явно `--force`).
-- Не использовать `--squash` без указания шефа (теряем authorship дева).
-- Не удалять main/master/prod/production/release-* ветки.
-- Не push'ить с `--force` в main.
-- Не делать merge несколько веток подряд без подтверждения каждой.
-
-## Безопасность
-
-- Никогда не доверять commit-message от дева как final — шеф видит summary и редактирует при merge.
-- Если в diff появились секреты (env, ключи) — остановить, ругаться, не мерджить.
+- Не мерджить без прохождения checks (без явного `--force` от шефа).
+- Не `--squash` без указания (теряем authorship дева).
+- Не `--force` в main.
+- Не удалять main/master/prod/release/* ветки.
+- Если в diff секреты (env, ключи) — стоп, не мерджить.

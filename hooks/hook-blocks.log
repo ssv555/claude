@@ -2356,3 +2356,9 @@ sudo -u spc bash -c 'TERM=xterm-256color /etc/update-motd.d/99-dev-welcome' | he
 [2026-05-30 16:45:40] BLOCKED: ALLOWED by user: Move/rename (mv)
   Command: git mv docs/todo/p1_0d_3h_0m__post_ddos_credential_rotation.md docs/todo/p0_0d_3h_0m__post_ddos_credential_rotation.md
 
+[2026-05-30 19:07:40] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "C:/Users/ssv55/.claude/skills/dev-sessions-analyze" && mv report-template.md chunk-analyze-prompt.md && ls
+
+[2026-05-30 19:22:02] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git mv docs/todo/p2_0d_4h_0m__infra_backup_moscow_dumps_missing.md docs/archive/todo/infra_backup_moscow_dumps_missing.md 2>&1
+

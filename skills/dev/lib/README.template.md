@@ -17,7 +17,7 @@
 | PostgreSQL DB | `{{DB_NAME}}` |
 | PostgreSQL user | `{{DB_USER}}` |
 | Repo | `~/projects/{{REPO_NAME}}` |
-| `.env.development` | `~/projects/{{REPO_NAME}}/.env.development` (claude-runner:claude-runner 600 — ты НЕ читаешь напрямую, только через `claude`) |
+| `.env.development` | `~/projects/{{REPO_NAME}}/.env.development` ({{ALIAS}}:{{ALIAS}} 600 — ты owner, читаешь свободно; в репо НЕ коммитить) |
 
 ---
 
@@ -35,8 +35,12 @@ Private key передан тебе шефом отдельно через за�
 
 ## Что внутри
 
-- **Claude Code** установлен глобально, запускается командой `claude` (через setuid-wrapper — стартует как `claude-runner`, читает `.env.development`)
-- **Skills** разделяемые, read-only — общие для всех девов на сервере. Доступны: `/dev-info`, `/dev-commit`, `/dev-push`, `/dev-reset`, `/version-up`, `/session-archive`, `/pre-deploy-check`, `/pre-deploy-autotests`
+- **Claude Code** установлен глобально (`/usr/local/bin/claude`), запускается как ты сам (без setuid wrapper'а — UID = твой)
+- **RULES** (`/opt/claude-shared/RULES.md`) — обязательное принятие при первом интерактивном логине (gate показывает текст → ты вводишь `YES, I AGREE`). При апдейте правил шефом — принимаешь заново.
+- **Skills** разделяемые, read-only — общие для всех девов на сервере. Доступные тебе:
+  - Workflow: `/dev-00-start` (старт задачи), `/dev-01-status` (где я), `/dev-05-commit`, `/dev-07-commit-push`, `/dev-08-reset`, `/dev-09-finish` (финал + уведомление шефа)
+  - Справка / аудит: `/dev-info`
+  - Качество: `/pre-deploy-check`, `/pre-deploy-autotests`, `/version-up`, `/session-archive`
 - **CLAUDE.md / codex.md / DEV_GUIDE.md** — read-only, симлинки на shared. Запусти `claude` и попроси `прочитай CLAUDE.md` для общего онбординга по коду
 - **Memory** (`~/.claude/memory/`) — твоя личная, изолированная от других девов. Claude пишет туда сам по мере работы
 - **Sessions / projects** (`~/.claude/sessions/`, `~/.claude/projects/`) — твоя приватная история сессий
@@ -92,10 +96,10 @@ curl -sS --max-time 5 -o /dev/null -w "anthropic remote_ip=%{remote_ip} http=%{h
 
 ## Что НЕЛЬЗЯ
 
-- **Читать `.env.development` напрямую из shell** (`cat`, `less`, `vim`) — упадёт `Permission denied`. Это норма: креды читает только `bun` запущенный через `claude`. Если деву реально нужно посмотреть значение — попроси `claude` показать (он отрендерит безопасно).
-- **Пушить в `main`, `master`, `release/*`, `prod`, `production`** — заблокировано серверным pre-receive хуком. Делай свою ветку `{{ALIAS}}/feature-name`, шеф мерджит через `/dev-merge {{ALIAS}}`.
+- **Коммитить секреты** (`.env*`, ключи, токены) — даже свой `.env.development`. Pre-receive хук имеет best-effort защиту, но это не лицензия — если попало, СТОП и зови шефа.
+- **Пушить в `main`, `master`, `release/*`, `prod`, `production`** — заблокировано серверным pre-receive хуком. Твоя ветка — `dev/{{ALIAS}}/<slug>`, создаётся автоматом через `/dev-00-start` или `/dev-05-commit`.
 - **Менять файлы вне `~/projects/{{REPO_NAME}}`** — у тебя нет прав на shared (`/opt/`), nginx (`/etc/nginx/`), bare repo (`/srv/git/`), чужие home (`/home/*`).
-- **Запускать `bun run dev` напрямую как `{{ALIAS}}`** — `.env.development` недоступен. Только через `claude`.
+- **Смешивать задачи в одной ветке/пуше** — Rule 1 из RULES.md. Новый таск = новый `/dev-00-start`.
 
 ---
 
@@ -106,9 +110,12 @@ Origin указывает на локальный bare repo `/srv/git/VDole.git`
 - Хук `post-receive` триггерит mirror-push → твой коммит автоматически зеркалится в GitHub `ssv555/vdole`
 
 Команды-обёртки (используй их вместо ручных `git`):
-- `/dev-commit` — staged + commit с авто-сообщением
-- `/dev-push` — staged + commit + push
-- `/dev-reset` — `git fetch origin && git rebase origin/main`
+- `/dev-00-start` — старт задачи: pull main + новая ветка `dev/{{ALIAS}}/<slug>`
+- `/dev-01-status` — где я сейчас (ветка, commits, dirty files)
+- `/dev-05-commit` — staged + commit с авто-сообщением (один таск = один коммит)
+- `/dev-07-commit-push` — то же + push (один таск = один push)
+- `/dev-08-reset` — `git fetch origin && git rebase origin/main`
+- `/dev-09-finish` — финал задачи: pre-deploy-check + autotests + push + уведомление шефа в TG
 - `/dev-info` — справка по командам
 
 ---

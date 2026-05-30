@@ -1,24 +1,10 @@
 #!/usr/bin/env bash
 # /usr/local/sbin/dev-notify-finish — privileged helper for /dev-09-finish.
 #
-# Two things happen here:
-#   1. Append a structured line to /opt/claude-shared/audit/finished_branches.log
-#      (chief tails this file).
-#   2. Send a TG message to the chief reusing the existing moscow_my relay:
-#        TOKEN/CHAT_ID  ← /var/backups/.tg_config (VDOLE_* keys; IAMRICH_* fallback)
-#        TG path        ← sudo -u www-data ssh -i /var/www/.ssh/id_backup
-#                         amsterdam_my:53847 (fallback amsterdam_grey:53847)
-#                       → curl https://api.telegram.org/bot$TOKEN/sendMessage
-#      Same mechanism used by /usr/local/bin/vdole-tg-forward.sh and the deploy
-#      pipeline's notify_telegram_admin.sh on TST/FBK. No new secrets, no new
-#      endpoints, no IP allowlist changes.
+# 1. Append structured line to /opt/claude-shared/audit/finished_branches.log
+# 2. Send TG via existing amsterdam relay (TOKEN/CHAT_ID from /var/backups/.tg_config)
 #
-# If TOKEN/CHAT_ID missing or both relays fail → log-only fallback (no error
-# propagation; /dev-09-finish stays green for the dev).
-#
-# Called via sudoers NOPASSWD by developers.
-#
-# Usage:  sudo /usr/local/sbin/dev-notify-finish <branch> <head_sha> <commits> <added> <removed> <summary...>
+# Usage: sudo /usr/local/sbin/dev-notify-finish <branch> <head_sha> <commits> <added> <removed> <summary...>
 
 set -euo pipefail
 
@@ -53,7 +39,7 @@ case "$COMMITS$ADDED$REMOVED" in
 esac
 
 # ============================================================================
-# Step 1 — audit log (always succeeds; ground truth)
+# Step 1 — audit log (always; ground truth)
 # ============================================================================
 SHARED='/opt/claude-shared'
 LOG="$SHARED/audit/finished_branches.log"
@@ -76,28 +62,64 @@ TG_TOKEN=''
 TG_CHAT_ID=''
 
 if [ -r "$TG_CONFIG" ]; then
-    TG_TOKEN=$(grep -E '^VDOLE_TELEGRAM_BOT_TOKEN=' "$TG_CONFIG" | cut -d= -f2-)
-    TG_CHAT_ID=$(grep -E '^VDOLE_TELEGRAM_USER_ID='  "$TG_CONFIG" | cut -d= -f2-)
-    # Fallback to IAMRICH keys if VDOLE empty (matches deploy pipeline's discovery order)
+    TG_TOKEN=$(grep -E  '^VDOLE_TELEGRAM_BOT_TOKEN='  "$TG_CONFIG" | cut -d= -f2-)
+    TG_CHAT_ID=$(grep -E '^VDOLE_TELEGRAM_USER_ID='   "$TG_CONFIG" | cut -d= -f2-)
     [ -z "$TG_TOKEN" ]   && TG_TOKEN=$(grep   -E '^IAMRICH_TELEGRAM_BOT_TOKEN=' "$TG_CONFIG" | cut -d= -f2-)
     [ -z "$TG_CHAT_ID" ] && TG_CHAT_ID=$(grep -E '^IAMRICH_TELEGRAM_USER_ID='   "$TG_CONFIG" | cut -d= -f2-)
 fi
 
 if [ -z "$TG_TOKEN" ] || [ -z "$TG_CHAT_ID" ]; then
-    printf 'TG creds missing in %s — log-only mode (audit OK)\n' "$TG_CONFIG"
+    printf 'TG creds missing in %s — log-only (audit OK)\n' "$TG_CONFIG"
     exit 0
 fi
 
-# HTML-escape & build message body
+# Commit subjects from bare repo (up to 5 lines)
+SUBJECTS=''
+BARE='/srv/git/VDole.git'
+if [ -d "$BARE" ]; then
+    SUBJECTS=$(git -C "$BARE" log --oneline "refs/heads/${BRANCH}" "^refs/heads/main" 2>/dev/null \
+        | head -5 | sed 's/^[a-f0-9]* /• /' || true)
+fi
+
+# GitHub compare URL (branch slug after "dev/")
+BRANCH_SLUG="${BRANCH#dev/}"
+ENCODED=$(printf '%s' "$BRANCH_SLUG" | sed 's|/|%2F|g')
+GITHUB_URL="https://github.com/ssv555/vdole/compare/main...dev%2F${ENCODED}"
+
+# HTML-escape
 escape_html() { printf '%s' "$1" | sed -e 's|&|\&amp;|g' -e 's|<|\&lt;|g' -e 's|>|\&gt;|g'; }
+
 H_ALIAS=$(escape_html "$ALIAS")
-H_BRANCH=$(escape_html "$BRANCH")
+H_SLUG=$(escape_html "$BRANCH_SLUG")
 H_SUMMARY=$(escape_html "$SUMMARY")
+H_SUBJECTS=$(escape_html "$SUBJECTS")
+H_GITHUB=$(escape_html "$GITHUB_URL")
 
-MSG=$(printf '✅ <b>dev-branch finished</b>\n<code>%s</code> by <b>%s</b>\nhead: <code>%s</code>\ncommits: %s   diff: +%s/-%s\n\n%s' \
-    "$H_BRANCH" "$H_ALIAS" "$HEAD_SHA" "$COMMITS" "$ADDED" "$REMOVED" "$H_SUMMARY")
+# Compact, action-oriented TG message — commands first (quick click after stats),
+# then descriptive content (subjects + summary + GitHub link).
+# IMPORTANT: literal newlines below — bash $(...) strips trailing \n, would glue lines.
+MSG="✅ <b>${H_ALIAS}</b> → <code>${H_SLUG}</code>
+sha: <code>${HEAD_SHA}</code>   ${COMMITS} commits   +${ADDED}/-${REMOVED}
 
-# Relay via amsterdam — same path as /usr/local/bin/vdole-tg-forward.sh
+/dev-merge ${HEAD_SHA}
+/dev-changelog ${HEAD_SHA}"
+
+if [ -n "$H_SUBJECTS" ]; then
+    MSG="${MSG}
+
+${H_SUBJECTS}"
+fi
+
+if [ -n "$H_SUMMARY" ]; then
+    MSG="${MSG}
+
+<i>${H_SUMMARY}</i>"
+fi
+
+MSG="${MSG}
+
+<a href=\"${H_GITHUB}\">GitHub diff</a>"
+
 relay_via() {
     local host="$1" port="$2" code
     code=$(printf '%s' "$MSG" | sudo -u www-data ssh \
@@ -116,8 +138,7 @@ if relay_via 77.238.231.203 53847; then
     printf 'notified chief via amsterdam_my\n'
     exit 0
 fi
-printf '[dev-notify-finish] amsterdam_my relay failed, trying amsterdam_grey\n' >&2
-
+printf '[dev-notify-finish] amsterdam_my failed, trying amsterdam_grey\n' >&2
 if relay_via 94.103.80.11 53847; then
     printf 'notified chief via amsterdam_grey\n'
     exit 0

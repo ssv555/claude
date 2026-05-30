@@ -54,36 +54,49 @@ cat <<EOF
 
 
 ====================================================================
-  RULES ACCEPTANCE REQUIRED
+  ТРЕБУЕТСЯ ПРИНЯТИЕ ПРАВИЛ  /  RULES ACCEPTANCE REQUIRED
 ====================================================================
-  You must accept the developer rules before you can use this shell.
-  Press ENTER to read the rules (paged with less — q to quit pager).
-  After the pager closes, type the acceptance phrase exactly.
+  🇷🇺 Прочти правила. Нажми ENTER — откроется пейджер (less, выход — q).
+      После закрытия пейджера введи фразу принятия точно как написано.
+      Чтобы отказаться — введи NO или просто Enter, тебя залогаутит.
+
+  🇬🇧 Read the rules. Press ENTER — opens in pager (less, q to quit).
+      After the pager closes, type the acceptance phrase exactly.
+      To decline — type NO or just press Enter; you'll be logged out.
 ====================================================================
 
 EOF
 
-# Wait for ENTER before showing pager (so the user actually reads the prompt)
+# Wait for ENTER before showing pager
 read -r _ < /dev/tty || {
     printf '\n[rules-gate] no tty — cannot prompt. Aborting login.\n' >&2
     exit 1
 }
 
-# Show rules via less (LESS=-R for colors, but our rules file is plain text)
+# Show rules via less
 less -RX "$RULES_FILE" < /dev/tty > /dev/tty || true
 
-# Prompt for acceptance
-printf '\nTo accept: type exactly  YES, I AGREE  and press ENTER.\n'
-printf 'Anything else (or empty) will log you out.\n\n> '
+# Prompt for acceptance — bilingual + explicit decline
+printf '\n'
+printf '────────────────────────────────────────────────────────────────────\n'
+printf '🇷🇺 Принять:  введи  \033[1mYES, I AGREE\033[0m  и нажми Enter.\n'
+printf '   Отказаться: введи  \033[1mNO\033[0m  (или просто Enter) — залогаутит.\n'
+printf '🇬🇧 Accept:   type  \033[1mYES, I AGREE\033[0m  and press Enter.\n'
+printf '   Decline:  type  \033[1mNO\033[0m  (or just Enter) — logs you out.\n'
+printf '────────────────────────────────────────────────────────────────────\n'
+printf '> '
 
 REPLY=''
 read -r REPLY < /dev/tty || REPLY=''
 
 if [ "$REPLY" != "YES, I AGREE" ]; then
-    printf '\n[rules-gate] not accepted — logging out.\n'
+    case "$REPLY" in
+        NO|no|No|'') printf '\n[rules-gate] не принято / not accepted — logging out.\n' ;;
+        *)           printf '\n[rules-gate] фраза не совпала / phrase mismatch — logging out.\n' ;;
+    esac
     sleep 1
-    # profile.d runs sourced inside the login shell — `exit` here exits that shell
-    # and ssh closes the session. No SIGHUP needed.
+    # profile.d runs sourced inside the login shell — `exit` here exits the shell
+    # and ssh closes the session.
     exit 1
 fi
 

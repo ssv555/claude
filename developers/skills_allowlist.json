@@ -3,7 +3,7 @@
   "_excluded_intentionally": [
     "deploy-to-prod", "changelog-to-prod", "changelog-sync", "prod-to-dev",
     "git-push", "git-push-code-review", "git-push-all",
-    "dev", "dev-merge",
+    "dev", "dev-merge", "dev-changelog", "dev-sessions-analyze",
     "sealed", "seal", "unseal", "skill-creator", "update-config",
     "mcp-list", "tools-chatgpt-archive", "tools-chat-validator"
   ],

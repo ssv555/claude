@@ -1,6 +1,6 @@
 ---
 name: dev
-description: Manage developers on personal moscow_my server (Linux users + claude-runner isolation + per-dev PG database + per-dev nginx dev-stand + bare git mirror to GitHub). Chief-only skill. Use when user says "/dev", "/dev help", "/dev list", "/dev <alias>", "/dev add", "/dev del <alias>", "/dev sync-skills", "/dev bootstrap".
+description: Manage developers on personal moscow_my server (Linux users + claude-runner isolation + per-dev PG database + per-dev nginx dev-stand + bare git mirror to GitHub). Chief-only skill. Use when user says "/dev", "/dev help", "/dev list", "/dev <alias>", "/dev add", "/dev del <alias>", "/dev sync-skills", "/dev bootstrap". Also entry-point docs for "/dev-merge <alias|sha>", "/dev-changelog <sha>", "/dev-sessions-analyze <alias>".
 model: sonnet
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*)
 ---
@@ -47,6 +47,10 @@ if (-not (($env:USERNAME -eq 'ssv555') -or ($env:COMPUTERNAME -eq 'PC-SKY'))) {
 | `/dev ssh unblock <alias>` | Восстановить SSH-логин: `mv authorized_keys.blocked → authorized_keys` |
 | `/dev sync-skills [<alias>\|all]` | Пересинхрон allowlisted скилов в `/opt/claude-shared/skills/` |
 | `/dev bootstrap` | Ручной запуск bootstrap (обычно авто при первом `add`) |
+| `/dev-merge <alias>` | Список всех незамердженных веток дева (sha / branch / дата / commits / diff) |
+| `/dev-merge <sha>` | Смерджить конкретную ветку по HEAD sha (из TG-нотификации). sha-pin check: если ветка ушла вперёд — warning + выбор |
+| `/dev-changelog <sha>` | Анализ ветки по sha: Technical changes (backend/frontend/DB) + Business changes (что изменилось для пользователя/бизнеса) |
+| `/dev-sessions-analyze <alias>` | Анализ Claude Code сессии дева: 10 метрик качества AI-использования + вовлечённости (test rate, AI corrections, active time, ownership signs, etc). Отчёт MD в `D:\Data\Documents\Programming\Projects\WEB\VDole\.docs\dev\sessions\`. Справка: `cat ~/.claude/skills/dev-sessions-analyze/METRICS.md` |
 
 ## Workflow — диспетчер
 
@@ -230,6 +234,12 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
 - `dev-09-finish` — финал (pre-deploy + push + уведомление шефа)
 
 Старые имена `dev-commit/dev-push/dev-reset` упразднены 2026-05-30 — заменены номерными для отображения порядка в workflow.
+
+**Chief-only скилы — НЕ синкаются на сервер** (в `_excluded_intentionally`, девы их не видят):
+- `dev` — этот самый диспетчер
+- `dev-merge` — review + merge ветки дева в main
+- `dev-changelog` — анализ diff'а dev-ветки vs main (Technical + Business changes)
+- `dev-sessions-analyze` — анализ Claude Code сессии дева на 10 метрик (prompt quality, AI corrections, test rate, active time, ownership signs, etc); справка в `~/.claude/skills/dev-sessions-analyze/METRICS.md`
 
 ## Раскладка ФС на сервере
 

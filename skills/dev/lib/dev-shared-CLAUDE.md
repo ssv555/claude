@@ -24,21 +24,27 @@ project-specific rules read each project's own `CLAUDE.md` inside its repo.
 
 - Every change goes into a feature branch: `dev/<your-alias>/<short-slug>`.
 - If you're on `main`, `master`, `prod`, `production`, or `release/*` —
-  switch off before any commit. Use `/dev-commit` or `/dev-push` — they
-  enforce this and create the branch for you.
+  switch off before any commit. Use `/dev-00-start` or `/dev-05-commit` —
+  they enforce this and create the branch for you.
 - Pushing to protected branches is blocked at the git server (pre-receive
   hook). Don't waste time trying.
+- **One task = one push.** Rule 1 in `/opt/claude-shared/RULES.md`. Never
+  mix two unrelated tasks in the same branch.
 
-## Workflow — your three skills
+## Workflow — numbered skills
 
-- `/dev-reset` — sync your branch with latest `main` (rebase). Refuses if
-  you have uncommitted changes — commit first.
-- `/dev-commit` — stage all + commit. Enforces correct branch. AI writes
-  the message.
-- `/dev-push` — same as commit + `git push origin <branch>`.
+- `/dev-00-start` — start of task: fetch + pull main + new `dev/<alias>/<slug>` branch.
+- `/dev-01-status` — read-only: which branch, commits ahead of main, dirty files.
+- `/dev-05-commit` — stage all + commit. Branch guard. AI writes message.
+  Sanity-checks that diff is one task (not several).
+- `/dev-07-commit-push` — commit + `git push origin <branch>`. Same one-task check.
+- `/dev-08-reset` — sync your branch with latest `main` (rebase). Refuses if
+  uncommitted changes — commit first.
+- `/dev-09-finish` — end of task: pre-deploy-check + autotests + final push +
+  notify the chief in TG with branch + sha + diff stats.
 
-When your branch is ready for review, tell the chief — they will run
-`/dev merge <your-alias>` on their machine.
+Old names (`/dev-commit`, `/dev-push`, `/dev-reset`) were renamed 2026-05-30
+to numbered form so the workflow order is visible at a glance.
 
 ## Code quality — non-negotiable
 
@@ -99,12 +105,23 @@ Each step verified before moving on. Bug fixes: reproduce first, then fix.
   You (Claude) can append/update entries here. Seeded once from chief's
   curated memory; from then on it's your own.
 - `~/.claude/projects/`, `~/.claude/sessions/`, `~/.claude/.credentials.json`
-  — Claude private state. You (Claude) own and manage these; the dev's
-  shell user has no access at all (Permission denied).
-- `~/.claude/` itself — owned by you (claude-runner). Feel free to
-  create `settings.json`, `hooks/`, or any service file you need.
-- `~/projects/` — dev's workspace, you (Claude) write into it via the
-  shared `claude-runner` group + setgid on the project directory.
+  — Claude private state. Owned by the dev (Claude runs as the dev — no
+  separate claude-runner UID anymore).
+- `~/.claude/` itself — owned by the dev. Feel free to create `settings.json`,
+  `hooks/`, or any service file you need.
+- `~/projects/` — dev's workspace, owned by the dev directly. Claude writes
+  there as the dev.
+
+## RULES gate
+
+On every interactive shell login you must accept the rules in
+`/opt/claude-shared/RULES.md` (gate at `/etc/profile.d/00-rules-check.sh`).
+The rules are versioned by SHA-256 — if the chief updates them, the next
+login asks you to accept the new version.
+
+Acceptance is recorded per-dev in
+`/opt/claude-shared/rules_acceptances/<alias>__<hash>.flag` with timestamp
+and source IP. The shell will not let you proceed until you accept.
 
 ## Don't
 
