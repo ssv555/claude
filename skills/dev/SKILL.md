@@ -101,7 +101,7 @@ Bootstrap триггерится автоматически при первом 
 - **Custom motd** (`/etc/update-motd.d/99-dev-welcome`) — компактный welcome-баннер на каждом login: alias, репо+ветка, статус принятия правил, restart-warn, шорткаты ключевых скилов. Дефолтный Ubuntu-motd погашен через `~/.hushlogin` (создаётся в `add-user.sh`).
 - **RULES gate** — `/opt/claude-shared/RULES.md` + `/opt/claude-shared/RULES.version` (SHA-256). Принятие через привилегированный helper `/usr/local/sbin/dev-accept-rules` (sudoers NOPASSWD для %developers). Gate `/etc/profile.d/00-rules-check.sh` блокирует интерактивный shell до приёма. Audit-log: `/opt/claude-shared/audit/rules_acceptances.log` (root 600).
 - **Workflow audit-log** — `/usr/local/sbin/dev-audit-log` (sudoers helper). Все `/dev-NN-*` скилы пишут одну строку на действие в `/opt/claude-shared/audit/<YYYY-MM>/<alias>.log` (root 600 — девы не видят чужой работы).
-- **Chief notifier** — `/usr/local/sbin/dev-notify-finish` (sudoers helper). `/dev-09-finish` зовёт его → запись в `/opt/claude-shared/audit/finished_branches.log` + опциональный HTTPS POST на `WEBHOOK_URL` (из `/opt/dev-skill/notify.conf` если есть). Конфиг отсутствует → log-only.
+- **Chief notifier** — `/usr/local/sbin/dev-notify-finish` (sudoers helper). `/dev-09-finish` зовёт его → запись в `/opt/claude-shared/audit/finished_branches.log` + TG-сообщение через существующий релэй: TOKEN/CHAT_ID из `/var/backups/.tg_config` (VDOLE_* с fallback на IAMRICH_*), путь `sudo -u www-data ssh -i /var/www/.ssh/id_backup` → amsterdam_my:53847 → `curl api.telegram.org` (fallback amsterdam_grey:53847). Тот же механизм, что у `/usr/local/bin/vdole-tg-forward.sh` и deploy-pipeline'а — никаких новых секретов / endpoint'ов / IP-allowlist'ов. Креды отсутствуют → log-only.
 
 ## `/dev add <alias> [<repo>]` — полный flow
 
@@ -257,8 +257,7 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
   00-rules-check.sh                     (→ /etc/profile.d/00-rules-check.sh)
   dev-accept-rules.sh                   (→ /usr/local/sbin/dev-accept-rules)
   dev-audit-log.sh                      (→ /usr/local/sbin/dev-audit-log)
-  dev-notify-finish.sh                  (→ /usr/local/sbin/dev-notify-finish)
-  notify.conf                           root:root 600                    ← опционально: WEBHOOK_URL+WEBHOOK_SECRET для /dev-09-finish
+  dev-notify-finish.sh                  (→ /usr/local/sbin/dev-notify-finish; читает /var/backups/.tg_config)
   dev-shared-CLAUDE.md, codex.md, DEV_GUIDE.md, memory/
   .bootstrap-ok
 

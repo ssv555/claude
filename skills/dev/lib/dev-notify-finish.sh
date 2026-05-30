@@ -4,9 +4,17 @@
 # Two things happen here:
 #   1. Append a structured line to /opt/claude-shared/audit/finished_branches.log
 #      (chief tails this file).
-#   2. If /opt/dev-skill/notify.conf exists with WEBHOOK_URL + WEBHOOK_SECRET,
-#      POST a JSON payload to that URL (chief's TG notifier endpoint).
-#      Missing config → log-only mode (no error).
+#   2. Send a TG message to the chief reusing the existing moscow_my relay:
+#        TOKEN/CHAT_ID  ← /var/backups/.tg_config (VDOLE_* keys; IAMRICH_* fallback)
+#        TG path        ← sudo -u www-data ssh -i /var/www/.ssh/id_backup
+#                         amsterdam_my:53847 (fallback amsterdam_grey:53847)
+#                       → curl https://api.telegram.org/bot$TOKEN/sendMessage
+#      Same mechanism used by /usr/local/bin/vdole-tg-forward.sh and the deploy
+#      pipeline's notify_telegram_admin.sh on TST/FBK. No new secrets, no new
+#      endpoints, no IP allowlist changes.
+#
+# If TOKEN/CHAT_ID missing or both relays fail → log-only fallback (no error
+# propagation; /dev-09-finish stays green for the dev).
 #
 # Called via sudoers NOPASSWD by developers.
 #
@@ -16,8 +24,8 @@ set -euo pipefail
 
 err() { printf '[dev-notify-finish] ERROR: %s\n' "$*" >&2; exit 2; }
 
-[ "$EUID" -eq 0 ]                 || err "must run as root (via sudoers NOPASSWD)"
-[ -n "${SUDO_USER:-}" ]           || err "no SUDO_USER set"
+[ "$EUID" -eq 0 ]       || err "must run as root (via sudoers NOPASSWD)"
+[ -n "${SUDO_USER:-}" ] || err "no SUDO_USER set"
 
 ALIAS="$SUDO_USER"
 BRANCH="${1:-}"
@@ -40,11 +48,13 @@ if ! id -nG "$ALIAS" | tr ' ' '\n' | grep -qx developers; then
     err "$ALIAS is not in developers"
 fi
 
-# Numeric sanity
 case "$COMMITS$ADDED$REMOVED" in
     *[!0-9]*) err "commits/added/removed must be integers" ;;
 esac
 
+# ============================================================================
+# Step 1 — audit log (always succeeds; ground truth)
+# ============================================================================
 SHARED='/opt/claude-shared'
 LOG="$SHARED/audit/finished_branches.log"
 TS=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
@@ -58,42 +68,60 @@ printf '%s|%s|%s|%s|%s|+%s/-%s|%s\n' \
     "$TS" "$ALIAS" "$BRANCH" "$HEAD_SHA" "$COMMITS" "$ADDED" "$REMOVED" "$SUMMARY" \
     >> "$LOG"
 
-# Optional webhook notification — config at /opt/dev-skill/notify.conf:
-#   WEBHOOK_URL=https://vdole.it-joy.ru/api/_internal/alert
-#   WEBHOOK_SECRET=<shared HMAC secret>
-CONF='/opt/dev-skill/notify.conf'
-if [ -r "$CONF" ]; then
-    # shellcheck disable=SC1090
-    . "$CONF"
-    if [ -n "${WEBHOOK_URL:-}" ] && [ -n "${WEBHOOK_SECRET:-}" ] && command -v curl >/dev/null 2>&1; then
-        PAYLOAD=$(printf '{"type":"dev_finished","alias":"%s","branch":"%s","head":"%s","commits":%s,"added":%s,"removed":%s,"summary":"%s","ts":"%s"}' \
-            "$ALIAS" "$BRANCH" "$HEAD_SHA" "$COMMITS" "$ADDED" "$REMOVED" "$SUMMARY" "$TS")
+# ============================================================================
+# Step 2 — TG via existing amsterdam relay
+# ============================================================================
+TG_CONFIG='/var/backups/.tg_config'
+TG_TOKEN=''
+TG_CHAT_ID=''
 
-        # HMAC-SHA256 signature header (consumer verifies)
-        SIG=$(printf '%s' "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" -hex 2>/dev/null | awk '{print $NF}')
-
-        # Retry 3x with backoff (network resiliency)
-        for attempt in 1 2 3; do
-            HTTP_CODE=$(curl -sS --max-time 8 -o /tmp/dev-notify.body \
-                -w '%{http_code}' \
-                -H 'Content-Type: application/json' \
-                -H "X-Signature: sha256=$SIG" \
-                -X POST -d "$PAYLOAD" \
-                "$WEBHOOK_URL" 2>/dev/null || echo '000')
-            if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "204" ]; then
-                rm -f /tmp/dev-notify.body
-                printf 'notified chief (HTTP %s)\n' "$HTTP_CODE"
-                exit 0
-            fi
-            printf '[dev-notify-finish] attempt %d/3 failed (HTTP %s)\n' "$attempt" "$HTTP_CODE" >&2
-            [ -f /tmp/dev-notify.body ] && head -c 200 /tmp/dev-notify.body >&2 && printf '\n' >&2
-            sleep $((attempt * 2))
-        done
-
-        printf '[dev-notify-finish] webhook delivery failed after 3 attempts — log-only fallback\n' >&2
-        rm -f /tmp/dev-notify.body
-    fi
+if [ -r "$TG_CONFIG" ]; then
+    TG_TOKEN=$(grep -E '^VDOLE_TELEGRAM_BOT_TOKEN=' "$TG_CONFIG" | cut -d= -f2-)
+    TG_CHAT_ID=$(grep -E '^VDOLE_TELEGRAM_USER_ID='  "$TG_CONFIG" | cut -d= -f2-)
+    # Fallback to IAMRICH keys if VDOLE empty (matches deploy pipeline's discovery order)
+    [ -z "$TG_TOKEN" ]   && TG_TOKEN=$(grep   -E '^IAMRICH_TELEGRAM_BOT_TOKEN=' "$TG_CONFIG" | cut -d= -f2-)
+    [ -z "$TG_CHAT_ID" ] && TG_CHAT_ID=$(grep -E '^IAMRICH_TELEGRAM_USER_ID='   "$TG_CONFIG" | cut -d= -f2-)
 fi
 
-printf 'logged to %s\n' "$LOG"
+if [ -z "$TG_TOKEN" ] || [ -z "$TG_CHAT_ID" ]; then
+    printf 'TG creds missing in %s — log-only mode (audit OK)\n' "$TG_CONFIG"
+    exit 0
+fi
+
+# HTML-escape & build message body
+escape_html() { printf '%s' "$1" | sed -e 's|&|\&amp;|g' -e 's|<|\&lt;|g' -e 's|>|\&gt;|g'; }
+H_ALIAS=$(escape_html "$ALIAS")
+H_BRANCH=$(escape_html "$BRANCH")
+H_SUMMARY=$(escape_html "$SUMMARY")
+
+MSG=$(printf '✅ <b>dev-branch finished</b>\n<code>%s</code> by <b>%s</b>\nhead: <code>%s</code>\ncommits: %s   diff: +%s/-%s\n\n%s' \
+    "$H_BRANCH" "$H_ALIAS" "$HEAD_SHA" "$COMMITS" "$ADDED" "$REMOVED" "$H_SUMMARY")
+
+# Relay via amsterdam — same path as /usr/local/bin/vdole-tg-forward.sh
+relay_via() {
+    local host="$1" port="$2" code
+    code=$(printf '%s' "$MSG" | sudo -u www-data ssh \
+        -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new \
+        -i /var/www/.ssh/id_backup -p "$port" "www-data@$host" \
+        "curl -s --connect-timeout 5 --max-time 10 -X POST \
+            'https://api.telegram.org/bot${TG_TOKEN}/sendMessage' \
+            --data-urlencode 'chat_id=${TG_CHAT_ID}' \
+            --data-urlencode 'parse_mode=HTML' \
+            --data-urlencode 'text@-' \
+            -o /dev/null -w '%{http_code}'" 2>/dev/null) || code='ssh-failed'
+    [ "$code" = "200" ]
+}
+
+if relay_via 77.238.231.203 53847; then
+    printf 'notified chief via amsterdam_my\n'
+    exit 0
+fi
+printf '[dev-notify-finish] amsterdam_my relay failed, trying amsterdam_grey\n' >&2
+
+if relay_via 94.103.80.11 53847; then
+    printf 'notified chief via amsterdam_grey\n'
+    exit 0
+fi
+
+printf '[dev-notify-finish] both relays failed — audit log kept, no TG\n' >&2
 exit 0

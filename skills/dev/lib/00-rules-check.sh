@@ -82,9 +82,8 @@ read -r REPLY < /dev/tty || REPLY=''
 if [ "$REPLY" != "YES, I AGREE" ]; then
     printf '\n[rules-gate] not accepted — logging out.\n'
     sleep 1
-    # Kicking out of an interactive login shell: exit propagates from profile.d
-    # to bash's login init. Use SIGHUP on parent ssh session as belt-and-braces.
-    kill -HUP $PPID 2>/dev/null || true
+    # profile.d runs sourced inside the login shell — `exit` here exits that shell
+    # and ssh closes the session. No SIGHUP needed.
     exit 1
 fi
 
@@ -95,6 +94,5 @@ if sudo -n /usr/local/sbin/dev-accept-rules accept "$CURRENT_HASH" < /dev/tty > 
 else
     printf '\n\033[31m[rules-gate] helper failed — contact chief.\033[0m\n' >&2
     sleep 1
-    kill -HUP $PPID 2>/dev/null || true
     exit 1
 fi

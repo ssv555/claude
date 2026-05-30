@@ -537,6 +537,12 @@ function Sync-Skills {
     Write-Host "[sync-skills] uploading $(($globalSkills | Measure-Object).Count) global skills to /opt/claude-shared/skills/ ..." -ForegroundColor DarkGray
     & ssh $SSH_HOST "sudo mkdir -p /opt/claude-shared/skills && sudo chown `$(id -u):`$(id -g) /opt/claude-shared/skills"
 
+    # Prune skills not in allowlist (renamed/removed entries). Server-side bash
+    # script lives in lib/sync-skills-prune.sh — already synced via Sync-LibToServer.
+    Write-Host "[sync-skills] pruning stale skills on server ..." -ForegroundColor DarkGray
+    $allowedJoined = ($globalSkills -join ' ')
+    & ssh $SSH_HOST "sudo bash $SERVER_SKILL_DIR/sync-skills-prune.sh $allowedJoined"
+
     foreach ($s in $globalSkills) {
         $local = Join-Path $skillsRoot $s
         if (-not (Test-Path $local)) {

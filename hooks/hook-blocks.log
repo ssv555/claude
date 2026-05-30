@@ -2333,3 +2333,26 @@ EOF
 [2026-05-30 10:46:47] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
   Command: rm -rf "C:/Users/ssv55/.claude/skills/dev-commit" "C:/Users/ssv55/.claude/skills/dev-push" "C:/Users/ssv55/.claude/skills/dev-reset" && ls "C:/Users/ssv55/.claude/skills/" | grep -E '^dev'
 
+[2026-05-30 16:42:10] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: ssh moscow_my "
+echo '=== A. backfill ~/.hushlogin for existing devs ==='
+for dev in \$(getent group developers | cut -d: -f4 | tr , ' '); do
+    if [ -n \"\$dev\" ] && [ -d \"/home/\$dev\" ]; then
+        sudo install -o \$dev -g \$dev -m 644 /dev/null \"/home/\$dev/.hushlogin\" 2>/dev/null || true
+        echo \"  /home/\$dev/.hushlogin тЖТ \$(stat -c '%U:%G %a' /home/\$dev/.hushlogin)\"
+    fi
+done
+
+echo
+echo '=== B. prune stale skills (dev-commit / dev-push / dev-reset) ==='
+sudo rm -rf /opt/claude-shared/skills/dev-commit /opt/claude-shared/skills/dev-push /opt/claude-shared/skills/dev-reset
+ls /opt/claude-shared/skills/
+
+echo
+echo '=== C. verify motd renders for spc ==='
+sudo -u spc bash -c 'TERM=xterm-256color /etc/update-motd.d/99-dev-welcome' | head -20
+"
+
+[2026-05-30 16:45:40] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git mv docs/todo/p1_0d_3h_0m__post_ddos_credential_rotation.md docs/todo/p0_0d_3h_0m__post_ddos_credential_rotation.md
+
