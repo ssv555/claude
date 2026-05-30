@@ -11,6 +11,8 @@
       "WebSearch",
       "WebFetch",
       "Skill",
+      "Bash(grep '^DEV_SHORT_NAME=':*)",
+      "Bash(grep ^DEV_SHORT_NAME=:*)",
       "mcp__mcp-dev-tg-chat-agent__notify_via_telegram",
       "mcp__amsterdam_grey__*",
       "mcp__amsterdam_grey_root__*",
@@ -29,8 +31,36 @@
     "deny": [
       "Read(**/.env)",
       "Read(**/.env.*)",
+      "Bash(cat *.env*)",
       "Bash(cat */.env*)",
-      "Bash(type */.env*)"
+      "Bash(type *.env*)",
+      "Bash(type */.env*)",
+      "Bash(head *.env*)",
+      "Bash(head */.env*)",
+      "Bash(tail *.env*)",
+      "Bash(tail */.env*)",
+      "Bash(less *.env*)",
+      "Bash(less */.env*)",
+      "Bash(more *.env*)",
+      "Bash(more */.env*)",
+      "Bash(bat *.env*)",
+      "Bash(bat */.env*)",
+      "Bash(vi *.env*)",
+      "Bash(vi */.env*)",
+      "Bash(vim *.env*)",
+      "Bash(vim */.env*)",
+      "Bash(nano *.env*)",
+      "Bash(nano */.env*)",
+      "Bash(awk *.env*)",
+      "Bash(awk */.env*)",
+      "Bash(sed *.env*)",
+      "Bash(sed */.env*)",
+      "Bash(cp *.env*)",
+      "Bash(cp */.env*)",
+      "Bash(scp *.env*)",
+      "Bash(scp */.env*)",
+      "Bash(rsync *.env*)",
+      "Bash(rsync */.env*)"
     ],
     "additionalDirectories": [
       "d:\\Data\\Documents\\Programming\\Projects\\MCP\\mcp-dev-tg-chat-agent",
@@ -61,7 +91,7 @@
       }
     ]
   },
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "autoUpdatesChannel": "latest",
   "theme": "dark-daltonized"
 }

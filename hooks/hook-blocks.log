@@ -2362,3 +2362,39 @@ sudo -u spc bash -c 'TERM=xterm-256color /etc/update-motd.d/99-dev-welcome' | he
 [2026-05-30 19:22:02] BLOCKED: ALLOWED by user: Move/rename (mv)
   Command: git mv docs/todo/p2_0d_4h_0m__infra_backup_moscow_dumps_missing.md docs/archive/todo/infra_backup_moscow_dumps_missing.md 2>&1
 
+[2026-05-30 19:50:02] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: ssh moscow_my "
+echo '=== deleting projects contents ==='
+sudo rm -rf /home/spc/.claude/projects/*
+sudo rm -rf /home/spc/.claude/projects/.* 2>/dev/null
+sudo find /home/spc/.claude/projects -mindepth 1 | wc -l
+
+echo
+echo '=== deleting sessions contents ==='
+sudo rm -rf /home/spc/.claude/sessions/*
+sudo find /home/spc/.claude/sessions -mindepth 1 | wc -l
+
+echo
+echo '=== ownership intact? ==='
+sudo stat -c '%U:%G %a' /home/spc/.claude/projects /home/spc/.claude/sessions
+
+echo
+echo '=== sanity: ╨╛╤Б╤В╨░╨╗╤М╨╜╨╛╨╡ spc'\''╤Л ╨░╤А╤В╨╡╤Д╨░╨║╤В╤Л ╨╜╨░ ╨╝╨╡╤Б╤В╨╡ ==='
+sudo ls -la /home/spc/.claude/ | grep -E 'credentials|claude.json|memory|skills|CLAUDE'
+"
+echo
+echo '=== chief PC topics cache reset ==='
+rm -f "C:/Users/ssv55/.claude/developers/spc/topics.json"
+echo "topics cache removed"
+
+[2026-05-30 21:32:11] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "$(cat <<'EOF'
+fix: abusive list тАФ remove false positives (╤Б╨╕╨╗╨░, ╤Г╤А╤О╨║, ╨╛╤В╨┐╨╛╤А╨╛╤В╤М)
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+EOF
+)"
+
+[2026-05-30 21:32:32] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git pull --rebase && git push
+
