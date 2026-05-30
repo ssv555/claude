@@ -267,6 +267,11 @@ function Cmd-Show {
     Write-Host "ssh key fp   : $(if ($localInfo) { $localInfo.ssh_key_fp } else { '-' })"
     Write-Host "status       : $(if ($localInfo) { $localInfo.status } else { 'active' })"
     Write-Host ""
+    if ($localInfo -and $localInfo.ssh_key_path) {
+        Write-Host "private key (copy → Termius):"
+        Write-Host ([System.IO.Path]::GetFullPath($localInfo.ssh_key_path))
+        Write-Host ""
+    }
 }
 
 function Cmd-Add {

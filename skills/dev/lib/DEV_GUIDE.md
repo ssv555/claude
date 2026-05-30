@@ -17,6 +17,7 @@ CLI — твой shell-юзер не имеет доступа к `~/.claude/`).
 - Сессии и проекты Claude (`~/.claude/projects/`, `~/.claude/sessions/`, `.credentials.json`): полностью приватны Claude (`claude-runner:claude-runner 700/600`) — **твой shell-юзер не имеет доступа** (Permission denied), писать может только сам Claude
 - Сама `~/.claude/` (top-level): `claude-runner:claude-runner 750` — Claude может создавать тут settings.json, hooks/, любые служебные файлы. Ты как shell-юзер вообще не заходишь
 - Твоя рабочая папка: `~/projects/` (твой полный доступ + claude-runner может писать туда же когда работаешь через claude)
+- Onboarding-памятка: `~/README.<ALIAS_UPPER>.md` (например `~/README.SPC.md`) — твои порты, БД, URL dev-стенда, что НЕЛЬЗЯ. Сгенерирована при `/dev add`, читается тобой свободно.
 
 ---
 

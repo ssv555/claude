@@ -272,4 +272,46 @@ if [ -n "$REPO_NAME" ]; then
     fi
 fi
 
+# ============================================================================
+# 7. README.<ALIAS>.md in dev's HOME — onboarding for the dev (read by them)
+# ============================================================================
+
+README_TEMPLATE='/opt/dev-skill/README.template.md'
+if [ -f "$README_TEMPLATE" ]; then
+    ALIAS_UPPER=$(echo "$ALIAS" | tr '[:lower:]' '[:upper:]')
+    README_OUT="$HOME_DIR/README.${ALIAS_UPPER}.md"
+    log "rendering $README_OUT"
+
+    # Hardcoded server constants (same on all moscow_my dev-stands)
+    HOST_IP='195.2.75.212'
+    SSH_PORT='53847'
+
+    perl -pe "
+        s|\{\{ALIAS\}\}|$ALIAS|g;
+        s|\{\{ALIAS_UPPER\}\}|$ALIAS_UPPER|g;
+        s|\{\{FULL_NAME\}\}|$FULL_NAME|g;
+        s|\{\{EMAIL\}\}|$EMAIL|g;
+        s|\{\{HOST_IP\}\}|$HOST_IP|g;
+        s|\{\{SSH_PORT\}\}|$SSH_PORT|g;
+        s|\{\{PORT_API\}\}|${API_PORT:-NA}|g;
+        s|\{\{PORT_HMR\}\}|${HMR_PORT:-NA}|g;
+        s|\{\{PORT_BOT_TG\}\}|${TG_BOT_PORT:-NA}|g;
+        s|\{\{PORT_BOT_MAX\}\}|${MAX_BOT_PORT:-NA}|g;
+        s|\{\{DB_NAME\}\}|${DB_NAME:-NA}|g;
+        s|\{\{DB_USER\}\}|${DB_USER:-NA}|g;
+        s|\{\{REPO_NAME\}\}|${REPO_NAME:-NA}|g;
+    " "$README_TEMPLATE" > "$README_OUT"
+
+    if grep -q '{{' "$README_OUT"; then
+        warn "unsubstituted placeholders remaining in $README_OUT:"
+        grep -n '{{' "$README_OUT" | head -10 >&2
+    fi
+
+    chown "$ALIAS:$ALIAS" "$README_OUT"
+    chmod 644 "$README_OUT"
+    log "$README_OUT written (dev can read)"
+else
+    warn "README template not found at $README_TEMPLATE — skip onboarding file"
+fi
+
 log "dev $ALIAS created"

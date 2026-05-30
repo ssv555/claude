@@ -154,10 +154,13 @@ Bootstrap триггерится автоматически при первом 
    - OAuth/SMS/SMTP/Bot tokens — DUMMY (шеф докинет real-creds через secure channel если деву нужны интеграции)
    - **Perms: 600 claude-runner:claude-runner** — дев НЕ читает прямо из shell. Bun читает только запущенный через claude (setuid → claude-runner).
 8. **Server:** `bun install` от имени дева
-9. **Chief PC:**
-   - `~/.claude/developers/<alias>/info.json` (alias/email/fp/created_at/...)
-   - `~/.claude/developers/<alias>/onboarding.md` — текст для пересылки деву
-   - Append row в `D:\Data\Backup\Ubuntu-Servers\moscow_my\SSH_KEYS_INVENTORY.md`
+9. **Server (`add-user.sh` шаг 7 — README onboarding для дева):**
+   - Рендерит `lib/README.template.md` (плейсхолдеры `{{ALIAS}}`, `{{HOST_IP}}`, `{{SSH_PORT}}`, `{{PORT_*}}`, `{{DB_NAME}}`, `{{DB_USER}}`, `{{REPO_NAME}}` и т.д.) → `/home/<alias>/README.<ALIAS_UPPER>.md` (`<alias>:<alias>` 644 — дев читает свободно). Sanity-check на нерасширенные `{{}}` → warn в лог. **Не содержит пути к private key шефа** (только параметры для Termius: host/port/user).
+10. **Chief PC:**
+    - `~/.claude/developers/<alias>/info.json` (alias/email/fp/ssh_key_path/created_at/...)
+    - `~/.claude/developers/<alias>/onboarding.md` — текст для пересылки деву
+    - Append row в `D:\Data\Backup\Ubuntu-Servers\moscow_my\SSH_KEYS_INVENTORY.md`
+    - `/dev show <alias>` отображает абсолютный `ssh key path` + отдельный чистый блок для копирования в Termius
 
 ## `/dev del <alias>` — полный flow
 
@@ -221,12 +224,14 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
   pre-receive.sh, post-receive.sh
   dev-services-cleanup.{sh,service,timer}
   nginx-dev-template.conf
+  README.template.md                    шаблон onboarding для девов (рендерится add-user.sh)
   dev-shared-CLAUDE.md, codex.md, DEV_GUIDE.md, memory/
   .bootstrap-ok
 
 /usr/local/bin/claude                   claude-runner:claude-runner 4755 ← setuid wrapper
 
 /home/<dev>/                            <dev>:<dev>             750       ← НЕ 755, дев приватен
+  README.<DEV_UPPER>.md                 <dev>:<dev> 644                   ← onboarding для дева (host/port/user/ports/DB) — читается им свободно
   .ssh/                                 <dev>:<dev> 700
   .claude/                              claude-runner:claude-runner 750   ← дев НЕ заходит (other class=0), claude полный owner
     skills    → /opt/claude-shared/skills    (root-symlink, read-only)

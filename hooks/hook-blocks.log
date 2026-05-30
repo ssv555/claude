@@ -2160,3 +2160,131 @@ echo
 echo '=== final state ==='
 ls -la
 
+[2026-05-29 00:07:07] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && mv docs/todo/p2_0d_4h_0m__vdole_pro_dist_replication.md docs/archive/todo/vdole_pro_dist_replication.md && echo "moved to archive" && rm -rf .tmp/dist-sync && echo "tmp cleaned"
+
+[2026-05-29 20:23:26] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git commit -m "$(cat <<'EOF'
+add emergency TG channel via fallback API
+
+Post-incident 2026-05-28 fix. PRO loses .env.production -> local TG creds
+gone -> bash tg_send silent -> 23h before watchdog catches it. This adds a
+third tier: PRO POSTs to FBK's new /api/_internal/alert which forwards via
+FBK's own TG credentials.
+
+Files:
+- back/src/routes/internal-alert.ts: new Elysia route, IP-allowlist (only PRO),
+  rate-limit 3/min, body validation, defense-in-depth
+- back/src/lib/emergency-tg.ts: persist-to-disk always, then grammyjs send,
+  then bash tg_send fallback through Amsterdam SSH-relay
+- back/src/lib/rate-limiter.ts: internalAlertLimiter (3/min) + ALL_LIMITERS
+- back/src/app.ts: mount internalAlertRoute under /api
+- back/src/middleware/csrf.ts: add /api/_internal/alert to CSRF_EXEMPT
+- scripts/deploy/backup-README.md: Emergency TG channel section
+- docs/todo/p1_0d_4h_0m__infra_emergency_tg_via_fallback_api.md: full plan
+
+Endpoint: https://vdole.it-joy.ru/api/_internal/alert (FBK = moscow_my)
+Needs M3 setup on FBK: DNS done, certbot + nginx vhost next.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+EOF
+)" && echo '---' && git pull --rebase origin main 2>&1 | tail -5 && echo '---' && git push 2>&1 | tail -8
+
+[2026-05-29 20:37:21] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git add scripts/deploy/lib/notify_telegram_admin.sh && git diff --cached --stat && git commit -m "$(cat <<'EOF'
+add tier-3 emergency channel in notify_telegram_admin.sh
+
+When tg_send has no local TG creds on PRO (no .env.production AND no
+/var/backups/.tg_config), call FBK's HTTPS endpoint
+https://vdole.it-joy.ru/api/_internal/alert instead of silently warning
+and dropping the alert. FBK uses its own intact bot to deliver.
+
+New function _emergency_via_fallback_api:
+- JSON-escape via pure bash (no jq dep)
+- 3 attempts with exponential backoff, per-attempt errors to stderr
+- Only fires on hostname=vdole-pro (FBK doesn't need this)
+
+Closes the 23h silent-failure window from incident 2026-05-28.
+
+Plan: docs/todo/p1_0d_4h_0m__infra_emergency_tg_via_fallback_api.md
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+EOF
+)" && git push 2>&1 | tail -5
+
+[2026-05-29 20:46:48] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && mkdir -p docs/archive/todo && git mv docs/todo/p1_0d_4h_0m__infra_emergency_tg_via_fallback_api.md docs/archive/todo/infra_emergency_tg_via_fallback_api.md && git status --short | grep -E 'infra_emergency|backup-README'
+
+[2026-05-29 20:48:00] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git add docs/archive/todo/infra_emergency_tg_via_fallback_api.md scripts/deploy/backup-README.md && git diff --cached --stat && git commit -m "$(cat <<'EOF'
+close emergency TG channel task тАФ verified E2E
+
+All 8 verification matrix rows green:
+- DNS + letsencrypt cert (expires 2026-08-27)
+- Route mounted + body validation
+- TG delivery (smoke + HTML escape + E2E)
+- Persist log at /var/backups/.emergency-alerts.log
+- 403 from non-PRO IP (nginx allowlist)
+- Rate-limit 3/min per peer IP
+- 444 on root (silent stub, no info disclosure)
+- E2E with .env.production hidden тЖТ tier-3 fires тЖТ TG arrives
+
+Repo changes:
+- backup-README: nginx vhost lives in conf.d, root = 444 (not 404),
+  server_tokens off
+- docs/todo/p1_*.md -> docs/archive/todo/ (prefix stripped per convention)
+- file header Status: Done + completed date
+
+The 23h silent-failure window from incident 2026-05-28 is closed.
+TODO.inprogress.md update (move InProgress -> Finished) intentionally
+left in working tree alongside unrelated pending edits.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+EOF
+)" && git push 2>&1 | tail -5
+
+[2026-05-29 21:06:40] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git add -A && git status --short | head -10 && echo '---STAT---' && git diff --cached --stat | tail -25 && git commit -m "$(cat <<'EOF'
+fix deploy chown for nginx-user setups + bundle pending edits
+
+Hidden bug found in FBK fallback: /var/www/vdole.it-joy.ru/ had perms
+drwxr-x--- www-data:www-data, but FBK's nginx runs as user `nginx` (not
+www-data тАФ RHEL-style setup). Static files returned 500 Permission denied;
+fallback site was broken if PRO ever went down.
+
+Fix: 00-deploy.sh now uses conditional chown тАФ group=nginx when that user
+exists, group=www-data otherwise. Matches working iamrich/other vhost
+pattern on FBK while keeping PRO's Ubuntu setup unchanged.
+
+Applied immediately to FBK via: chown -R www-data:nginx /var/www/vdole.it-joy.ru
+(verified: vdole.pro through --resolve to FBK now returns 200 on /, /auth,
+/api/health тАФ was 500 before).
+
+This commit also bundles user's parallel pending edits (CLAUDE.md, README,
+docs, tests/skills) per explicit request.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+EOF
+)" 2>&1 | tail -10 && echo '---PUSH---' && git push 2>&1 | tail -5
+
+[2026-05-29 21:12:10] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && bash -n scripts/deploy/lib/notify_telegram_admin.sh && echo SYNTAX_OK && git add scripts/deploy/lib/notify_telegram_admin.sh scripts/deploy/backup-README.md && git diff --cached --stat && git commit -m "$(cat <<'EOF'
+add VDOLE_TG_TEST_TAG env var for manual alert tagging
+
+When set, tg_send prepends [TEST: <tag>] to every TG message so manual
+ops/tests are visually distinct from real cron-driven incidents. Real
+cron paths (01:00 nightly, 09:00 watchdog) never set the var.
+
+Usage:
+  sudo bash -c 'VDOLE_TG_TEST_TAG=E2E bash 01a-backup-db.sh --force'
+
+Propagates across all 3 tiers (grammy-relay, fallback config, emergency
+API) тАФ same prefix in TG and in /var/backups/.emergency-alerts.log on FBK.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+EOF
+)" 2>&1 | tail -5 && git push 2>&1 | tail -3
+
+[2026-05-29 21:14:42] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && bash -n scripts/deploy/lib/notify_telegram_admin.sh && echo SYNTAX_OK && git add scripts/deploy/lib/notify_telegram_admin.sh && git commit -m "format VDOLE_TG_TEST_TAG marker on its own line" 2>&1 | tail -3 && git push 2>&1 | tail -3
+
