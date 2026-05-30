@@ -61,7 +61,7 @@
       }
     ]
   },
-  "effortLevel": "xhigh",
+  "effortLevel": "max",
   "autoUpdatesChannel": "latest",
   "theme": "dark-daltonized"
 }

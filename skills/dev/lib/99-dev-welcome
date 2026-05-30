@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# /etc/update-motd.d/99-dev-welcome — custom motd for developers on moscow_my.
+#
+# Replaces stock Ubuntu motd (devs have ~/.hushlogin → stock banner suppressed).
+# Shows alias, repo, rules-acceptance status, and key skill shortcuts.
+# Always exits 0 — failures must NEVER block login.
+
+set -u
+
+USER_NAME="${USER:-$(id -un 2>/dev/null || echo unknown)}"
+SHARED='/opt/claude-shared'
+AUDIT_DIR="$SHARED/audit"
+RULES_FILE="$SHARED/RULES.md"
+RULES_VERSION_FILE="$SHARED/RULES.version"
+ACCEPT_DIR="$SHARED/rules_acceptances"
+
+# Skip motd for non-developers (chief / system users) — they have their own habits.
+if ! id -nG "$USER_NAME" 2>/dev/null | tr ' ' '\n' | grep -qx developers; then
+    exit 0
+fi
+
+# ANSI color helpers — degrade gracefully on TERM=dumb.
+if [ -t 1 ] && [ "${TERM:-dumb}" != "dumb" ]; then
+    C_RST=$'\033[0m'
+    C_DIM=$'\033[2m'
+    C_BOLD=$'\033[1m'
+    C_OK=$'\033[32m'
+    C_WARN=$'\033[33m'
+    C_ERR=$'\033[31m'
+    C_INFO=$'\033[36m'
+else
+    C_RST='' C_DIM='' C_BOLD='' C_OK='' C_WARN='' C_ERR='' C_INFO=''
+fi
+
+# --- Rules acceptance status ---
+rules_status=''
+if [ -r "$RULES_VERSION_FILE" ]; then
+    rules_hash=$(cat "$RULES_VERSION_FILE" 2>/dev/null | tr -d '[:space:]')
+    if [ -n "$rules_hash" ] && [ -r "$ACCEPT_DIR/${USER_NAME}__${rules_hash}.flag" ]; then
+        rules_status="${C_OK}✓ rules accepted${C_RST}"
+    else
+        rules_status="${C_ERR}⚠ RULES NOT ACCEPTED — will be enforced at next login${C_RST}"
+    fi
+else
+    rules_status="${C_DIM}rules: not configured${C_RST}"
+fi
+
+# --- Current repo + branch (best effort, never block) ---
+repo_status=''
+repo_dir=$(find "$HOME/projects" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -1)
+if [ -n "$repo_dir" ] && [ -d "$repo_dir/.git" ]; then
+    repo_name=$(basename "$repo_dir")
+    branch=$(cd "$repo_dir" 2>/dev/null && git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')
+    repo_status="${C_INFO}${repo_name}${C_RST} @ ${C_BOLD}${branch}${C_RST}"
+fi
+
+# --- Restart-required flag (we still want devs to see it) ---
+restart_warn=''
+if [ -f /var/run/reboot-required ]; then
+    restart_warn="${C_WARN}⚠ System restart required${C_RST}"
+fi
+
+# ============================================================================
+# Print compact welcome
+# ============================================================================
+printf '\n'
+printf '%s\n' "${C_BOLD}moscow_my${C_RST} — dev: ${C_INFO}${USER_NAME}${C_RST}  ${repo_status}"
+printf '%b\n' "$rules_status"
+[ -n "$restart_warn" ] && printf '%b\n' "$restart_warn"
+printf '\n'
+printf '%s\n' "${C_DIM}Quick reference:${C_RST}"
+printf '  /dev-info        — full guide\n'
+printf '  /dev-00-start    — pull main + new dev branch (start of day)\n'
+printf '  /dev-01-status   — where am I (branch, commits, dirty files)\n'
+printf '  /dev-05-commit   — commit (one task = one commit)\n'
+printf '  /dev-07-commit-push — commit + push\n'
+printf '  /dev-08-reset    — rebase current branch onto fresh main\n'
+printf '  /dev-09-finish   — checks + push + notify chief (end of task)\n'
+printf '\n'
+printf '%s\n' "${C_DIM}Rule of thumb: one task = one push. Mixing tasks is forbidden.${C_RST}"
+printf '\n'
+
+exit 0

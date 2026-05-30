@@ -2,8 +2,8 @@
 
 Краткая инструкция для разработчика. Лежит в `/opt/claude-shared/DEV_GUIDE.md`
 (read-only). Из bash: `cat /opt/claude-shared/DEV_GUIDE.md`. Из claude:
-`/dev-info` или `cat ~/.claude/DEV_GUIDE.md` (симлинк работает только в claude
-CLI — твой shell-юзер не имеет доступа к `~/.claude/`).
+`/dev-info` или `cat ~/.claude/DEV_GUIDE.md` (симлинк работает только из
+claude CLI — твой shell-юзер не имеет прямого доступа к `~/.claude/`).
 
 ---
 
@@ -11,30 +11,59 @@ CLI — твой shell-юзер не имеет доступа к `~/.claude/`).
 
 - Сервер: `moscow_my`
 - Юзер: твой alias (Linux account)
-- Claude Code: уже установлен, общий бинарь `/usr/local/bin/claude` (setuid wrapper)
-- Скилы / правила (`skills/`, `CLAUDE.md`, `codex.md`, `DEV_GUIDE.md`): **shared, read-only** через симлинки на `/opt/claude-shared/` — шеф централизованно управляет
-- Память Claude (`~/.claude/memory/`): **per-dev, writable** — Claude обновляет твою личную память (seeded при создании юзера копией из chief's curated memory)
-- Сессии и проекты Claude (`~/.claude/projects/`, `~/.claude/sessions/`, `.credentials.json`): полностью приватны Claude (`claude-runner:claude-runner 700/600`) — **твой shell-юзер не имеет доступа** (Permission denied), писать может только сам Claude
-- Сама `~/.claude/` (top-level): `claude-runner:claude-runner 750` — Claude может создавать тут settings.json, hooks/, любые служебные файлы. Ты как shell-юзер вообще не заходишь
-- Твоя рабочая папка: `~/projects/` (твой полный доступ + claude-runner может писать туда же когда работаешь через claude)
-- Onboarding-памятка: `~/README.<ALIAS_UPPER>.md` (например `~/README.SPC.md`) — твои порты, БД, URL dev-стенда, что НЕЛЬЗЯ. Сгенерирована при `/dev add`, читается тобой свободно.
+- Claude Code: `/usr/local/bin/claude` (общий бинарь, бежит как ты)
+- Скилы и правила (`skills/`, `CLAUDE.md`, `codex.md`, `DEV_GUIDE.md`, `RULES.md`): shared, read-only через симлинки на `/opt/claude-shared/`
+- Память Claude (`~/.claude/memory/`): per-dev, writable
+- Твоя рабочая папка: `~/projects/<repo>/`
+- Onboarding: `~/README.md` (твои порты, БД, URL)
+- NDA / конфиденциальность: `~/AGREEMENT.md` (legal)
+- Технические правила: `/opt/claude-shared/RULES.md` (обязательное принятие при логине)
+
+---
+
+## RULES — обязательное принятие при входе
+
+При первом интерактивном логине ты увидишь страницу с правилами и вопрос
+«type `YES, I AGREE` to accept». До принятия — shell тебя выкинет.
+
+- Хеш SHA-256 правил привязан к версии файла.
+- Шеф обновил RULES.md → старый flag протухает → при следующем логине ты увидишь
+  новые правила и должен принять заново.
+- Принятие пишется в audit-log с твоим alias, IP, временем и хешем.
+
+Если правила выводят больше одного экрана — `Space`/`PgDn` пагинатор, `q` —
+выход из less. Прочитал → введи `YES, I AGREE` точно как написано.
+
+**Ключевое правило (Rule 1):** один `git push` = один таск. Никогда не мешать
+две задачи в одном push'е — это отдельный пункт правил, нарушение ловится
+ручным review шефа.
 
 ---
 
 ## Доступные скилы (slash-команды)
 
-### Работа с кодом
+### Дневной workflow (рекомендованный порядок)
+
+| # | Skill | Описание |
+|---|---|---|
+| 00 | `/dev-00-start` | Старт задачи: pull main + `git checkout -b dev/<alias>/<slug>` |
+| 01 | `/dev-01-status` | Где я сейчас: ветка, коммиты, dirty files |
+| 05 | `/dev-05-commit` | Коммит (с branch guard). Один таск = один коммит |
+| 07 | `/dev-07-commit-push` | Коммит + push. Один таск = один push |
+| 08 | `/dev-08-reset` | Подтянуть свежий main и отрибейзить твою ветку |
+| 09 | `/dev-09-finish` | Финал: pre-deploy-check + autotests + push + уведомление шефа |
+
+Сокращения: `/d00 /d01 /d05 /d07 /d08 /d09`.
+
+### Информация и проверки
 
 | Команда | Описание |
 |---|---|
 | `/dev-info` | Эта инструкция |
-| `/dev-commit` | Коммит с проверкой ветки. Если ты на `main`/protected — авто-создаст `dev/<alias>/<slug>` и переключит. AI пишет commit message. |
-| `/dev-push` | Коммит + push в origin (bare-repo → mirror в GitHub). |
-| `/dev-reset` | `fetch origin` + `rebase` твоей ветки на `main`. Откажет если есть uncommitted — сначала `/dev-commit`. |
-| `/pre-deploy-check` | typecheck/lint/build перед сдачей задачи. |
-| `/pre-deploy-autotests` | Прогон unit/integration/e2e тестов. |
-| `/version-up` | Бамп `APP_VERSION` в проекте. |
-| `/session-archive` | Архивирование текущей сессии в `docs/archive/sessions/`. |
+| `/pre-deploy-check` | typecheck/lint/build перед сдачей задачи |
+| `/pre-deploy-autotests` | Прогон unit/integration/e2e тестов |
+| `/version-up` | Бамп `APP_VERSION` в проекте |
+| `/session-archive` | Архив текущей сессии в `docs/archive/sessions/` |
 
 ### Встроенные в Claude (всегда работают)
 
@@ -43,64 +72,98 @@ CLI — твой shell-юзер не имеет доступа к `~/.claude/`).
 
 ---
 
-## Workflow задачи
+## Стандартный рабочий день
 
 ```
-1. Получил задачу от шефа
-2. /dev-reset           — подтянуть свежий main
-3. Делаешь работу       — Claude помогает
-4. /dev-push            — коммит + push (в твою ветку dev/<alias>/<slug>)
-5. /pre-deploy-check    — typecheck/lint/build
-6. /pre-deploy-autotests — тесты
-7. Если всё зелёное — пишешь шефу: «готово, ветка dev/<alias>/<slug>»
-8. Шеф у себя запустит /dev-merge <твой-alias> — review + merge в main
+1.  /dev-00-start             ← утро. Подтянуть main + создать ветку
+2.  работа + Claude помогает
+3.  /dev-05-commit            ← по ходу, после каждого осмысленного шага
+4.  /dev-05-commit            ← коммитов может быть много, ПОКА все про ОДНУ задачу
+5.  /dev-07-commit-push       ← как только хочешь засинхрить с сервером
+6.  работа продолжается
+7.  /dev-08-reset             ← если main ушёл вперёд (опционально)
+8.  /dev-09-finish            ← задача готова → checks + push + уведомление шефа
 ```
 
-## Запуск dev-сервера — ТОЛЬКО через claude
+Шеф у себя запустит `/dev-merge <твой-alias>` — review + merge в main. После
+мерджа твоя ветка удаляется с сервера, локально остаётся — почистишь сам.
 
-`.env.development` лежит с правами `600 claude-runner:claude-runner` — твой shell-юзер
-НЕ может его читать. Это намеренно: там DB-креды, JWT, OAuth secrets.
-
-Поэтому `bun run dev` из твоего bash **не запустится** (bun не сможет прочесть env).
-
-Правильно: запускай через claude CLI — тогда bun унаследует от claude-runner права
-на чтение .env:
+### Несколько задач за день — несколько циклов 00→09
 
 ```
-$ claude
-> запусти bun run dev
+утро:    /dev-00-start  → ...работа task A... → /dev-09-finish
+позже:   /dev-00-start  → ...работа task B... → /dev-09-finish
+вечером: /dev-00-start  → ...работа task C... → /dev-09-finish
 ```
 
-или одной строкой:
-```
-$ claude -p "запусти bun run dev"
+НЕ смешивать A+B+C в одной ветке/пуше. Это нарушение Rule 1 RULES.md.
+
+---
+
+## Проверка канала Claude → Anthropic
+
+Claude обязан ходить во внешний мир ТОЛЬКО через Amsterdam (a не напрямую с moscow IP).
+Маршрутизация настроена инфраструктурно (`wg0` туннель):
+
+```bash
+# 1. Exit IP и Cloudflare datacenter — должно быть AMS / NL
+curl -sS --max-time 5 https://www.cloudflare.com/cdn-cgi/trace | grep -E "^(ip|colo|loc)="
+
+# 2. Реальный adres api.anthropic.com (должен быть из 160.79.96.0/20)
+curl -sS --max-time 5 -o /dev/null -w "anthropic remote_ip=%{remote_ip} http=%{http_code}\n" https://api.anthropic.com/
 ```
 
-Твой dev-стенд после старта будет доступен по https://dev-<твой-alias>.it-joy.ru
+Ожидаемо:
+- `ip=77.238.231.203` (amsterdam_my)
+- `colo=AMS`, `loc=NL`
+- `anthropic remote_ip=160.79.x.x http=404`
+
+Если видишь `colo=DME`/`loc=RU` или IP вне `160.79.96.0/20` — **СТОП**, скажи шефу,
+маршруты съехали (вероятно Anthropic поменяли CIDR, надо обновить wg0 на сервере).
+
+---
+
+## Запуск dev-сервера
+
+`.env.development` лежит с правами `600 <alias>:<alias>` — ты МОЖЕШЬ его читать
+(claude и bun запущены как ты), но НЕ коммить — секреты.
+
+```bash
+cd ~/projects/<repo>
+bun run dev
+```
+
+Твой dev-стенд после старта будет доступен по `https://dev-<alias>.it-joy.ru`.
+
+Если bun ушёл в фон и не убит — daily cleanup в 06:00 MSK прибьёт все процессы
+на портах 40001-49999. Это нормально, ничего не сломается.
 
 ---
 
 ## Ветки — НИКОГДА не работать в `main`
 
 Защита:
-
-- `pre-receive` хук на bare-repo **физически блокирует** push в `main`, `master`, `prod`, `production`, `release/*`.
-- `/dev-commit` и `/dev-push` **отказываются** коммитить в protected-ветки и сами переключают на `dev/<alias>/<slug>`.
+- `pre-receive` хук на bare-repo **физически блокирует** push в `main`, `master`, `prod`, `production`, `release/*`
+- `/dev-05-commit` и `/dev-07-commit-push` **отказываются** коммитить в protected и сами переключают на `dev/<alias>/<slug>`
 
 Формат твоих веток: `dev/<твой-alias>/<short-slug>`. Пример: `dev/danya/add-otp-field`.
 
-После merge'а шефом твоя ветка **удаляется на сервере**. У тебя локально остаётся — почисти после `/dev-reset` или вручную `git branch -D dev/danya/add-otp-field`.
+После merge'а шефом твоя ветка удаляется на сервере. У тебя локально остаётся
+— почисти после `/dev-08-reset` или вручную `git branch -D dev/danya/add-otp-field`.
 
 ---
 
 ## Что НЕ делать
 
-- Не пушить в protected-ветки (бесполезно — сервер откажет).
-- Не использовать `--force` ни в каких git-командах.
-- Не править файлы в `~/.claude/skills/`, `~/.claude/CLAUDE.md`, `/opt/claude-shared/` — это root-owned shared, ты не сможешь.
-- Не запускать скилы которые не описаны выше — особенно если что-то намекает на «deploy», «prod», «changelog» — это **только шеф**.
-- Не коммитить секреты (.env, ключи, токены).
-- Не делать `git config --global user.email` — он уже прописан корректно.
+См. `/opt/claude-shared/RULES.md` (10 пунктов). Кратко:
+
+- Не пушить в protected-ветки (бесполезно — сервер откажет)
+- Не использовать `--force` / `--no-verify` без явного разрешения шефа
+- Не редактировать `/opt/claude-shared/*`, `/opt/dev-skill/*` (read-only)
+- Не коммитить секреты (.env, ключи, токены)
+- Не делать `git config --global user.email` — уже прописан корректно
+- Не смешивать задачи в одной ветке/пуше — Rule 1
+- Не обходить SFTP-блок — не легитимный канал передачи кода
 
 ---
 
@@ -108,11 +171,15 @@ $ claude -p "запусти bun run dev"
 
 | Ситуация | Решение |
 |---|---|
-| `/dev-push` падает с network error | retry уже встроен (3 попытки) — если всё равно падает, скажи шефу |
-| `/dev-reset` показывает conflict | разреши вручную, `git add` файлы, `git rebase --continue`, потом снова `/dev-reset` |
+| `/dev-07-commit-push` падает с network error | retry уже встроен (3 попытки) — если всё равно падает, скажи шефу |
+| `/dev-08-reset` показывает conflict | разреши вручную, `git add` файлы, `git rebase --continue`, потом снова `/dev-08-reset` |
 | Случайно закоммитил секрет | НЕ пушь, скажи шефу немедленно |
+| `/dev-09-finish` упал на pre-deploy-check | посмотри ошибки, исправь, запусти `/dev-09-finish` снова |
+| Заметил баг в чужом коде по ходу задачи | НЕ исправляй здесь. Закончи свою задачу через `/dev-09-finish`, потом `/dev-00-start` новый slug под этот баг |
 | Не понимаю что хочет шеф | Спроси прямо — лучше уточнить, чем сделать не то |
 | Тесты падают на чужом коде | Скажи шефу, не «исправляй» чужое самовольно |
+| После `claude` чёрный экран в Termius | Проверь `echo $TERM` — должно быть `xterm-256color`. В `~/.bashrc` уже стоит, но Termius может перезаписывать через свой профиль |
+| Видишь «rules NOT ACCEPTED» в motd | Выйди (`exit`) и зайди по SSH заново — gate покажет правила |
 
 ---
 

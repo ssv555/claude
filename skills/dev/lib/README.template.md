@@ -43,6 +43,21 @@ Private key передан тебе шефом отдельно через за�
 
 ---
 
+## Проверка канала (Claude → Amsterdam)
+
+Весь трафик к Anthropic/Cloudflare/Google/etc автоматически уходит через amsterdam_my (wg0).
+Проверь одной командой (под собой ИЛИ под `claude-runner` — без разницы):
+
+```bash
+curl -sS --max-time 5 https://www.cloudflare.com/cdn-cgi/trace | grep -E "^(ip|colo|loc)="
+curl -sS --max-time 5 -o /dev/null -w "anthropic remote_ip=%{remote_ip} http=%{http_code}\n" https://api.anthropic.com/
+```
+
+Должно: `ip=77.238.231.203`, `colo=AMS`, `loc=NL`, `anthropic remote_ip=160.79.x.x http=404`.
+Если colo=DME / loc=RU — маршруты съехали, скажи шефу.
+
+---
+
 ## Первые шаги
 
 1. Зайди по SSH через Termius.
@@ -56,6 +71,22 @@ Private key передан тебе шефом отдельно через за�
    bun run dev
    ```
 4. Открой https://dev-{{ALIAS}}.it-joy.ru — должен подняться фронт.
+
+---
+
+## Передача файлов и конфиденциальность
+
+- **SFTP / WinSCP / scp заблокированы** для группы `developers` на уровне sshd
+  (`ForceCommand /bin/bash` в `/etc/ssh/sshd_config.d/02-developers-no-sftp.conf`).
+  Подключение SFTP-клиентом сразу упадёт на согласовании протокола.
+- **Передача кода через `git push`** — это легитимный канал. Твоя ветка пушится
+  в bare repo на сервере, оттуда зеркалится в GitHub. Шеф видит всё.
+- **Шеф ↔ дев обмен файлами** — через `git`, или через Telegram, или через clipboard
+  в terminal (`base64 < file`). SFTP не нужен.
+- **Audit-log SFTP** включён на сервере (`Subsystem sftp ... -l INFO -f AUTH`) — даже если
+  твою группу когда-то поменяют, любые SFTP-сессии будут залогированы в `journalctl -u ssh`.
+- **Код проекта — собственность шефа.** Локальная копия для работы — норма (git clone
+  + работа через claude). Распространение кода вне проекта — нарушение NDA.
 
 ---
 

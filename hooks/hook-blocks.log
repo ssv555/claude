@@ -2288,3 +2288,48 @@ EOF
 [2026-05-29 21:14:42] BLOCKED: ALLOWED by user: Git destructive/push/commit
   Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && bash -n scripts/deploy/lib/notify_telegram_admin.sh && echo SYNTAX_OK && git add scripts/deploy/lib/notify_telegram_admin.sh && git commit -m "format VDOLE_TG_TEST_TAG marker on its own line" 2>&1 | tail -3 && git push 2>&1 | tail -3
 
+[2026-05-30 06:53:23] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git add CLAUDE.md README.md docs/GLOSSARY.md docs/tech/ADR/0003-emergency-tg-channel.md && git diff --cached --stat && git commit -m "$(cat <<'EOF'
+docs: ADR 0003 + sync README/GLOSSARY/CLAUDE for emergency channel
+
+- New ADR 0003 (Emergency TG Channel) тАФ context, decision, defense-in-depth
+  layers, accepted trade-offs.
+- CLAUDE.md: ADR 0003 added to architecture-decisions list.
+- README.md, docs/GLOSSARY.md: TST description includes new emergency-alert
+  receiver role of vdole.it-joy.ru hostname.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+EOF
+)" 2>&1 | tail -3 && git push 2>&1 | tail -3
+
+[2026-05-30 07:03:15] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git add docs/archive/sessions/2026.05.29_21.23_ssv_Docs_full_audit_2.md && git commit -m "docs: session archive тАФ docs full audit continuation" 2>&1 | tail -3 && git push 2>&1 | tail -3
+
+[2026-05-30 07:08:43] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git status --short | head && echo '---' && git add docs/todo/p3_0d_2h_0m__infra_remove_tg_relay_via_tst_ssh_root.md && git commit -m "$(cat <<'EOF'
+docs: add plan to remove _tg_relay_via_tst SSH-as-root (techdebt)
+
+Captures the remaining SSH-as-root call site between PRO and FBK in
+notify_telegram_admin.sh and a 2h refactor plan to replace it with the
+existing /api/_internal/alert endpoint. Open questions, risks, and
+acceptance criteria included for the new session.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+EOF
+)" 2>&1 | tail -3 && git push 2>&1 | tail -3
+
+[2026-05-30 07:10:39] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git add docs/archive/sessions/2026.05.29_21.23_ssv_Docs_full_audit_2.md && git commit -m "docs: extend session archive _2 with closeout (port fix + sweep + p3 plan)" 2>&1 | tail -3 && git push 2>&1 | tail -3
+
+[2026-05-30 07:21:30] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && echo "=== last 15 git commits ===" && git log --oneline -15 && echo "=== current branch state ===" && git status --short | head -20 && echo "=== ADR 0003 exists? ===" && ls -la docs/tech/ADR/ 2>&1
+
+[2026-05-30 09:32:30] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git mv docs/todo/p3_1d_0h_0m__email_migration.md docs/todo/p4_0d_4h_0m__email_migration.md
+
+[2026-05-30 10:26:29] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git mv docs/archive/todo/email_migration.md docs/todo/p4_0d_4h_0m__suspended_to_2026_07_01__email_migration.md
+
+[2026-05-30 10:46:47] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: rm -rf "C:/Users/ssv55/.claude/skills/dev-commit" "C:/Users/ssv55/.claude/skills/dev-push" "C:/Users/ssv55/.claude/skills/dev-reset" && ls "C:/Users/ssv55/.claude/skills/" | grep -E '^dev'
+

@@ -39,11 +39,12 @@ if id -u "$ALIAS" >/dev/null 2>&1; then
 fi
 
 # Orphan group cleanup: previous /dev del may have left group $ALIAS alive
-# (claude-runner still in it as supplementary member). adduser would fail with
+# (other supplementary members still in it). adduser would fail with
 # "fatal: The group X already exists".
 if getent group "$ALIAS" >/dev/null 2>&1; then
     log "orphaned group $ALIAS detected (no user) — cleaning up"
-    gpasswd -d claude-runner "$ALIAS" 2>/dev/null || true
+    gpasswd -d webdev "$ALIAS" 2>/dev/null || true
+    gpasswd -d ssv    "$ALIAS" 2>/dev/null || true
     groupdel "$ALIAS" 2>/dev/null || true
 fi
 
@@ -55,7 +56,12 @@ log "adduser $ALIAS"
 adduser --disabled-password --gecos "$FULL_NAME,,,," "$ALIAS"
 
 usermod -aG developers "$ALIAS"
-usermod -aG "$ALIAS"   claude-runner   # claude-runner can read dev's files via group
+usermod -aG webdev     "$ALIAS"  # dev needs group:webdev to read /var/lib/webdev/.claude/.credentials.json
+usermod -aG "$ALIAS"   ssv       # chief gets read access on dev's HOME without sudo
+
+# HOME root — plain 750 <dev>:<dev>. NO setuid wrapper anymore, NO claude-runner.
+# Claude runs as the dev (UID 1002 = spc), so dev itself owns HOME and writes naturally.
+# No ACL needed → no sshd StrictModes conflict.
 chmod 750 "/home/$ALIAS"
 
 HOME_DIR="/home/$ALIAS"
@@ -71,10 +77,50 @@ chown -R "$ALIAS:$ALIAS" "$HOME_DIR/.ssh"
 chmod 700 "$HOME_DIR/.ssh"
 chmod 600 "$HOME_DIR/.ssh/authorized_keys"
 
+# Suppress stock Ubuntu motd banner ("Welcome to Ubuntu 24.04.4 LTS / System info /
+# Last login / Documentation links"). /etc/update-motd.d/99-dev-welcome (installed
+# by bootstrap-server.sh) renders a compact custom banner instead — alias, repo,
+# rules-acceptance, restart-warning, skill shortcuts. ~/.hushlogin is the standard
+# Ubuntu mechanism — silences pam_motd's dynamic and static motd output.
+# Restart-required line is preserved via our custom motd (reads /var/run/reboot-required).
+if [ ! -f "$HOME_DIR/.hushlogin" ]; then
+    touch "$HOME_DIR/.hushlogin"
+    chown "$ALIAS:$ALIAS" "$HOME_DIR/.hushlogin"
+    chmod 644 "$HOME_DIR/.hushlogin"
+fi
+
+# Termius default TERM=vt100 breaks Claude TUI (black screen on first run).
+# Force xterm-256color + UTF-8 locale for every shell login.
+if ! grep -q '^export TERM=xterm-256color' "$HOME_DIR/.bashrc" 2>/dev/null; then
+    cat >> "$HOME_DIR/.bashrc" <<'BASHRC_EOF'
+
+# === claude TUI requires modern terminal — Termius default 'vt100' breaks rendering ===
+export TERM=xterm-256color
+export LC_ALL=en_US.UTF-8
+BASHRC_EOF
+    chown "$ALIAS:$ALIAS" "$HOME_DIR/.bashrc"
+fi
+
+# Auto-cd into the dev's project on interactive SSH login.
+# Skipped for non-interactive (scp/sftp/rsync). Idempotent (AUTO_CD_DONE guard
+# in the snippet itself, plus grep-marker guard at install-time).
+if [ -n "$REPO_NAME" ] && ! grep -q 'AUTO_CD_DONE' "$HOME_DIR/.bashrc" 2>/dev/null; then
+    cat >> "$HOME_DIR/.bashrc" <<BASHRC_EOF
+
+# === auto-cd into project on interactive login (skip for scp/sftp) ===
+case \$- in *i*)
+    if [ -z "\$AUTO_CD_DONE" ] && [ -d "\$HOME/projects/$REPO_NAME" ]; then
+        export AUTO_CD_DONE=1
+        cd "\$HOME/projects/$REPO_NAME"
+    fi
+    ;;
+esac
+BASHRC_EOF
+    chown "$ALIAS:$ALIAS" "$HOME_DIR/.bashrc"
+fi
+
 # ============================================================================
-# 3. ~/.claude/ — owned by claude-runner so claude can fully manage its own
-#    workspace (create settings.json, hooks, write to memory, etc.).
-#    Dev (spc) is NOT in group claude-runner → falls into 'other' class → 0 perms → denied.
+# 3. ~/.claude/ — owned by the dev (claude runs AS THE DEV, not under setuid).
 # ============================================================================
 
 log "scaffolding ~/.claude/ for $ALIAS"
@@ -82,33 +128,41 @@ CLAUDE_HOME="$HOME_DIR/.claude"
 mkdir -p "$CLAUDE_HOME"
 
 # Read-only chief-managed config: symlinks to /opt/claude-shared/ (root:root 755).
-# Devs and their claude cannot modify these — central rules of conduct.
 ln -sfn "$SHARED_DIR/skills"     "$CLAUDE_HOME/skills"
 ln -sfn "$SHARED_DIR/CLAUDE.md"  "$CLAUDE_HOME/CLAUDE.md"
 [ -f "$SHARED_DIR/DEV_GUIDE.md" ] && ln -sfn "$SHARED_DIR/DEV_GUIDE.md" "$CLAUDE_HOME/DEV_GUIDE.md"
 [ -f "$SHARED_DIR/codex.md" ]     && ln -sfn "$SHARED_DIR/codex.md"     "$CLAUDE_HOME/codex.md"
 
-# Per-dev memory: real directory (NOT symlink) so claude can update it freely.
-# Seeded once from chief's curated memory; from then on each dev's memory diverges.
+# Per-dev memory: real directory (NOT symlink). Seeded from chief's curated memory.
 mkdir -p "$CLAUDE_HOME/memory"
 if [ -d "$SHARED_DIR/memory" ]; then
     cp -a "$SHARED_DIR/memory/." "$CLAUDE_HOME/memory/" 2>/dev/null || true
 fi
 
-# claude-runner is owner of .claude/ top-level — can create settings.json, hooks, etc.
-chown -R claude-runner:claude-runner "$CLAUDE_HOME"
+# Copy webdev's master OAuth credentials into dev's HOME (claude refuses to use
+# symlinked or non-owned credentials.json). Each dev gets own copy; refreshes
+# diverge over time but bootstrap auth is shared from one Pro/Max login.
+WEBDEV_CREDS='/var/lib/webdev/.claude/.credentials.json'
+WEBDEV_CONFIG='/var/lib/webdev/.claude.json'
+if [ -s "$WEBDEV_CREDS" ]; then
+    cp "$WEBDEV_CREDS" "$CLAUDE_HOME/.credentials.json"
+    log "copied webdev OAuth creds → $CLAUDE_HOME/.credentials.json"
+else
+    warn "webdev OAuth creds missing/empty — chief must run: sudo -u webdev -i; claude"
+    touch "$CLAUDE_HOME/.credentials.json"
+fi
+if [ -s "$WEBDEV_CONFIG" ]; then
+    cp "$WEBDEV_CONFIG" "$HOME_DIR/.claude.json"
+fi
+
+mkdir -p "$CLAUDE_HOME/projects" "$CLAUDE_HOME/sessions"
+
+# Everything in .claude/ owned by the dev (claude runs as them).
+chown -R "$ALIAS:$ALIAS" "$CLAUDE_HOME" "$HOME_DIR/.claude.json" 2>/dev/null
 chmod 750 "$CLAUDE_HOME"
-chmod 700 "$CLAUDE_HOME/memory"
-
-for sub in projects sessions; do
-    mkdir -p "$CLAUDE_HOME/$sub"
-    chown claude-runner:claude-runner "$CLAUDE_HOME/$sub"
-    chmod 700 "$CLAUDE_HOME/$sub"
-done
-
-touch "$CLAUDE_HOME/.credentials.json"
-chown claude-runner:claude-runner "$CLAUDE_HOME/.credentials.json"
+chmod 700 "$CLAUDE_HOME/memory" "$CLAUDE_HOME/projects" "$CLAUDE_HOME/sessions"
 chmod 600 "$CLAUDE_HOME/.credentials.json"
+[ -f "$HOME_DIR/.claude.json" ] && chmod 600 "$HOME_DIR/.claude.json"
 
 # ============================================================================
 # 4. ~/projects/ — owned <alias>:<alias> 755
@@ -144,11 +198,9 @@ if [ -n "$REPO_NAME" ]; then
         sudo -u "$ALIAS" git clone "$BARE" "$HOME_DIR/projects/$REPO_NAME"
         sudo -u "$ALIAS" git -C "$HOME_DIR/projects/$REPO_NAME" config remote.origin.url "$BARE"
 
-        # Plan §1: <dev>:claude-runner 2775 — claude-runner must write into the project
+        # Repo owned by dev — claude runs as dev so no extra group/setgid needed.
         REPO_DIR="$HOME_DIR/projects/$REPO_NAME"
-        chgrp -R claude-runner "$REPO_DIR"
-        chmod -R g+w "$REPO_DIR"
-        find "$REPO_DIR" -type d -exec chmod g+s {} +
+        chown -R "$ALIAS:$ALIAS" "$REPO_DIR"
 
         # ====================================================================
         # 6a. Per-dev port allocation
@@ -215,8 +267,9 @@ if [ -n "$REPO_NAME" ]; then
         # 6c. .env.development — render from /opt/dev-skill/.env.outstaffers
         #     template (uploaded by dev.ps1 from chief PC). Substitutes placeholders
         #     with per-dev values, then writes to $REPO_DIR/.env.development.
-        #     Owner: claude-runner. Mode 600. Dev CANNOT read directly from shell.
-        #     Bun reads it only when launched via claude (which runs as claude-runner).
+        #     Owner: dev. Mode 600. Dev can read (claude runs as dev too).
+        #     TODO: build/deploy isolation — split into ~/projects/<repo>/ (dev,
+        #     DUMMY) and ~/projects/<repo>-www/ (webdev, REAL) — see docs/todo.
         # ====================================================================
         ENV_TEMPLATE='/opt/dev-skill/.env.development'
         if [ -n "$PORT_BASE" ] && [ -f "$ENV_TEMPLATE" ]; then
@@ -255,9 +308,9 @@ if [ -n "$REPO_NAME" ]; then
                 grep -n '{{' "$ENV_OUT" | head -10 >&2
             fi
 
-            chown claude-runner:claude-runner "$ENV_OUT"
+            chown "$ALIAS:$ALIAS" "$ENV_OUT"
             chmod 600 "$ENV_OUT"
-            log ".env.development written (perms: 600 claude-runner:claude-runner — dev cannot read)"
+            log ".env.development written (perms: 600 $ALIAS:$ALIAS — dev reads via claude/bun launched as dev)"
         elif [ ! -f "$ENV_TEMPLATE" ]; then
             err "env template not found at $ENV_TEMPLATE — chief must run /dev add from PC where .env.outstaffers exists"
         fi
@@ -279,7 +332,7 @@ fi
 README_TEMPLATE='/opt/dev-skill/README.template.md'
 if [ -f "$README_TEMPLATE" ]; then
     ALIAS_UPPER=$(echo "$ALIAS" | tr '[:lower:]' '[:upper:]')
-    README_OUT="$HOME_DIR/README.${ALIAS_UPPER}.md"
+    README_OUT="$HOME_DIR/README.md"
     log "rendering $README_OUT"
 
     # Hardcoded server constants (same on all moscow_my dev-stands)
@@ -312,6 +365,37 @@ if [ -f "$README_TEMPLATE" ]; then
     log "$README_OUT written (dev can read)"
 else
     warn "README template not found at $README_TEMPLATE — skip onboarding file"
+fi
+
+# ============================================================================
+# 8. AGREEMENT.<ALIAS>.md — NDA / confidentiality agreement in dev's HOME
+# ============================================================================
+
+AGREEMENT_TEMPLATE='/opt/dev-skill/AGREEMENT.template.md'
+if [ -f "$AGREEMENT_TEMPLATE" ]; then
+    ALIAS_UPPER=$(echo "$ALIAS" | tr '[:lower:]' '[:upper:]')
+    AGREEMENT_OUT="$HOME_DIR/AGREEMENT.md"
+    log "rendering $AGREEMENT_OUT"
+
+    # AGREEMENT must NOT leak infrastructure (no IP, no ports, no server paths).
+    # Devs on probation see only declarative NDA + their own alias/name/repo.
+    perl -pe "
+        s|\{\{ALIAS\}\}|$ALIAS|g;
+        s|\{\{ALIAS_UPPER\}\}|$ALIAS_UPPER|g;
+        s|\{\{FULL_NAME\}\}|$FULL_NAME|g;
+        s|\{\{REPO_NAME\}\}|${REPO_NAME:-NA}|g;
+    " "$AGREEMENT_TEMPLATE" > "$AGREEMENT_OUT"
+
+    if grep -q '{{' "$AGREEMENT_OUT"; then
+        warn "unsubstituted placeholders remaining in $AGREEMENT_OUT:"
+        grep -n '{{' "$AGREEMENT_OUT" | head -10 >&2
+    fi
+
+    chown "$ALIAS:$ALIAS" "$AGREEMENT_OUT"
+    chmod 644 "$AGREEMENT_OUT"
+    log "$AGREEMENT_OUT written (dev can read)"
+else
+    warn "AGREEMENT template not found at $AGREEMENT_TEMPLATE — skip NDA file"
 fi
 
 log "dev $ALIAS created"

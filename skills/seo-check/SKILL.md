@@ -1,6 +1,7 @@
 ---
 name: seo-check
-description: Audit SEO + performance + conversion across public URLs. Three modes — quick (curl, mechanics), deep (Playwright, real browser), full (+ conversion/selling analysis). Read-only — reports findings, never edits. Asks user which mode to run. Reads project-specific config from ./tests/skills/seo-check.md
+description: Audit SEO across two routes — live mode (curl + Playwright on running site, default; quick/deep/full sub-levels) or source mode (`/seo-check text` — only reads the project sources: data files, sitemap, robots, JSON-LD logic). Read-only, reports findings, never edits. Reads project config from ./tests/skills/seo-check.md
+argument-hint: "[text]"
 disable-model-invocation: false
 allowed-tools: Bash(bun *),Bash(curl *),Read,Glob,Grep,AskUserQuestion,mcp__playwright__browser_navigate,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_evaluate,mcp__playwright__browser_console_messages,mcp__playwright__browser_network_requests,mcp__playwright__browser_resize,mcp__playwright__browser_close,mcp__playwright__browser_wait_for
 model: sonnet
@@ -8,22 +9,37 @@ model: sonnet
 
 # SEO Check — Universal Auditor
 
-Read-only audit of SEO mechanics, real-browser rendering, and conversion potential. Three escalating modes — user picks at start. Reports findings as a table, never edits files.
+Read-only audit of SEO mechanics, real-browser rendering, and conversion potential, **or** source-only audit of texts + structure in repo files. Reports findings as a table, never edits.
 
 <!-- Project-specific configuration: ./tests/skills/seo-check.md
      This is a global skill — production URL, public routes, locales,
      and per-page expectations are defined per-project in the local file. -->
 
+## Arguments — pick the route at invocation
+
+| Invocation | Route | What it does |
+|---|---|---|
+| `/seo-check` (no arg) | **Live mode** | Curl + Playwright on the running site. Asks user for environment (dev/prod) and sub-level (quick/deep/full). |
+| `/seo-check text` / `texts` / `content` / `source` / `src` | **Source mode** | Reads ONLY repo source files: data JSONs, sitemap.xml, robots.txt, head template, build-static logic. No HTTP requests, no browser, no dev-server required. Audits texts (titles/descriptions/CTAs/FAQ/stats) and structure (sitemap/hreflang/JSON-LD coverage). |
+
+Detect by lowercasing the first arg and matching against `text|texts|content|source|src|in-source`. Anything else (or missing) → Live mode.
+
+If you can't determine the arg from the invocation context, default to **Live mode** and proceed with Step 1 below.
+
 ## Execution
 
-### Step 0: Read local config
+### Step 0: Read local config (both modes)
 
 Read `./tests/skills/seo-check.md` from the project root.
 
 - **If file exists** — parse the sections described under "Config format" below.
 - **If file NOT found** — print the template (see "Config format") and STOP.
 
-### Step 1: Ask user which mode + which environment
+### Step 0.5: Source mode (if invoked with `text` arg)
+
+Skip Steps 1–8 entirely. Go to "## Source mode audit" further below.
+
+### Step 1: Ask user which mode + which environment (Live mode only)
 
 Use `AskUserQuestion` with **two** questions in one call:
 
@@ -200,6 +216,90 @@ Options:
 **Do NOT auto-invoke** `/seo-fix` — wait for user choice. If 1/2/3, instruct user to run `/seo-fix` next (the fix skill will pick up findings from this conversation context).
 
 If all PASS — skip Step 8 entirely.
+
+## Source mode audit (`/seo-check text`)
+
+Triggered when invoked with first arg matching `text|texts|content|source|src|in-source`. **No HTTP, no Playwright, no dev-server.** Reads only repo source files. Use this when:
+
+- Aйдитим контент перед деплоем (вне зависимости от того, поднят ли сайт)
+- Проверяем что после рефакторинга texts/structure ничего не уехало
+- Не хочется тратить время на curl/Playwright если задача — текстовая ревизия
+
+### Files audited
+
+| Группа | Файл (от project root) | Что проверяем |
+|---|---|---|
+| Тексты лендингов | `front/src/static/data/ru.json` + `front/src/static/data/en.json` | title/description длины, og:* parity, CTA-копи, stats-плейсхолдеры, FAQ полнота, contact email/url consistency, RU↔EN parity ключей |
+| Sitemap | `front/public/sitemap.xml` | XML валидность, completeness vs PAGES в build-static, hreflang симметричность, домен совпадает с canonical, lastmod не устарел (>12 мес) |
+| Robots | `front/public/robots.txt` | Allow/Disallow полнота, Sitemap-директива указывает на правильный URL, нет случайного `Disallow: /` для `User-agent: *` |
+| Head template | `front/src/static/partials/_head.eta` | Наличие canonical/hreflang/og:*/twitter:*/JSON-LD/yandex-verification, использование dynamic `it.data.site.url` (не hardcoded), `og:image` ссылка валидна |
+| Build pipeline | `front/scripts/build-static.ts` | JSON-LD `@graph` — Organization/WebSite на всех, FAQPage на landing, WebPage на остальных; PAGES массив vs sitemap.xml; BreadcrumbList/Product/Offer — WARN если отсутствуют |
+| SPA shell | `front/app.html` | canonical/hreflang/og:*/twitter:* для SPA-роута (если admin-area индексируется хотя бы под `noindex`) |
+
+If any of these paths don't exist in this project — emit a WARN with a note about which file is missing and continue with what's available.
+
+### Checks (Source mode)
+
+Print header:
+
+```
+**SEO Check — Source** [0/N]
+```
+
+For each project source file:
+
+**Texts (per locale, per page):**
+
+S1. **title length 10–60 chars** — иначе FAIL with actual length
+S2. **description length 50–160 chars** — иначе FAIL
+S3. **og_title present and ≤ 95 chars** — иначе WARN
+S4. **og_description present and ≤ 200 chars** — иначе WARN
+S5. **Title uniqueness across pages × locales** — дубли = FAIL
+S6. **Description uniqueness** — дубли = WARN
+S7. **CTA in `landing.cta.button`** — non-empty, contains action verb (regex: `^(Начать|Зарегистр|Создать|Купить|Найти|Получить|Start|Sign|Get|Create|Find|Buy)`) → иначе WARN
+S8. **Stats placeholders** (`landing.stats.*`) — если значения круглые числа типа `120+`, `300+`, `10 000+`, `4,8 млрд` — WARN «выглядит как маркетинговый placeholder, проверь правдивость»
+S9. **FAQ count ≥ 5** — иначе WARN (мало для FAQPage schema)
+S10. **`site.email` matches `site.url` host** — `info@vdole.pro` для `https://vdole.pro` ✓; mismatch = FAIL
+S11. **No dead-domain references** — grep по text values на `vdole.it-joy.ru` и других упразднённых хостах (из local config или CLAUDE.md `## Domain Terminology` если упомянуты)
+S12. **RU ↔ EN key parity** — каждый ключ в `ru.json` должен быть в `en.json` и наоборот. Missing keys = FAIL (поломает рендер EN-страницы)
+S13. **`legal.last_updated_date`** — если дата старше 12 мес от сегодня → WARN
+
+**Structure (sitemap + robots + head + build-static):**
+
+S14. **sitemap.xml — valid XML** (try parse, FAIL on error)
+S15. **Every page from build-static.ts `PAGES` array (excluding error_404/error_403/docs) appears in sitemap** for both RU and EN locales
+S16. **Sitemap URLs use canonical host** matching `site.url` из ru.json. Mismatch = FAIL
+S17. **hreflang в sitemap симметричны** — каждый URL имеет ru/en/x-default, alt-URL ведут на реально существующие записи в том же sitemap
+S18. **lastmod не старше 12 месяцев** (от текущей даты) — WARN если устарел
+S19. **robots.txt — Sitemap-директива** указывает на тот же URL что и реальный файл, домен корректный
+S20. **robots.txt — Allow** покрывает все public URL из local config
+S21. **robots.txt — Disallow** содержит все из `must_disallow` local config + нет случайного `Disallow: /` для `User-agent: *`
+S22. **_head.eta — обязательные теги** — наличие в шаблоне: title, description, canonical, hreflang × 3, og:type/title/description/url/image/site_name/locale, twitter:card/title/description/image, JSON-LD inject, yandex-verification (если `yandex_verification: true` в config)
+S23. **_head.eta — нет hardcoded URL** — все URL через `<%= it.data.site.url %>...`, не литералы. Hardcoded `https://vdole.pro/...` или подобное в шаблоне = WARN
+S24. **build-static.ts — JSON-LD coverage** — Organization + WebSite в `@graph` для всех страниц (S24a), FAQPage на landing (S24b), WebPage на не-landing (S24c)
+S25. **build-static.ts — BreadcrumbList** — отсутствует = WARN (рекомендация для будущих per-business pages)
+S26. **build-static.ts — Product/Offer** — отсутствует = WARN если в проекте есть страницы офферов (по `## Public URLs` в config)
+S27. **PAGES в build-static.ts vs sitemap.xml — расхождения** — список страниц в build генерится, но не попадает в sitemap (или наоборот) = FAIL
+S28. **SPA shell (front/app.html)** — если файл существует, содержит yandex-verification, canonical, og:*, JSON-LD (Organization + WebSite). Расхождение с _head.eta по токенам = WARN
+
+### Output (Source mode)
+
+Use the same format as Live mode:
+
+```
+[i/N] Check Name -- PASS
+[i/N] Check Name -- FAIL: <reason, with file:line if applicable>
+[i/N] Check Name -- WARN: <reason>
+```
+
+Print summary table identical to Step 6, then Step 7 verdict, then offer `/seo-fix` if any FAIL/WARN (Step 8 logic) — `/seo-fix` уже работает по исходникам, ровно тот же контекст.
+
+### Why two modes
+
+- **Live mode** ловит то, что не видно из исходников: реальный hydration React, броузерные console errors, network failures, реальный response от Метрики, OG-preview через Playwright. Нужен **запущенный сервер** (prod или dev).
+- **Source mode** ловит то, что лучше проверять в репо: текстовые косяки, неполный sitemap, отсутствующие meta-теги в шаблоне, дубли titles между страницами, RU/EN parity, schema.org gaps. **Не требует поднятого сервера** — можно ревизировать перед коммитом.
+
+Оба mode используют один и тот же local config (`./tests/skills/seo-check.md`), один и тот же чек-набор по сути (просто Live проверяет рендеренный HTML, Source — исходники).
 
 ## Implementation notes
 

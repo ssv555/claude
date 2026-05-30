@@ -7,11 +7,12 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*)
 
 # dev
 
-Управление dev'ами на `moscow_my`. Полностью изолированные среды разработки —
+Управление dev'ами на `moscow_my`. Изолированные среды разработки —
 у каждого свой Linux-юзер, своя PostgreSQL DB, свой HTTPS dev-стенд
-`https://dev-<alias>.it-joy.ru`, свой блок портов и свой `.env.development`
-закрытый от чтения самим девом. Push-proxy git-зеркало в GitHub через
-bot-аккаунт `ssv-bot` (login `ssv555ssv`) → `ssv555/vdole`.
+`https://dev-<alias>.it-joy.ru`, свой блок портов. Claude бежит **как сам dev**
+(не setuid); OAuth-токен shared через `webdev` user (один OAuth = все devs работают).
+Push-proxy git-зеркало в GitHub через bot-аккаунт `ssv-bot` (login `ssv555ssv`)
+→ `ssv555/vdole`.
 
 ## Status block
 
@@ -77,19 +78,30 @@ Host alias `moscow_my` в `~/.ssh/config` (root@195.2.75.212:53847).
 
 `lib/bootstrap-server.sh`. Каждый шаг проверяет состояние и skip'ает если уже сделано:
 
-1. Системные юзеры `claude-runner`, `git-mirror` (без shell)
-2. Группа `developers` + sshd AllowGroups `developers` в `/etc/ssh/sshd_config.d/01-hardening.conf`
-3. **Filesystem isolation ACLs** — `setfacl` блокирует `developers` от `/var`, `/backup`, `/snap`, `/media`, `/mnt`, `/cdrom`, `/opt/{certbot,containerd,dev-skill,qdrant}`; traverse-only на `/home`, `/opt`, `/srv`, `/srv/git`
-4. Claude CLI в `/opt/claude/` через `bun install -g`
-5. `/opt/claude-shared/` — копия allowlisted скилов, dev-CLAUDE.md, codex.md, DEV_GUIDE.md, memory/
-6. Setuid-wrapper `/usr/local/bin/claude` (4755 claude-runner:claude-runner) — компилируется из `setuid-claude-wrapper.c`. Блокирует флаги `--config-dir/--projects-dir/--skills-dir/--hooks-dir/--settings`, очищает env, ставит HOME из passwd
-7. Bare repo `/srv/git/VDole.git` (`git init --bare --shared=group --initial-branch=main`) + хуки `pre-receive` (пропускает не-developers) + `post-receive` (queue trigger) + origin = `git@github.com:ssv555/vdole.git`
-8. Hooks dir + config + HEAD — `g-w` (девы НЕ могут переписать pre-receive хук)
-9. `/home/git-mirror/.ssh/id_ed25519` (фингерпринт `NZ5QUSFA...`) — бэкап ключа из `D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-self\git-mirror\`
-10. `mirror-push.sh` + systemd `vdole-mirror.service` + `vdole-mirror.path` (inotify) + sudoers
-11. **Daily 06:00 cleanup** — `dev-services-cleanup.sh` + `dev-services-cleanup.timer` убивает все процессы на портах 40001-49999 (защита от забытых `bun run dev`)
+1. `webdev` (UID 1600, shell `/bin/bash`, HOME `/var/lib/webdev`) — auth-holder. После bootstrap chief один раз делает OAuth: `sudo -u webdev -i; claude` → `/var/lib/webdev/.claude/.credentials.json` (640 webdev:webdev). `/dev add` копирует в HOME каждого дева. **Shell `/bin/bash` обязателен** — Anthropic отшивает `nologin`-аккаунты. **UID >=1000 обязателен** — Anthropic отшивает системные UID.
+2. `git-mirror` (system, nologin) + группа `developers` + sshd AllowGroups `developers`
+3. **Filesystem isolation ACLs** — `setfacl` блокирует `developers` от `/var`, `/backup`, `/snap`, `/media`, `/mnt`, `/cdrom`, `/opt/{certbot,containerd,dev-skill,qdrant}`; traverse-only на `/home`, `/opt`, `/srv`, `/srv/git`. **Exception:** `g:developers:--x` на `/var`, `/var/lib`, `/var/lib/webdev` + `:r-x` на `/var/lib/webdev/.claude` — узкий traverse к креды webdev (всё остальное в /var остаётся блокированным)
+4. **SFTP блок + audit** — `02-developers-no-sftp.conf`: `Match Group developers / Subsystem sftp /bin/false` (WinSCP/scp падают, shell работает). `03-sftp-audit.conf`: `-l INFO -f AUTH` для прочих SFTP.
+5. **`/etc/hosts` — Anthropic IPv4 force** — 14 anthropic-доменов прибиты к `160.79.104.10`. Зачем: wg0 туннель маршрутизирует только IPv4 → Amsterdam. IPv6 (AAAA) уходит direct с moscow IP → Anthropic geo-block 403.
+6. Claude CLI в `/opt/claude/` через `bun install -g`
+7. `/opt/claude-shared/` — allowlisted скилы, dev-CLAUDE.md, codex.md, DEV_GUIDE.md, memory/
+8. `/usr/local/bin/claude` — **plain symlink** на `/opt/claude/bin/claude` (без setuid wrapper). Дев запускает claude **как самого себя** (UID 1002 = spc).
+9. Bare repo `/srv/git/VDole.git` + хуки + origin GitHub
+10. Hooks dir + config + HEAD — `g-w` (девы НЕ переписывают)
+11. `/home/git-mirror/.ssh/id_ed25519` (фингерпринт `NZ5QUSFA...`) — бэкап ключа из `D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-self\git-mirror\`
+12. `mirror-push.sh` + systemd `vdole-mirror.service` + `vdole-mirror.path` (inotify) + sudoers
+13. **Daily 06:00 cleanup** — `dev-services-cleanup.sh` + `dev-services-cleanup.timer` убивает все процессы на портах 40001-49999
 
-Bootstrap триггерится автоматически при первом `/dev add`. Маркер `/opt/dev-skill/.bootstrap-ok`. Можно запустить вручную: `/dev bootstrap`.
+Bootstrap триггерится автоматически при первом `/dev add`. Маркер `/opt/dev-skill/.bootstrap-ok`. Можно запустить вручную: `/dev bootstrap` (идемпотентно — безопасно перезапускать после правок lib/).
+
+**После bootstrap — ОДИН РАЗ:** `sudo -u webdev -i; claude` → пройти OAuth в браузере → выйти. Без этого `/dev add` будет копировать пустой credentials.json и дев получит TUI с просьбой login.
+
+### Bootstrap-extras (с 2026-05-30)
+
+- **Custom motd** (`/etc/update-motd.d/99-dev-welcome`) — компактный welcome-баннер на каждом login: alias, репо+ветка, статус принятия правил, restart-warn, шорткаты ключевых скилов. Дефолтный Ubuntu-motd погашен через `~/.hushlogin` (создаётся в `add-user.sh`).
+- **RULES gate** — `/opt/claude-shared/RULES.md` + `/opt/claude-shared/RULES.version` (SHA-256). Принятие через привилегированный helper `/usr/local/sbin/dev-accept-rules` (sudoers NOPASSWD для %developers). Gate `/etc/profile.d/00-rules-check.sh` блокирует интерактивный shell до приёма. Audit-log: `/opt/claude-shared/audit/rules_acceptances.log` (root 600).
+- **Workflow audit-log** — `/usr/local/sbin/dev-audit-log` (sudoers helper). Все `/dev-NN-*` скилы пишут одну строку на действие в `/opt/claude-shared/audit/<YYYY-MM>/<alias>.log` (root 600 — девы не видят чужой работы).
+- **Chief notifier** — `/usr/local/sbin/dev-notify-finish` (sudoers helper). `/dev-09-finish` зовёт его → запись в `/opt/claude-shared/audit/finished_branches.log` + опциональный HTTPS POST на `WEBHOOK_URL` (из `/opt/dev-skill/notify.conf` если есть). Конфиг отсутствует → log-only.
 
 ## `/dev add <alias> [<repo>]` — полный flow
 
@@ -132,16 +144,18 @@ Bootstrap триггерится автоматически при первом 
 2. **Chief PC:** `Get-NextPortBlock` сканит `/etc/nginx/conf.d/dev-*.it-joy.ru.conf`, ищет следующий свободный 10-блок в `40001..49991`. Шаг **10** — до 100 девов.
 3. **Chief PC:** `New-NginxConfForDev` — генерит HTTP-stub conf → `certbot --webroot` → full HTTPS conf из `lib/nginx-dev-template.conf` (placeholders `{{ALIAS}}`, `{{PORT_API}}`, `{{PORT_HMR}}`) → nginx reload
 4. **Server (`add-user.sh`):**
-   - `adduser --disabled-password` + `usermod -aG developers` + `usermod -aG <alias> claude-runner`
+   - `adduser --disabled-password` + `usermod -aG developers <alias>` + `usermod -aG webdev <alias>` (read /var/lib/webdev/.claude/creds) + `usermod -aG <alias> ssv` (chief read access without sudo)
    - `~/.ssh/authorized_keys` (pub-half from chief)
-   - `~/.claude/` (**claude-runner:claude-runner 750** — claude полный owner, может писать settings.json/hooks/любые служебные файлы) + симлинки read-only на shared (skills/CLAUDE.md/codex.md/DEV_GUIDE.md)
-   - `~/.claude/memory/` — **per-dev директория** (НЕ симлинк), claude-runner:claude-runner 700, seeded `cp -a /opt/claude-shared/memory/. ~/.claude/memory/` (дальше каждый дев пишет в свою память изолированно)
-   - `~/.claude/projects` + `~/.claude/sessions` + `~/.claude/.credentials.json` (claude-runner:claude-runner 700/600 — дев НЕ читает, sentinels приватны Claude'у)
+   - `~/.bashrc` — `export TERM=xterm-256color` + `export LC_ALL=en_US.UTF-8` (Termius шлёт `TERM=vt100` → ломает TUI) + auto-cd в `~/projects/<repo>` при interactive login
+   - `~/.claude/` (**<alias>:<alias> 750** — дев сам owner, claude бежит как он) + симлинки read-only на `/opt/claude-shared/` (skills/CLAUDE.md/codex.md/DEV_GUIDE.md)
+   - `~/.claude/memory/` — per-dev директория, seeded `cp -a /opt/claude-shared/memory/.` (каждый дев пишет в свою память изолированно)
+   - `~/.claude/.credentials.json` — **копия** `/var/lib/webdev/.claude/.credentials.json` (640 webdev:webdev). Claude НЕ принимает symlink на чужой файл — поэтому `cp`, не `ln`. Refresh-tokens у каждого дева расходятся со временем; bootstrap-auth shared
+   - `~/.claude.json` — копия `/var/lib/webdev/.claude.json` (global settings/state, нужен для распознавания валидной сессии)
    - `~/projects/` (`<alias>:<alias>` 755)
    - git config user.name/user.email
 5. **Server (clone + tweak):**
    - `git clone /srv/git/<repo>.git ~/projects/<repo>` (origin = bare local path)
-   - `chgrp -R claude-runner` + `chmod g+s` на dirs → claude-runner может писать в дев-проект
+   - `chown -R <alias>:<alias>` на `~/projects/<repo>` — дев сам owner
 6. **Server (PostgreSQL):**
    - `CREATE ROLE user_<alias>` с **рандомным 32-char паролем**
    - `CREATE DATABASE <repo>_<alias> TEMPLATE <repo>` (fallback empty DB при активных коннектах)
@@ -152,7 +166,7 @@ Bootstrap триггерится автоматически при первом 
    - JWT_SECRET / COOKIE_SECRET / SESSION_SECRET — рандом 64-char
    - PUBLIC_BASE_URL = `https://dev-<alias>.it-joy.ru`
    - OAuth/SMS/SMTP/Bot tokens — DUMMY (шеф докинет real-creds через secure channel если деву нужны интеграции)
-   - **Perms: 600 claude-runner:claude-runner** — дев НЕ читает прямо из shell. Bun читает только запущенный через claude (setuid → claude-runner).
+   - **Perms: 600 <alias>:<alias>** — дев читает (claude/bun запущены как сам dev). TODO: build/deploy isolation — split в `~/projects/<repo>` (DUMMY) и `~/projects/<repo>-www` (REAL, owned webdev) — см. `docs/todo/`
 8. **Server:** `bun install` от имени дева
 9. **Server (`add-user.sh` шаг 7 — README onboarding для дева):**
    - Рендерит `lib/README.template.md` (плейсхолдеры `{{ALIAS}}`, `{{HOST_IP}}`, `{{SSH_PORT}}`, `{{PORT_*}}`, `{{DB_NAME}}`, `{{DB_USER}}`, `{{REPO_NAME}}` и т.д.) → `/home/<alias>/README.<ALIAS_UPPER>.md` (`<alias>:<alias>` 644 — дев читает свободно). Sanity-check на нерасширенные `{{}}` → warn в лог. **Не содержит пути к private key шефа** (только параметры для Termius: host/port/user).
@@ -204,10 +218,18 @@ Manual force-cleanup: `sudo systemctl start dev-services-cleanup.service`
 `C:\Users\ssv55\.claude\developers\skills_allowlist.json` — single source of truth.
 
 Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (root-owned read-only).
-Дев'ам отдаются:
+Дев'ам отдаются (актуально на 2026-05-30):
 - `pre-deploy-check`, `pre-deploy-autotests`
 - `version-up`, `session-archive`
-- `dev-commit`, `dev-push`, `dev-reset`, `dev-info`
+- `dev-info`
+- `dev-00-start` — начать задачу (pull main + новая ветка)
+- `dev-01-status` — где я (ветка, коммиты, dirty)
+- `dev-05-commit` — коммит (с branch guard, один таск = один коммит)
+- `dev-07-commit-push` — коммит + push (один таск = один push)
+- `dev-08-reset` — rebase на свежий main
+- `dev-09-finish` — финал (pre-deploy + push + уведомление шефа)
+
+Старые имена `dev-commit/dev-push/dev-reset` упразднены 2026-05-30 — заменены номерными для отображения порядка в workflow.
 
 ## Раскладка ФС на сервере
 
@@ -217,34 +239,67 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
   skills/                               (allowlist'ом)
   CLAUDE.md                             dev-версия (только code quality + workflow)
   codex.md, DEV_GUIDE.md, memory/
+  RULES.md                              root:root 644                    ← обязательные правила
+  RULES.version                         root:root 644                    ← SHA-256 текущего RULES.md
+  rules_acceptances/                    root:root 755                    ← <alias>__<hash>.flag (root 644)
+  audit/                                root:root 750                    ← дев не читает
+    rules_acceptances.log               root:root 600                    ← кто/когда/откуда принял правила
+    finished_branches.log               root:root 640                    ← /dev-09-finish events (для шефа/notifier)
+    <YYYY-MM>/<alias>.log               root:root 600                    ← per-dev workflow audit
 /opt/dev-skill/                         root:root 755                    ← server-side скрипты
   bootstrap-server.sh, add-user.sh, del-user.sh, list-users.sh
-  setuid-claude-wrapper.c
   mirror-push.sh, vdole-mirror.{service,path}
   pre-receive.sh, post-receive.sh
   dev-services-cleanup.{sh,service,timer}
   nginx-dev-template.conf
-  README.template.md                    шаблон onboarding для девов (рендерится add-user.sh)
+  README.template.md, AGREEMENT.template.md, RULES.template.md
+  99-dev-welcome                        (→ /etc/update-motd.d/99-dev-welcome)
+  00-rules-check.sh                     (→ /etc/profile.d/00-rules-check.sh)
+  dev-accept-rules.sh                   (→ /usr/local/sbin/dev-accept-rules)
+  dev-audit-log.sh                      (→ /usr/local/sbin/dev-audit-log)
+  dev-notify-finish.sh                  (→ /usr/local/sbin/dev-notify-finish)
+  notify.conf                           root:root 600                    ← опционально: WEBHOOK_URL+WEBHOOK_SECRET для /dev-09-finish
   dev-shared-CLAUDE.md, codex.md, DEV_GUIDE.md, memory/
   .bootstrap-ok
 
-/usr/local/bin/claude                   claude-runner:claude-runner 4755 ← setuid wrapper
+/usr/local/sbin/dev-accept-rules        root:root 750                    ← privileged helper для приёма правил
+/usr/local/sbin/dev-audit-log           root:root 750                    ← privileged helper для workflow audit
+/usr/local/sbin/dev-notify-finish       root:root 750                    ← privileged helper для уведомления шефа
 
-/home/<dev>/                            <dev>:<dev>             750       ← НЕ 755, дев приватен
-  README.<DEV_UPPER>.md                 <dev>:<dev> 644                   ← onboarding для дева (host/port/user/ports/DB) — читается им свободно
+/etc/profile.d/00-rules-check.sh        root:root 755                    ← gate: блокирует shell до приёма правил
+/etc/update-motd.d/99-dev-welcome       root:root 755                    ← custom motd для девов
+
+/etc/sudoers.d/dev-accept-rules         root:root 440                    ← %developers → dev-accept-rules accept *
+/etc/sudoers.d/dev-skills-helpers       root:root 440                    ← %developers → dev-audit-log + dev-notify-finish
+
+/usr/local/bin/claude                   symlink → /opt/claude/bin/claude  ← plain symlink, БЕЗ setuid
+
+/var/lib/webdev/                        webdev:webdev 755                 ← auth-holder (UID 1600, shell /bin/bash, OBLIGATORY: Anthropic refuses nologin/UID<1000)
+  .claude/                              webdev:webdev 755 + ACL g:developers:r-x
+    .credentials.json                   webdev:webdev 640                 ← master OAuth (один OAuth login chief'ом, потом /dev add копирует в HOME каждого дева)
+  .claude.json                          webdev:webdev 600                 ← global settings
+
+/etc/hosts                                                                 ← 14 anthropic-доменов прибиты к 160.79.104.10 (force IPv4 → wg0 → Amsterdam)
+/etc/ssh/sshd_config.d/02-developers-no-sftp.conf                          ← Match Group developers: Subsystem sftp /bin/false (WinSCP блок)
+/etc/ssh/sshd_config.d/03-sftp-audit.conf                                  ← audit-log SFTP
+
+/home/<dev>/                            <dev>:<dev> 750                   ← plain 750, БЕЗ ACL (sshd StrictModes happy)
+  README.md                             <dev>:<dev> 644                   ← onboarding из lib/README.template.md
+  AGREEMENT.md                          <dev>:<dev> 644                   ← NDA из lib/AGREEMENT.template.md
   .ssh/                                 <dev>:<dev> 700
-  .claude/                              claude-runner:claude-runner 750   ← дев НЕ заходит (other class=0), claude полный owner
-    skills    → /opt/claude-shared/skills    (root-symlink, read-only)
-    CLAUDE.md → /opt/claude-shared/CLAUDE.md (root-symlink, read-only — chief manages)
+  .bashrc                                                                  ← + TERM=xterm-256color + LC_ALL=en_US.UTF-8 + auto-cd projects/<repo>
+  .claude.json                          <dev>:<dev> 600                   ← КОПИЯ из /var/lib/webdev/.claude.json (нужно для распознавания валидной сессии)
+  .claude/                              <dev>:<dev> 750                   ← дев сам owner (claude бежит как dev)
+    skills    → /opt/claude-shared/skills    (read-only symlink)
+    CLAUDE.md → /opt/claude-shared/CLAUDE.md
     codex.md, DEV_GUIDE.md               → /opt/claude-shared/... (read-only)
-    memory/                             claude-runner:claude-runner 700   ← per-dev (НЕ симлинк), seeded из shared
-    projects/                           claude-runner:claude-runner 700   ← claude пишет conversation data
-    sessions/                           claude-runner:claude-runner 700   ← claude пишет session metadata
-    .credentials.json                   claude-runner:claude-runner 600
-    (settings.json, hooks/, и т.п.)     claude может создавать на top-level (owner=claude-runner)
-  projects/                             <dev>:<dev>             755
-    <repo>/                             <dev>:claude-runner     2775      ← setgid, claude может писать
-      .env.development                  claude-runner:claude-runner 600   ← дев НЕ читает
+    memory/                             <dev>:<dev> 700                   ← per-dev, seeded из shared
+    projects/                           <dev>:<dev> 700                   ← claude пишет conversation data
+    sessions/                           <dev>:<dev> 700                   ← claude пишет session metadata
+    .credentials.json                   <dev>:<dev> 600                   ← КОПИЯ /var/lib/webdev/...creds (не симлинк — claude ругается). Refresh-tokens расходятся со временем
+  projects/                             <dev>:<dev> 755
+    <repo>/                             <dev>:<dev>                       ← дев сам owner всех файлов
+      .env.development                  <dev>:<dev> 600                   ← дев МОЖЕТ читать (claude/bun бегут как dev). TODO build/deploy isolation
 
 /srv/git/VDole.git/                     root:developers 2775
   hooks/                                root:developers 2755              ← g-w (дев НЕ переписывает pre-receive)
@@ -264,14 +319,18 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
 ## Filesystem isolation для devs (через ACL)
 
 Дев в группе `developers` НЕ видит:
-- `/var`, `/backup`, `/lost+found`, `/snap`, `/media`, `/mnt`, `/cdrom` — full block
+- `/var`, `/backup`, `/lost+found`, `/snap`, `/media`, `/mnt`, `/cdrom` — full block (exception: `--x` traverse до `/var/lib/webdev/.claude/` для чтения мастер-creds)
 - `/opt/{certbot,containerd,dev-skill,qdrant}` — full block
 - `ls /home`, `ls /opt`, `ls /srv` — traverse-only (только cd по точному пути)
 - `/etc/nginx` (750 root:root)
 - Чужие процессы в `ps aux` (`hidepid=invisible` на `/proc`)
 - Чужие SSH/auth логи (`/var` blocked)
-- Свой `~/.claude/` (claude-runner:claude-runner 750 — дев НЕ в claude-runner группе, попадает в other class = 0 прав)
-- `.env.development` (claude-runner:claude-runner 600)
+- SFTP/WinSCP/scp — `Subsystem sftp /bin/false` для group developers
+- Чужие `/home/<other>/` (750 owner:owner — group developers попадает в other=0)
+
+Дев МОЖЕТ:
+- Читать ВСЁ в собственном `~/` (он сам owner — это его рабочее место)
+- Включая `.env.development` (claude бежит как dev → нет другого UID для изоляции). Защита через build/deploy isolation — TODO
 
 ## Что НЕ делать
 
@@ -280,7 +339,6 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
 - Не пушить в protected branches через bot-аккаунт — нарушает audit-trail
 - Не редактировать allowlist без подтверждения
 - Не показывать содержимое SSH private-key и `.env.development` в чате (секреты)
-- Не запускать `bun run dev` от имени дева напрямую — только через claude
 
 ## Зависимости (выполнены 2026-05-27)
 
