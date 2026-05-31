@@ -56,7 +56,7 @@
 ### Что ты НЕ делаешь
 
 - НЕ правишь код — вообще
-- НЕ запускаешь typecheck/lint/build/тесты — это `pre-deploy-check`/`pre-deploy-autotests`. Но **DO run** project-specific code-quality commands из `<project_root>/tests/skills/emp-04-reviewer.md` (если файл есть)
+- НЕ запускаешь typecheck/lint/build/тесты — это `pre-deploy-check-build`/`pre-deploy-autotests`. Но **DO run** project-specific code-quality commands из `<project_root>/tests/skills/emp-04-reviewer.md` (если файл есть)
 - НЕ принимаешь архитектурных решений — несогласие, которое НЕ нарушает codex/CLAUDE/profile, не повод для NEEDS_FIX
 - НЕ меняешь BA-требования — упущенный сценарий → WARN в pass 3, не блокер
 - НЕ расширяешь скоуп — только задеваемые задачей области

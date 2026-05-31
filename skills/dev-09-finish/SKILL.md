@@ -1,6 +1,6 @@
 ---
 name: dev-09-finish
-description: Finish a task — run pre-deploy-check + pre-deploy-autotests, final commit + push, notify chief (audit log + optional TG webhook). End-of-task ritual; the chief gets a notification with branch + sha + line diff. Use when user says "/dev-09-finish", "закончил задачу", "готово, зови шефа", "/d09".
+description: Finish a task — run pre-deploy-check-build + pre-deploy-autotests, final commit + push, notify chief (audit log + optional TG webhook). End-of-task ritual; the chief gets a notification with branch + sha + line diff. Use when user says "/dev-09-finish", "закончил задачу", "готово, зови шефа", "/d09".
 model: sonnet
 allowed-tools: Bash(*), Read(*), Grep(*), Glob(*), Skill(*)
 ---
@@ -42,7 +42,7 @@ MODEL:  sonnet
 
 5. **Pre-deploy check** (typecheck/lint/build) — через скил:
    ```
-   /pre-deploy-check
+   /pre-deploy-check-build
    ```
    Падает → СТОП. Показать ошибки, отказаться завершать. Сказать: «Исправь и запусти `/dev-09-finish` заново».
 
@@ -87,7 +87,7 @@ MODEL:  sonnet
 
 ## Что НЕ делать
 
-- Не пропускать pre-deploy-check / pre-deploy-autotests «потому что я уже запускал». Они тут официальный signoff.
+- Не пропускать pre-deploy-check-build / pre-deploy-autotests «потому что я уже запускал». Они тут официальный signoff.
 - Не пушить с `--force` если push failed после rebase. Если конфликт — это новая работа, она требует `/dev-08-reset` и нового цикла.
 - Не вызывать `/dev-merge` сам — это chief-only скил.
 - Не финализировать ветку с несколькими задачами — Rule 1.

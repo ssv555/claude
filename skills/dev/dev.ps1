@@ -665,7 +665,7 @@ function Cmd-Help {
     Write-Host "                                (sha / slug / date / commits / +/- lines)"
     Write-Host "  /dev-merge <sha>              Merge branch by HEAD sha (from TG notification)."
     Write-Host "                                Sha-pin check: warns if branch advanced after"
-    Write-Host "                                /dev-09-finish. Then runs pre-deploy-check +"
+    Write-Host "                                /dev-09-finish. Then runs pre-deploy-check-build +"
     Write-Host "                                autotests + merge + push + cleanup."
     Write-Host "  /dev-changelog <sha>          Analyze branch by sha: Technical changes"
     Write-Host "                                (backend / frontend / DB) + Business changes"

@@ -167,7 +167,7 @@ When implementing per architect's §4, follow this order (types ready before con
 
 ## 8. Code-quality command set (reviewer runs in Pass 1 if file `<project>/tests/skills/emp-04-reviewer.md` exists)
 
-> Reviewer-specific commands that check content/consistency between code and static assets. NOT typecheck/lint/build (those belong to `pre-deploy-check`). Examples: i18n key↔code sync, hardcoded UI strings, dead translation cleanup.
+> Reviewer-specific commands that check content/consistency between code and static assets. NOT typecheck/lint/build (those belong to `pre-deploy-check-build`). Examples: i18n key↔code sync, hardcoded UI strings, dead translation cleanup.
 
 ```bash
 <command 1>

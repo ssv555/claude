@@ -40,7 +40,7 @@ Private key передан тебе шефом отдельно через за�
 - **Skills** разделяемые, read-only — общие для всех девов на сервере. Доступные тебе:
   - Workflow: `/dev-00-start` (старт задачи), `/dev-01-status` (где я), `/dev-05-commit`, `/dev-07-commit-push`, `/dev-08-reset`, `/dev-09-finish` (финал + уведомление шефа)
   - Справка / аудит: `/dev-info`
-  - Качество: `/pre-deploy-check`, `/pre-deploy-autotests`, `/version-up`, `/session-archive`
+  - Качество: `/pre-deploy-check-build`, `/pre-deploy-autotests`, `/version-up`, `/session-archive`
 - **CLAUDE.md / codex.md / DEV_GUIDE.md** — read-only, симлинки на shared. Запусти `claude` и попроси `прочитай CLAUDE.md` для общего онбординга по коду
 - **Memory** (`~/.claude/memory/`) — твоя личная, изолированная от других девов. Claude пишет туда сам по мере работы
 - **Sessions / projects** (`~/.claude/sessions/`, `~/.claude/projects/`) — твоя приватная история сессий
@@ -114,7 +114,7 @@ Origin указывает на локальный bare repo `/srv/git/VDole.git`
 - `/dev-05-commit` — staged + commit с авто-сообщением (один таск = один коммит)
 - `/dev-07-commit-push` — то же + push (один таск = один push)
 - `/dev-08-reset` — `git fetch origin && git rebase origin/main`
-- `/dev-09-finish` — финал задачи: pre-deploy-check + autotests + push + уведомление шефа в TG
+- `/dev-09-finish` — финал задачи: pre-deploy-check-build + autotests + push + уведомление шефа в TG
 - `/dev-info` — справка по командам
 
 ---

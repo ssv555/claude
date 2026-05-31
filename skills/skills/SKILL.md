@@ -19,7 +19,7 @@ List all skills (global + local) as a markdown table with clickable file paths.
 4. Output a numbered markdown table with columns: `#`, `Скилл`, `Путь`.
    - `Скилл` = `/<directory-name>`
    - ALL paths (global and local) MUST be clickable relative markdown links using forward slashes
-   - **Локальные** example: `[.claude/skills/pre-deploy-check/SKILL.md](.claude/skills/pre-deploy-check/SKILL.md)`
+   - **Локальные** example: `[.claude/skills/pre-deploy-check-build/SKILL.md](.claude/skills/pre-deploy-check-build/SKILL.md)`
    - **Глобальные** example: `[../../AI/Claude/skills/git-push/SKILL.md](../../AI/Claude/skills/git-push/SKILL.md)`
 5. Group: first **Глобальные**, then **Локальные** (skip section if empty).
 6. Sort alphabetically within each section.

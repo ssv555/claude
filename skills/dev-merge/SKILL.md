@@ -1,6 +1,6 @@
 ---
 name: dev-merge
-description: Chief-only — review and merge a developer's branch into main. Two modes: (1) /dev-merge <alias> lists all open unmerged branches for that dev; (2) /dev-merge <sha> finds branch by HEAD sha and runs full merge pipeline (pre-deploy-check + autotests + merge + push + cleanup). Use when user says "/dev-merge <alias>", "/dev-merge <sha>", "слить ветку", "принять работу".
+description: Chief-only — review and merge a developer's branch into main. Two modes: (1) /dev-merge <alias> lists all open unmerged branches for that dev; (2) /dev-merge <sha> finds branch by HEAD sha and runs full merge pipeline (pre-deploy-check-build + autotests + merge + push + cleanup). Use when user says "/dev-merge <alias>", "/dev-merge <sha>", "слить ветку", "принять работу".
 model: opus
 allowed-tools: Bash(*), Read(*), Grep(*), Glob(*), Edit(*), Write(*)
 ---
@@ -101,7 +101,7 @@ if (-not (($env:USERNAME -eq 'ssv555') -or ($env:COMPUTERNAME -eq 'PC-SKY'))) {
    git checkout -B review/<alias>/<slug> moscow/dev/<alias>/<slug>
    ```
 
-6. **pre-deploy-check** → падает = стоп, показать ошибки.
+6. **pre-deploy-check-build** → падает = стоп, показать ошибки.
 
 7. **pre-deploy-autotests** → падает = стоп.
 

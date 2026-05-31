@@ -2553,3 +2553,20 @@ ssh -o ConnectTimeout=20 -o ServerAliveInterval=5 vdole_pro_timeweb_moscow 'sudo
 [2026-05-31 22:52:52] BLOCKED: ALLOWED by user: Move/rename (mv)
   Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole/docs/todo" && mv plans infra_plans && ls -d infra_plans/ && ls infra_plans/
 
+[2026-06-01 00:05:16] BLOCKED: 'nul' reserved device name
+  Command: pwsh -NoProfile -Command '
+function Burst($proto,$n){
+  "=== curl $proto  x$n ==="
+  $res = 1..$n | ForEach-Object -ThrottleLimit $n -Parallel {
+    $o = & curl.exe $using:proto -k -sS -o NUL -w "%{http_code} v=%{http_version} t=%{time_total}s" --max-time 20 https://vdole-ssv.it-joy.ru/welcome_business 2>&1
+    "$o"
+  }
+  $res | ForEach-Object { "   $_" }
+}
+Burst "--http1.1" 6
+Burst "--http2" 6
+'
+
+[2026-06-01 01:12:08] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: mv "C:/Users/ssv55/.claude/skills/pre-deploy-check" "C:/Users/ssv55/.claude/skills/pre-deploy-check-build" && echo "dir renamed" && ls "C:/Users/ssv55/.claude/skills/" | grep pre-deploy
+

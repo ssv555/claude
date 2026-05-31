@@ -8,7 +8,7 @@
     "mcp-list", "tools-chatgpt-archive", "tools-chat-validator"
   ],
   "global": [
-    "pre-deploy-check",
+    "pre-deploy-check-build",
     "pre-deploy-autotests",
     "version-up",
     "session-archive",

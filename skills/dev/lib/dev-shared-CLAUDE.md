@@ -38,7 +38,7 @@ Shared (read-only via symlink to `/opt/claude-shared/CLAUDE.md`) across all deve
 - `/dev-07-commit-push` — commit + `git push origin <branch>`. Same one-task check.
 - `/dev-08-reset` — sync your branch with latest `main` (rebase). Refuses if
   uncommitted changes — commit first.
-- `/dev-09-finish` — end of task: pre-deploy-check + autotests + final push +
+- `/dev-09-finish` — end of task: pre-deploy-check-build + autotests + final push +
   notify the chief in TG with branch + sha + diff stats.
 
 Old names (`/dev-commit`, `/dev-push`, `/dev-reset`) were renamed 2026-05-30

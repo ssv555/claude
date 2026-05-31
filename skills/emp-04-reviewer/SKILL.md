@@ -50,7 +50,7 @@ If neither `01_ba.md` nor `02_arch.md` exists in the folder — refuse: *«Дл�
 ## Hard prohibitions
 
 - **NO editing any file** other than `03_review.md` itself.
-- **NO running** `bun run typecheck`/`lint`/`build`/test commands — those belong to `pre-deploy-check`/`pre-deploy-autotests`. **DO run** project-specific code-quality commands listed in `tests/skills/emp-04-reviewer.md` (content/consistency checks like i18n key↔code sync).
+- **NO running** `bun run typecheck`/`lint`/`build`/test commands — those belong to `pre-deploy-check-build`/`pre-deploy-autotests`. **DO run** project-specific code-quality commands listed in `tests/skills/emp-04-reviewer.md` (content/consistency checks like i18n key↔code sync).
 - **NO overriding architect's decisions** — disagreement that doesn't violate codex/CLAUDE is not a finding.
 - **NO scope expansion** beyond files/modules touched by the task.
 - **NO half-verdicts** — exactly one of: PASS / NEEDS_FIX / BLOCKED / PASS_PLAN / FIX_PLAN.

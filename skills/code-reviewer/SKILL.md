@@ -58,7 +58,7 @@ If `./tests/skills/code-reviewer.md` exists in the project:
 - Read it.
 - Run every command it lists, in order.
 - Any non-zero exit becomes a **P0 finding** in Step 5 — cite the failing command, include the tail of its output in the detail section, and force the verdict toward `NEEDS FIX`.
-- **Do NOT touch build / test tooling** (`typecheck`, `lint`, `build`, `bun test`) — those belong to the `pre-deploy-check` / `pre-deploy-autotests` skills, not to code review. The project-specific file should contain only **content/consistency checks** (dead-translation scans, sealed-module drift, hardcoded-string linters, i18n key sync, etc.) — the kind of thing "deploy passes but code is wrong".
+- **Do NOT touch build / test tooling** (`typecheck`, `lint`, `build`, `bun test`) — those belong to the `pre-deploy-check-build` / `pre-deploy-autotests` skills, not to code review. The project-specific file should contain only **content/consistency checks** (dead-translation scans, sealed-module drift, hardcoded-string linters, i18n key sync, etc.) — the kind of thing "deploy passes but code is wrong".
 
 If the file doesn't exist — skip this sub-step silently. It's an opt-in convention, not a requirement.
 

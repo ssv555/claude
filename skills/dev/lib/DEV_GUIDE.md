@@ -43,7 +43,7 @@
 | 05 | `/dev-05-commit` | Коммит (с branch guard). Один таск = один коммит |
 | 07 | `/dev-07-commit-push` | Коммит + push. Один таск = один push |
 | 08 | `/dev-08-reset` | Подтянуть свежий main и отрибейзить твою ветку |
-| 09 | `/dev-09-finish` | Финал: pre-deploy-check + autotests + push + уведомление шефа |
+| 09 | `/dev-09-finish` | Финал: pre-deploy-check-build + autotests + push + уведомление шефа |
 
 Сокращения: `/d00 /d01 /d05 /d07 /d08 /d09`.
 
@@ -52,7 +52,7 @@
 | Команда | Описание |
 |---|---|
 | `/dev-info` | Эта инструкция |
-| `/pre-deploy-check` | typecheck/lint/build перед сдачей задачи |
+| `/pre-deploy-check-build` | typecheck/lint/build перед сдачей задачи |
 | `/pre-deploy-autotests` | Прогон unit/integration/e2e тестов |
 | `/version-up` | Бамп `APP_VERSION` в проекте |
 | `/session-archive` | Архив текущей сессии в `docs/archive/sessions/` |
@@ -160,7 +160,7 @@ bun run dev
 | `/dev-07-commit-push` падает с network error | retry уже встроен (3 попытки) — если всё равно падает, скажи шефу |
 | `/dev-08-reset` показывает conflict | разреши вручную, `git add` файлы, `git rebase --continue`, потом снова `/dev-08-reset` |
 | Случайно закоммитил секрет | НЕ пушь, скажи шефу немедленно |
-| `/dev-09-finish` упал на pre-deploy-check | посмотри ошибки, исправь, запусти `/dev-09-finish` снова |
+| `/dev-09-finish` упал на pre-deploy-check-build | посмотри ошибки, исправь, запусти `/dev-09-finish` снова |
 | Заметил баг в чужом коде по ходу задачи | НЕ исправляй здесь. Закончи свою задачу через `/dev-09-finish`, потом `/dev-00-start` новый slug под этот баг |
 | Не понимаю что хочет шеф | Спроси прямо — лучше уточнить, чем сделать не то |
 | Тесты падают на чужом коде | Скажи шефу, не «исправляй» чужое самовольно |

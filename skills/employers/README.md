@@ -2,7 +2,7 @@
 
 > Generic, project-agnostic implementation of the BA → Architect → [Designer] → Developer → Reviewer pipeline (`emp-NN-*`). Each role lives as a global skill at `~/.claude/skills/emp-NN-*/`, reads its universal "role spine" from the same folder, and project-specific stack/domain/rules from `<project>/.claude/skills/employers/profile.md`. New projects "join the system" by dropping in `profile.md` + `config.md`.
 
-## Architecture (mirrors the `pre-deploy-check` global pattern)
+## Architecture (mirrors the `pre-deploy-check-build` global pattern)
 
 ```
 ~/.claude/skills/                              GLOBAL (universal across all projects)
@@ -93,4 +93,4 @@ When any `emp-NN-*` skill runs, it reads sources in this exact order (later sour
 - **Cheap to onboard new projects.** Two files (profile.md + config.md) is the minimum.
 - **Existing projects don't break.** Back-compat path `.docs/employers/` keeps VDole and similar projects working without migration.
 - **Optional per-role addendums.** Project quirks that don't fit profile (e.g. project-specific Pass-1 reviewer rules with custom grep patterns) go into a same-named file in the project's employers dir.
-- **Consistent with other global skills.** `pre-deploy-check`, `pre-deploy-autotests`, `seo-check` all use the same "global runner reads project file" pattern.
+- **Consistent with other global skills.** `pre-deploy-check-build`, `pre-deploy-autotests`, `seo-check` all use the same "global runner reads project file" pattern.

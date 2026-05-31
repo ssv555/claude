@@ -217,7 +217,7 @@ Manual force-cleanup: `sudo systemctl start dev-services-cleanup.service`
 
 Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (root-owned read-only).
 Дев'ам отдаются (актуально на 2026-05-30):
-- `pre-deploy-check`, `pre-deploy-autotests`
+- `pre-deploy-check-build`, `pre-deploy-autotests`
 - `version-up`, `session-archive`
 - `dev-info`
 - `dev-00-start` — начать задачу (pull main + новая ветка)
