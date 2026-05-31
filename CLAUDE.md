@@ -46,15 +46,9 @@ Return only the final answer.
 
 **HARD RULE — dry and short by default, ALWAYS.** If the user did not explicitly ask for detail / explanation / exhaustive list / long form — you write the minimum that fully answers. No restating the question, no recap of what you just did, no "here's what I changed", no "задеты файлы" dumps, no trailing "если что — скажи / могу ещё сделать X", no examples unless asked, no motivational bullets. A yes/no question gets 1–3 words. A small task gets 1–2 sentences after the tool calls. The diff / tool calls are the product — chat text is only what's NOT derivable from them. This is a RECURRING failure mode that the user has called out multiple times — treat violations as critical. When in doubt: cut it.
 
-- No thinking aloud — do not narrate reasoning or next steps
-- No alternatives — do not suggest other approaches unless asked
-- No filler — no "Great!", "Sure!", summaries of what you just did, or closing remarks
-- Task only — answer exactly what was asked, nothing more
-- Minimal output — shortest response that fully addresses the task
-- No explanations unless asked
-- No planning unless explicitly requested
-- Short, direct answers
-- Focus only on execution
+- No thinking aloud, no filler, no planning — don't narrate reasoning/next steps, no "Great!"/"Sure!", no recap of what you did, no closing remarks.
+- No alternatives — do not suggest other approaches unless asked.
+- Task only — shortest output that fully answers; no explanations unless asked.
 
 ## VERIFY BEFORE OUTPUT — UNIVERSAL
 NEVER make any claim without verifying first with a tool. No guessing, no theorizing, no speculating. Check first, speak second. If you can't verify — say "не знаю, проверю" and check.
@@ -90,8 +84,7 @@ NEVER make any claim without verifying first with a tool. No guessing, no theori
 - Public documentation pages, external APIs with their own SLAs
 
 ### Why
-
-User incident 2026-04-22: I fired `browser_navigate` blind to a dev URL twice, both timed out at 60s. User had forgotten to start the HMR server. Two minutes of wall-time burned waiting for timeouts before I even thought to probe the port. A 3-second `curl` would have revealed the server was down instantly.
+(incident 2026-04-22: fired `browser_navigate` blind twice, both timed out at 60s — HMR server was down; a 3s `curl` would have caught it instantly.)
 
 ## THINK BEFORE CODING — UNIVERSAL
 
@@ -106,13 +99,7 @@ Before implementing anything non-trivial:
 
 ### Relationship to Response Style — IMPORTANT
 
-`Response Style: No alternatives — do not suggest other approaches unless asked` forbids suggesting alternative libraries/architectures/approaches to a CLEAR request (e.g. user says "use library A" → don't reply "have you considered library B?"). It does **NOT** forbid surfacing genuine ambiguity IN the request itself.
-
-Two different cases:
-- **Clear request with possible alternatives** → legacy mode: shut up, do it.
-- **Ambiguous request with multiple valid readings** → `THINK BEFORE CODING`: enumerate the readings, ask.
-
-When in doubt which case applies: if you could implement the request in two incompatible ways and the user hasn't said which → it's ambiguous, ask.
+`Response Style: No alternatives` forbids pitching other libs/architectures for a CLEAR request — NOT surfacing genuine ambiguity in the request itself. Clear request → shut up, do it. Two incompatible valid readings, user hasn't said which → enumerate the readings, ask.
 
 ### Why
 
@@ -137,8 +124,7 @@ If you asked a yes/no question ("делать?", "продолжаем?", "ок?
 From Karpathy: "They really like to overcomplicate code and APIs, bloat abstractions, don't clean up dead code... implement a bloated construction over 1000 lines when 100 would do." Premature complexity is harder to read, harder to test, and almost always wrong for the future needs it was supposedly designed for — because those needs rarely arrive in the shape you predicted.
 
 ### Relationship to codex.md
-
-`codex.md` defines KISS and YAGNI as abstract principles. This section makes them concrete: specific anti-patterns (abstractions for single-use, unrequested knobs, impossible-scenario guards) and a simple test ("would a senior call this overcomplicated?"). When in conflict — this section wins, because it is specific.
+Concretises codex.md's abstract KISS/YAGNI with specific anti-patterns + the "would a senior call this overcomplicated?" test. On conflict, this section wins (more specific).
 
 ## ASK BEFORE EXTRA CHANGES — UNIVERSAL
 
@@ -160,16 +146,9 @@ If while working on a task you notice other things that "should" be changed — 
 
 ### Applies to
 
-- "While I'm here I'll also fix X" — NO.
-- "This naming is inconsistent, I'll rename it" — NO.
-- "Obvious typo in an unrelated file" — NO.
-- "Missing test coverage here, I'll add it" — NO.
-- "Better UX would be to also show Y" — NO.
-- "This function is ugly, quick refactor" — NO.
-- Removing pre-existing unused code in files you touched but didn't create the orphan — NO. (Orphans YOUR changes created are a different case — see "Does NOT apply to" below.)
-- Adding helpful comments you think would be nice — NO.
-- Changing code style (quotes, formatting, type hints, import order, naming) on lines you didn't need to modify — NO. **Match existing style, even if you'd do it differently.** Style drift on "drive-by" lines is one of the most common violations — if the file uses single quotes, don't switch to double quotes just because you prefer them; if functions don't have type hints, don't add them just because you were editing nearby.
-- Expanding scope of a fix to "do it right" — NO.
+- "While I'm here I'll also fix X" / inconsistent naming / unrelated typo / missing tests / "better UX" / "ugly, quick refactor" / "do it right" / helpful comments — all NO.
+- Removing pre-existing unused code in files you touched but didn't orphan — NO. (Orphans YOUR changes created are different — see "Does NOT apply to" below.)
+- Changing code style (quotes, formatting, type hints, import order, naming) on lines you didn't need to modify — NO. **Match existing style, even if you'd do it differently.** Style drift on "drive-by" lines is one of the most common violations.
 
 ### Does NOT apply to
 
@@ -250,7 +229,7 @@ pwsh -nop -c "$p='<file>.cmd'; $c=[IO.File]::ReadAllText($p); $c=$c -replace \"`
 
 Verify after with `od -c <file>.cmd | head -3` — first line must end with `\r \n`, not just `\n`.
 
-**Why**: I edited `VDole/run_all_update.cmd` with Edit tool, the file ended up LF-only, CMD parsed it as garbage and ate the first chars of every command — entire script broken, user ran it and got a wall of `'X' is not recognized` errors. Completely wasted run.
+**Why**: (incident) LF-only `run_all_update.cmd` made CMD eat the first chars of every command — whole script broken with `'X' is not recognized` errors.
 
 ## PowerShell — `pwsh` only, NEVER `powershell` — UNIVERSAL
 
@@ -277,7 +256,7 @@ powershell -nop -c "..."
 
 If `pwsh` is genuinely missing on a machine (rare in 2026), STOP and tell the user — don't silently fall back to legacy `powershell`.
 
-**Why again, with an incident**: 2026-05-28 in `/dev add spc` flow I used `powershell -NoProfile -Command "if (-not ((\$env:USERNAME ...)))"` — 5.1's `-Command` parser ate the `$env:` and threw `:USERNAME : is not recognized`. Output was cp866 garbage on top. User couldn't read the error, I couldn't read the error, the chief-guard check silently passed when it shouldn't have. `pwsh` would have just worked.
+(incident 2026-05-28: `powershell -Command` in `/dev add` ate `$env:` → `:USERNAME is not recognized` + cp866 garbage; chief-guard silently mis-passed. `pwsh` would have worked.)
 
 ## No duplication of rules
 NEVER duplicate rules across CLAUDE.md, CLAUDE.local.md, and memory files. Each rule lives in exactly ONE place. Memory is only for things NOT already in CLAUDE.md files.
@@ -446,12 +425,7 @@ This is a universal programming rule, not a project convention. Transient failur
 6. **Don't retry non-idempotent writes** without an idempotency key (payment charges, "create order" POSTs). If unsure, ask.
 
 ### Why
-
-User explicitly flagged this after I wrote `run_all_update.cmd` for VDole without retries and it failed on a GitHub DPI reset. His words: "Я думал, у тебя мозгов хватит самому так сделать. Вообще-то, правильно, так делают, когда внешние интеграции идут." And then again when the retry logic I added didn't show errors on intermediate attempts: "с выводом ошибок". This is baseline craftsmanship for anyone writing code that touches the network — skipping it is a quality defect, not an optimization.
-
-### Not in conflict with ASK BEFORE EXTRA CHANGES
-
-Retries on external integrations are part of correctly implementing the request, not a side-quest. When the task is "write a script that calls X over the network", retries are implicit in "correctly". No need to ask first.
+(incident) A retry-less `run_all_update.cmd` failed on a GitHub DPI reset; later the retries lacked per-attempt error output ("с выводом ошибок"). Baseline craftsmanship for network code — skipping it is a defect, not an optimization. Retries are part of "correctly" implementing a network task, so no need to ask first (not in conflict with ASK BEFORE EXTRA CHANGES).
 
 ## File links — ALWAYS relative from workspace root
 
@@ -534,12 +508,12 @@ Shared LLM-chat links (`chatgpt.com/s/...`, `chat.openai.com/share/...`, `claude
 
 ## Google Sheets — read & write capability
 
-Локально настроен Service Account + JSON-ключ + bun-скрипт на `googleapis`. Могу читать и редактировать любой Google Sheets, расшаренный на email сервис-аккаунта как Editor.
+A Service Account + JSON key + a `googleapis` bun script are set up locally. Can read and edit any Google Sheet shared to the service-account email as Editor.
 
-- Документация: [`~/.claude/docs/google-sheets-write.md`](docs/google-sheets-write.md) — setup, email сервис-аккаунта, операции (update / append / clear / get / batchUpdate), безопасность, quotas.
-- Скрипт: [`~/.claude/tmp/sheets-write/write-sheet.ts`](tmp/sheets-write/write-sheet.ts) — переиспользуемый, `node_modules` с `googleapis` уже установлены рядом.
+- Docs: [`~/.claude/docs/google-sheets-write.md`](docs/google-sheets-write.md) — setup, SA email, operations (update / append / clear / get / batchUpdate), security, quotas.
+- Script: [`~/.claude/tmp/sheets-write/write-sheet.ts`](tmp/sheets-write/write-sheet.ts) — reusable, `node_modules` with `googleapis` already installed alongside.
 
-Для записи в новый лист: пользователь шарит лист на SA-email (из docs) как Editor → говорит ID листа и что записать → правлю константы в скрипте (`SHEET_ID` / `RANGE` / `values`) и запускаю.
+To write to a new sheet: user shares the sheet to the SA email (from docs) as Editor → gives the sheet ID and what to write → edit the script constants (`SHEET_ID` / `RANGE` / `values`) and run.
 
 ## Claude Code Session Storage — UNIVERSAL
 
@@ -593,26 +567,26 @@ To sum main session + all subagents, run the script on each JSONL and sum the to
 
 ## Personal Infra — moscow_my / amsterdam_my / amsterdam_grey
 
-Документация / canonical source скриптов / snapshots для **personal-серверов пользователя**
-(не VDole-продакшен) лежат в:
+Docs / canonical source of scripts / snapshots for the **user's personal servers**
+(not VDole production) live in:
 
 ```
 D:\Data\Backup\Ubuntu-Servers\INFRA\
 ```
 
-Структура: `INFRA/servers/<server-alias>/{docs,snapshots,scripts}/`. Точка входа в каждый
-сервер — `servers/<alias>/README.md`. Конкретно по moscow_my (VPN-relay для домашнего PC,
-AmneziaWG + VLESS legacy + AS13335-expanded wg0 → amsterdam) — открой
+Structure: `INFRA/servers/<server-alias>/{docs,snapshots,scripts}/`. Entry point per server —
+`servers/<alias>/README.md`. For moscow_my specifically (VPN relay for the home PC,
+AmneziaWG + VLESS legacy + AS13335-expanded wg0 → amsterdam) open
 `D:\Data\Backup\Ubuntu-Servers\INFRA\servers\moscow_my\README.md`.
 
-**Правила доступа Claude к INFRA** — строгие, прописаны в
-`D:\Data\Backup\Ubuntu-Servers\INFRA\CLAUDE.md`. Главное: Claude имеет право
-создавать/править/удалять **только внутри INFRA/**, ничего выше по дереву
-(`D:\Data\Backup\Ubuntu-Servers\`, `D:\Data\Backup\`, и т.д.) не трогать. Это
-включает runtime-копии скриптов в `Ubuntu-Servers\moscow_my\awg\` — там лежат
-работающие копии с приватными ключами клиента, sync делает пользователь сам.
+**Claude's INFRA access rules** are strict, written in
+`D:\Data\Backup\Ubuntu-Servers\INFRA\CLAUDE.md`. Key point: Claude may
+create/edit/delete **only inside INFRA/**; never touch anything higher up the tree
+(`D:\Data\Backup\Ubuntu-Servers\`, `D:\Data\Backup\`, etc.). This includes the runtime
+script copies in `Ubuntu-Servers\moscow_my\awg\` — those hold working copies with the
+client's private keys; the user syncs them himself.
 
-Версионирование — SVN, инициализируется и управляется пользователем.
+Versioning is SVN, initialised and managed by the user.
 
 ### VPN exit check — `check-vpn.cmd`
 
@@ -634,13 +608,25 @@ Edit `skills_allowlist.json` then `/dev sync-skills` to propagate. Removing a sk
 
 ## TMP CLEANUP — UNIVERSAL
 
-В конце задачи или сессии — убирать за собой временные файлы из `.tmp/`, `tmp/`, `.playwright-mcp/`, отладочные скрипты в корне проекта.
+At the end of a task or session, clean up temp files in `.tmp/`, `tmp/`, `.playwright-mcp/`, and debug scripts in the project root.
 
-1. Файл создан в текущей сессии для отладки/проверки → удалить в той же сессии после завершения задачи, молча.
-2. Файл создан раньше и тема закрыта (есть итоговый док в `docs/`, артефакт залит в репо, проблема решена) → вывести список «кандидаты на чистку», спросить «удалять?».
-3. Конфиги с приватными ключами (`*.conf` с `PrivateKey`, `wg-*`, `*.pem`, `*.key`) — отдельное подтверждение, даже если тема закрыта.
-4. Группа > 5 файлов или объём > 1 MB → всегда спросить, не удалять без подтверждения.
-5. Триггеры применения: конец задачи, явный запрос «убери за собой», `/clear`, начало новой темы.
+1. File created this session for debug/checks → delete it the same session after the task, silently.
+2. File created earlier and the topic is closed (final doc in `docs/`, artifact committed, problem solved) → print a "cleanup candidates" list, ask "delete?".
+3. Configs with private keys (`*.conf` with `PrivateKey`, `wg-*`, `*.pem`, `*.key`) → separate confirmation, even if the topic is closed.
+4. Group > 5 files or > 1 MB → always ask, never delete without confirmation.
+5. Triggers: end of task, explicit "clean up after yourself", `/clear`, start of a new topic.
+
+## DELETE TO RECYCLE BIN — UNIVERSAL
+
+**Deletion must be recoverable. Bare `rm` is forbidden — it wipes past the Recycle Bin.**
+
+- To delete files/folders use `~/.claude/scripts/trash.ps1` — sends to the Windows Recycle Bin:
+  ```bash
+  pwsh -NoProfile -File C:\Users\ssv55\.claude\scripts\trash.ps1 <path> [<path> ...]
+  ```
+- Bare `rm` (without `-r`) is intercepted by the PreToolUse hook [block-dangerous.ps1](hooks/block-dangerous.ps1) and blocked (exit 2) — the error points to `trash.ps1`.
+- **Exception — bulk recursive deletes** (`rm -rf node_modules`, `dist`, `.cache`, other bulky junk): don't send to the bin (slow, fills it with gigabytes). These bypass the bin via the hook's older confirm dialog (pattern `rm -(rf|fr|r)`) — only with explicit user confirmation.
+- `Remove-Item` / `del /` / `rmdir` / `mv` are also under the hook's confirm dialog.
 
 ## Codex — Code Quality Rules
 
@@ -648,8 +634,8 @@ See [codex.md](./codex.md) — SOLID, DRY, KISS, YAGNI, Clean Code, Security, Te
 
 ## Deep Styles (design engineering, animations, polish)
 
-Триггерные фразы в запросе пользователя или в task-файле сотрудника: `use Deep Styles`, `используй Deep Styles`, `использовать глубокие стили`, `применить deep styles`, `глубокие стили`.
+Trigger phrases in the user request or an employee task-file: `use Deep Styles`, `используй Deep Styles`, `использовать глубокие стили`, `применить deep styles`, `глубокие стили`.
 
-При срабатывании триггера — загрузи и применяй [codex.design.deep-styles.md](./codex.design.deep-styles.md) (`~/.claude/codex.design.deep-styles.md`): durations, custom easing curves, scale-on-press, transform-origin, springs, `prefers-reduced-motion`, clip-path-трюки, perceived performance, review-таблицы Before/After/Why. Источник — Emil Kowalski's Design Engineering Skill, snapshot 2026-05-22.
+On trigger — load and apply [codex.design.deep-styles.md](./codex.design.deep-styles.md) (`~/.claude/codex.design.deep-styles.md`): durations, custom easing curves, scale-on-press, transform-origin, springs, `prefers-reduced-motion`, clip-path tricks, perceived performance, Before/After/Why review tables. Source — Emil Kowalski's Design Engineering Skill, snapshot 2026-05-22.
 
-Без триггера файл НЕ читается и его правила НЕ применяются — это намеренно, чтобы не перегружать обычные дизайн-задачи философией микро-интеракций. Тот же триггер действует и для `emp-05-designer` в пайплайне сотрудников — orchestrator передаёт фразу в `00_task.md`, дизайнер добавляет секцию «Animation & Motion (Deep Styles)» в `02b_design.md`.
+Without the trigger the file is NOT read and its rules are NOT applied — deliberate, so ordinary design tasks aren't loaded with micro-interaction philosophy. The same trigger applies to `emp-05-designer` in the employee pipeline — the orchestrator passes the phrase into `00_task.md`, and the designer adds an "Animation & Motion (Deep Styles)" section to `02b_design.md`.
