@@ -35,12 +35,4 @@ Windows PC (Hiddify v4.1.1, Service mode: VPN = TUN)
 
 ## Что заменило / удалено
 
-Старая схема (4 NSSM-сервиса на Windows + nginx LB + 3 SSH-туннеля → tinyproxy на Amsterdam) — снесена до 2026-05-19. Снимок-инвентарь старой схемы временно лежит в `~/.claude/tmp/proxy_old_inventory.md` (на ~неделю, потом удалить).
-
-## Фаза 2 — реализована 2026-05-22
-
-В Hiddify создан Авто-профиль с sing-box `urltest` outbound, объединяющий 3 узла: moscow-vk (основной), amsterdam_grey direct, amsterdam_my direct. Существующие VLESS-inbound-ы на серверах переиспользованы — поднимать ничего не пришлось. Все профили в Hiddify переименованы по схеме «PC → откуда → куда → SNI → назначение».
-
-Текущий tolerance=50ms даёт побочный эффект балансировки (узлы «одинаково лучшие», urltest колеблется). Для классического main+fallback — поднять до 200-300ms.
-
-Детали (структура Авто-профиля, таблица tolerance↔поведение, как менять, рекомендации) — в [vless_reality_claude.md](D:/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/docs/vless_reality_claude.md) → раздел «Fallback exit-ноды (Фаза 2)».
+Старая схема (4 NSSM-сервиса + nginx LB + 3 SSH-туннеля → tinyproxy) снесена до 2026-05-19. Фаза 2 (2026-05-22): Hiddify Авто-профиль с `urltest` outbound по 3 узлам (moscow-vk основной + amsterdam_grey/my direct), существующие VLESS-inbound переиспользованы. tolerance=50ms балансирует (для main+fallback — поднять до 200-300ms). Детали — в каноническом [vless_reality_claude.md](D:/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/docs/vless_reality_claude.md) → «Fallback exit-ноды (Фаза 2)».
