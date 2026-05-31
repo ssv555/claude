@@ -2398,3 +2398,49 @@ EOF
 [2026-05-30 21:32:32] BLOCKED: ALLOWED by user: Git destructive/push/commit
   Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git pull --rebase && git push
 
+[2026-05-31 11:32:18] BLOCKED: 'nul' reserved device name
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && bun -e "
+import * as changelogDb from './back/src/db/changelog';
+import { db } from './back/src/db/index';
+import { sql } from 'drizzle-orm';
+const proc = await changelogDb.getProcessedSessionFiles();
+console.log('getProcessedSessionFiles count:', proc.length);
+console.log('sample (first 5):'); proc.slice(0,5).forEach(p=>console.log('  '+JSON.stringify(p)));
+const r = await db.execute(sql\`SELECT session_file FROM changelog_entries WHERE session_file IS NOT NULL ORDER BY entry_date DESC LIMIT 5\`);
+console.log('raw session_file sample (DB):'); r.forEach(x=>console.log('  '+JSON.stringify(x.session_file)));
+const nn = await db.execute(sql\`SELECT count(*) FILTER (WHERE session_file IS NOT NULL) nn, count(*) FILTER (WHERE session_file IS NULL) nul FROM changelog_entries\`);
+console.log('session_file NOT NULL:', nn[0].nn, '| NULL:', nn[0].nul);
+process.exit(0);
+" --env-file .env.development 2>&1 | tail -20
+
+[2026-05-31 14:31:06] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: KEY="/d/Data/Backup/Ubuntu-Servers/moscow_my/keys-client/alx/id_ed25519"
+echo "=== strip passphrase from alx key (keypair unchanged) ==="
+ssh-keygen -p -P '""' -N '' -f "$KEY" && echo "--- stripped ---"
+echo -n "verify passphraseless: "; ssh-keygen -y -P '' -f "$KEY" >/dev/null 2>&1 && echo "OK тЬЕ" || echo "STILL HAS PASSPHRASE тЭМ"
+echo -n "pubkey unchanged (fp): "; ssh-keygen -lf "$KEY" | awk '{print $2}'
+echo
+echo "=== empirically find correct empty-passphrase form in pwsh (for script patch) ==="
+pwsh -NoProfile -Command '
+$t = Join-Path $env:TEMP "kt_test"
+if (Test-Path $t) { Remove-Item $t,"$t.pub" -Force -ErrorAction SilentlyContinue }
+ssh-keygen -t ed25519 -f $t -C test -q -N """"
+$r = & ssh-keygen -y -P "" -f $t 2>&1
+if ($LASTEXITCODE -eq 0) { "form -N \"\"\"\" => passphraseless OK" } else { "form -N \"\"\"\" => HAS passphrase (bug reproduced)" }
+Remove-Item $t,"$t.pub" -Force -ErrorAction SilentlyContinue
+'
+
+[2026-05-31 14:38:34] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: cat > /tmp/keytest.ps1 <<'PS'
+"pwsh: $($PSVersionTable.PSVersion)  ArgPassing: $($PSNativeCommandArgumentPassing)"
+$t = Join-Path $env:TEMP 'kt_empty'
+foreach ($f in @($t, "$t.pub")) { if (Test-Path $f) { Remove-Item $f -Force } }
+# candidate fix: -N '' (single-quoted empty string)
+ssh-keygen -t ed25519 -f $t -C test -q -N ''
+& ssh-keygen -y -P '' -f $t > $null 2>&1
+if ($LASTEXITCODE -eq 0) { "form  -N ''  => passphraseless OK" } else { "form  -N ''  => HAS passphrase" }
+foreach ($f in @($t, "$t.pub")) { if (Test-Path $f) { Remove-Item $f -Force } }
+PS
+pwsh -NoProfile -File /tmp/keytest.ps1
+rm -f /tmp/keytest.ps1
+

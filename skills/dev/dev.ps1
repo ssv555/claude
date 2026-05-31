@@ -334,8 +334,17 @@ function Cmd-Add {
     if (Test-Path $keyPath) { throw "Key already exists at $keyPath — refusing to overwrite" }
 
     Write-Host "[ssh-keygen] generating $keyPath ..." -ForegroundColor DarkGray
-    & ssh-keygen -t ed25519 -f $keyPath -N '""' -C "$alias@moscow_my" -q
+    # -N '' (single-quoted empty) yields a passphraseless key under pwsh.
+    # Do NOT use -N '""' — that passes the literal 2-char string "" as the passphrase,
+    # producing a key that prompts for a passphrase on every login (bug, 2026-05-31).
+    & ssh-keygen -t ed25519 -f $keyPath -N '' -C "$alias@moscow_my" -q
     if ($LASTEXITCODE -ne 0) { throw "ssh-keygen failed" }
+    # Safety net: strip any passphrase that slipped through (pwsh native-arg quirks vary).
+    & ssh-keygen -y -P '' -f $keyPath *> $null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "[ssh-keygen] key has a passphrase — stripping it" -ForegroundColor Yellow
+        & ssh-keygen -p -P '""' -N '' -f $keyPath -q *> $null
+    }
 
     $pubKey = Get-Content "$keyPath.pub" -Raw
     $fp = (& ssh-keygen -lf $keyPath -E sha256) -split '\s+' | Select-Object -Index 1
