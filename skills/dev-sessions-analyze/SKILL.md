@@ -79,22 +79,18 @@ ssh moscow_my "sudo cat <path> | jq -s '{
 
 ### Шаг 3 — Topic generation (4-5 слов)
 
-Читаем кеш `~/.claude/developers/<alias>/topics.json` (формат: `{sessionId: "topic text"}`).
-
-Для сессий БЕЗ topic в кеше:
+Кеш `~/.claude/developers/<alias>/topics.json` (формат: `{sessionId: "topic text"}`). Для сессий БЕЗ topic в кеше:
 1. Pull первые 3-5 user-сообщений из JSONL (через `ssh moscow_my "sudo cat ... | jq '[.[] | select(.type==\"user\") | .message.content] | .[0:5]'"`)
 2. Спросить **haiku** (через Agent с `model: 'haiku'`): «Опиши тему этой сессии в 4-5 словах на русском, без кавычек, без точки в конце. Контекст: первые сообщения пользователя:\n<контент>»
 3. Сохранить в `topics.json`
 
 ### Шаг 4 — Проверка analyzed-status
 
-Для каждой сессии — есть ли уже отчёт?
+Для каждой сессии — есть ли уже отчёт? Есть → ✓, иначе → ·.
 
 ```bash
 ls "D:\Data\Documents\Programming\Projects\WEB\VDole\.docs\dev\sessions\<alias>_*_<sid_short>.md" 2>/dev/null
 ```
-
-Если есть → ✓. Иначе → ·.
 
 ### Шаг 5 — Таблица + выбор
 
@@ -117,11 +113,11 @@ Sessions for spc (newest first):
 
 ### Шаг 6 — Pull выбранной JSONL
 
+Сначала на сервере: `sudo cat <path> > /tmp/dev-session-<sid>.jsonl && sudo chmod 644 /tmp/dev-session-<sid>.jsonl`. Затем:
+
 ```bash
 scp -P 53847 ssv@195.2.75.212:/tmp/dev-session-<sid>.jsonl C:\Users\ssv55\.claude\tmp\dev-sessions\
 ```
-
-Сначала на сервере: `sudo cat <path> > /tmp/dev-session-<sid>.jsonl && sudo chmod 644 /tmp/dev-session-<sid>.jsonl`.
 
 Также pull subagents/ если есть:
 ```bash
@@ -136,7 +132,7 @@ ssh moscow_my "sudo ls /home/<alias>/.claude/projects/<slug>/<sid>/subagents/ 2>
 #### Шаг 7a — Split через подагентов
 
 1. Разбей JSONL на куски по ~2 MB (или по 300 user/assistant пар).
-2. Для каждого куска вызови `Agent` с `subagent_type: 'general-purpose'`, prompt — см. шаблон `chunk-analyze-prompt.md` в этом же скил-каталоге.
+2. Для каждого куска вызови `Agent` с `subagent_type: 'general-purpose'`, prompt — см. `chunk-analyze-prompt.md` в этом каталоге.
 3. Каждый подагент возвращает JSON со счётчиками + примерами по 10 метрикам.
 4. В main session собрать все JSON, синтезировать сводный отчёт.
 
@@ -144,7 +140,7 @@ ssh moscow_my "sudo ls /home/<alias>/.claude/projects/<slug>/<sid>/subagents/ 2>
 
 #### Шаг 7b — Монолитный
 
-Прочитать JSONL целиком в main session, пройти все user/assistant сообщения, посчитать 10 метрик, выдать отчёт.
+Прочитать JSONL целиком в main session, пройти все сообщения, посчитать 10 метрик, выдать отчёт.
 
 ### Шаг 8 — 10 метрик (см. METRICS.md в этом каталоге)
 
@@ -182,13 +178,13 @@ activeMs += 5 * 60 * 1000;
 
 ### Шаг 10 — Запись отчёта
 
-Шаблон в `report-template.md` в этом каталоге. Заполни плейсхолдеры. Записать в:
+Шаблон `report-template.md` в этом каталоге. Заполни плейсхолдеры, запиши в:
 
 ```
 D:\Data\Documents\Programming\Projects\WEB\VDole\.docs\dev\sessions\<alias>_<YYYY-MM-DD>_<sid_short>.md
 ```
 
-Если файл уже есть → перезаписать (повторный анализ = новый verdict, сохранять историю не нужно).
+Если файл уже есть → перезаписать (повторный анализ = новый verdict).
 
 ### Шаг 11 — Anal cost block
 
@@ -222,9 +218,7 @@ console.log(JSON.stringify({main,subs_aggregate:subs.length?{messages:subs.reduc
 " "$SESSION_JSONL" "$SUBAGENTS_DIR"
 ```
 
-Дельта стартового timestamp до текущего = wall-clock.
-
-Дописать в КОНЕЦ отчёта секцию `## Analyzer cost` (см. report-template.md).
+Дельта стартового timestamp до текущего = wall-clock. Дописать в КОНЕЦ отчёта секцию `## Analyzer cost` (см. report-template.md).
 
 ### Шаг 12 — Финальный вывод
 
@@ -239,7 +233,7 @@ console.log(JSON.stringify({main,subs_aggregate:subs.length?{messages:subs.reduc
 
 ## Полная справка по метрикам
 
-См. отдельный файл `METRICS.md` в этом каталоге — что каждая из 10 метрик измеряет, как считается, на что обращать внимание при чтении отчёта. Можно открыть напрямую: `cat C:\Users\ssv55\.claude\skills\dev-sessions-analyze\METRICS.md`.
+См. `METRICS.md` в этом каталоге — что каждая из 10 метрик измеряет, как считается, на что смотреть. Открыть: `cat C:\Users\ssv55\.claude\skills\dev-sessions-analyze\METRICS.md`.
 
 ## Что НЕ делать
 

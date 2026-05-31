@@ -24,13 +24,13 @@ If the URL is inside a larger message that also contains a direct question — a
 
 ## Step 0: Ask user — which profile?
 
-Before any extraction, ask the user how deep to process the link. Use `AskUserQuestion` with three options:
+Before any extraction, ask how deep to process the link. Use `AskUserQuestion` with three options:
 
-1. **По умолчанию** — Sonnet + high effort (this skill's own run). Fast, suits most marketing pages / product summaries / short chats.
-2. **Глубоко** — spawn an Opus subagent to do the extraction. Best for long technical discussions, nested reasoning, multi-turn architectural chats. Costs more, ~2× slower.
-3. **Быстро** — spawn a Haiku subagent. For obviously simple pages where defaults would be overkill.
+1. **По умолчанию** — Sonnet + high effort (this skill's own run). Suits most marketing pages / short chats.
+2. **Глубоко** — spawn an Opus subagent. Best for long technical discussions, multi-turn architectural chats. ~2× slower.
+3. **Быстро** — spawn a Haiku subagent. For obviously simple pages.
 
-Show the defaults explicitly in the question text (model + effort), so the user always sees what "default" means today and can change it if the skill's defaults drift.
+Show the defaults explicitly in the question text (model + effort) so the user sees what "default" means today.
 
 **Question template:**
 

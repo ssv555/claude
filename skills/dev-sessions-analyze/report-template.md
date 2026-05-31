@@ -1,7 +1,6 @@
 # Report template — dev-sessions-analyze
 
-Заполни плейсхолдеры `{{NAME}}`, запиши результат в
-`D:\Data\Documents\Programming\Projects\WEB\VDole\.docs\dev\sessions\<alias>_<YYYY-MM-DD>_<sid_short>.md`.
+Заполни плейсхолдеры `{{NAME}}`, запиши в `D:\Data\Documents\Programming\Projects\WEB\VDole\.docs\dev\sessions\<alias>_<YYYY-MM-DD>_<sid_short>.md`.
 
 ---
 

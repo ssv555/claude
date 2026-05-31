@@ -48,7 +48,7 @@ Mandatory order:
 
 If your solution contains any of these signals — stop, return to step 1.
 
-**Why:** a hack "works now" but creates invisible debt. Documented API is tested and maintained by library author. "I took the hack because it's faster" is the #1 reason a codebase turns into a minefield.
+**Why:** a hack "works now" but creates invisible debt; the documented API is tested and maintained by the library author.
 
 ## Границы
 

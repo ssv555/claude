@@ -13,9 +13,7 @@ Execute ALL steps strictly in order. Do NOT run steps in parallel. Complete each
 ### Report File
 
 > Путь к файлу отчёта. Хранит результаты всех запусков и метку даты последнего анализа.
-> Лежит ВНУТРИ проекта в его `.claude/` — у каждого проекта свой отчёт и своя метка времени.
-> На большинстве проектов `.claude/*` уже в `.gitignore` (с whitelist на `user.conf`),
-> поэтому отчёт автоматически вне VCS. Если у проекта свои правила — пользователь решает сам.
+> Лежит ВНУТРИ проекта в его `.claude/` — у каждого проекта свой отчёт. Обычно `.claude/*` в `.gitignore`, поэтому отчёт вне VCS.
 
 ```
 REPORT_FILE   = {project_root}/.claude/tokens-report.md
@@ -26,9 +24,7 @@ PROJECT_NAME  = basename "$(git -C {project_root} rev-parse --show-toplevel)"
 
 ### Author Alias Map
 
-> **Карта авторов.** Один разработчик может коммитить под разными именами (ssv555, Developer),
-> но email один и тот же. Группируем по email → каноническое имя.
-> Обновлять при появлении новых разработчиков.
+> **Карта авторов.** Один разработчик может коммитить под разными именами, но email один. Группируем по email → каноническое имя.
 
 | Email | Canonical Name |
 |-------|---------------|
@@ -42,12 +38,7 @@ If a new email appears that is NOT in this map, use the git author name as-is an
 
 ### File Type Weights
 
-> **Весовые коэффициенты типов файлов.** Не все строки кода одинаково ценны:
-> - Бизнес-логика (.ts/.tsx) = 1.0 — максимальный вес
-> - Конфиги (.json) = 0.2 — минимальная сложность, легко генерируются
-> - Автогенерация (routeTree.gen.ts) = 0.02 — не писал человек
-> - Бинарники (картинки, шрифты) = 0.0 — не код вообще
->
+> **Весовые коэффициенты типов файлов.** Не все строки кода одинаково ценны (бизнес-логика .ts = 1.0, конфиги .json = 0.2, автоген = 0.02, бинарники = 0.0).
 > Формула: `строки × вес = взвешенный объём`
 
 | Pattern | Weight | Category |
@@ -71,15 +62,7 @@ If a file extension is not listed, use weight **0.5** (unknown type, moderate we
 
 ### Complexity Keywords
 
-> **Ключевые слова для анализа плотности логики.** Считаем, сколько "умных" конструкций
-> приходится на каждую строку кода. Чем больше ветвлений, обработки ошибок и функций —
-> тем сложнее код и выше плотность логики (logic density).
->
-> - **Control flow** — управление потоком. Каждый `if/for/while` = развилка в коде, +0.1
-> - **Error handling** — обработка ошибок. `try/catch/throw` = защитное программирование, +0.1
-> - **Functions** — определение функций. `function/async/=>` = структурирование кода, +0.05
-> - **Ternary** — тернарный оператор `? :` = компактная логика, +0.05
-> - **Nesting** — вложенность. Глубина > 2 уровней = сложность чтения, +0.05/уровень
+> **Ключевые слова для анализа плотности логики.** Считаем "умные" конструкции на строку кода — чем больше, тем выше logic density.
 
 **Control flow** (+0.1 each): `if`, `else`, `for`, `while`, `switch`, `case`
 **Error handling** (+0.1 each): `try`, `catch`, `throw`
@@ -89,11 +72,7 @@ If a file extension is not listed, use weight **0.5** (unknown type, moderate we
 
 ### Complexity Rating Scale
 
-> **Шкала сложности.** Итоговый рейтинг разработчика по средней плотности логики его кода.
-> - **Low** — простые изменения: конфиги, форматирование, документация
-> - **Medium** — стандартная фича-работа: компоненты, маршруты, CRUD
-> - **High** — сложная логика: алгоритмы, state management, оптимизации
-> - **Expert** — архитектурно сложный код: middleware, парсеры, системные модули
+> **Шкала сложности.** Итоговый рейтинг по средней плотности логики: Low (конфиги/доки), Medium (компоненты/CRUD), High (алгоритмы/state), Expert (middleware/парсеры).
 
 | Avg Logic Density | Rating |
 |-------------------|--------|
@@ -104,9 +83,7 @@ If a file extension is not listed, use weight **0.5** (unknown type, moderate we
 
 ### Effort Estimation (COCOMO Basic Organic)
 
-> **Оценка трудозатрат по COCOMO Basic, режим Organic** (Barry Boehm, 1981) — отраслевой стандарт
-> для расчёта человеко-часов по объёму кода. Охватывает полный цикл разработки:
-> проектирование, кодирование, отладка, тестирование, интеграция.
+> **Оценка трудозатрат по COCOMO Basic, режим Organic** (Boehm 1981) — отраслевой стандарт для расчёта человеко-часов по объёму кода. Назначение: «сколько бы заняло вручную без ИИ». Экспонента `1.05` отражает нелинейный рост сложности с ростом кодовой базы.
 >
 > Формула:
 > ```
@@ -117,13 +94,6 @@ If a file extension is not listed, use weight **0.5** (unknown type, moderate we
 > days          = floor(hours / 8)   # 1 рабочий день = 8 часов
 > rem_hours     = round(hours - days × 8)
 > ```
->
-> Показатель степени `1.05` слегка выше единицы — отражает нелинейный рост сложности
-> с увеличением кодовой базы (коммуникации, рефакторинги, регрессии).
->
-> Назначение: оценка «сколько бы заняло вручную без ИИ». Позволяет сравнивать реальное
-> календарное время с предсказанной ручной трудоёмкостью — и видеть, насколько ИИ
-> ускоряет разработку.
 
 **COCOMO constants (Organic mode):**
 
@@ -138,7 +108,7 @@ If a file extension is not listed, use weight **0.5** (unknown type, moderate we
 
 ## Step 0: Resolve project name and overrides
 
-> Этот шаг нужен, потому что скилл глобальный: один и тот же `logic.md` запускается из разных проектов. До любых git-команд нужно зафиксировать имя текущего проекта и подхватить per-project overrides.
+> Скилл глобальный — до git-команд зафиксировать имя текущего проекта и подхватить per-project overrides.
 
 1. **Resolve `PROJECT_NAME`** via Bash (single command):
    ```bash
@@ -175,9 +145,7 @@ If a file extension is not listed, use weight **0.5** (unknown type, moderate we
 
 ## Step 2: Freeze Timestamp
 
-> **Замораживаем текущее время ДО начала анализа.**
-> Зачем: если кто-то сделает коммит, пока идёт анализ, мы его не потеряем —
-> следующий запуск подхватит его, т.к. `ANALYSIS_TIMESTAMP` был зафиксирован раньше.
+> **Замораживаем текущее время ДО анализа.** Коммит, сделанный во время анализа, не потеряется — его подхватит следующий запуск (`ANALYSIS_TIMESTAMP` зафиксирован раньше).
 
 **CRITICAL**: This MUST happen BEFORE any git commands.
 
@@ -213,10 +181,8 @@ Store as `MERGE_COMMITS`.
 
 ## Step 4: Extract Commit Data
 
-> Извлекаем данные коммитов: автор, email, дата, список файлов с количеством добавленных/удалённых строк.
-> `--no-merges` — пропускаем merge-коммиты, чтобы не считать одни и те же строки дважды.
-> `--numstat` — даёт точное число строк added/removed на файл.
-> Коммиты из feature-веток видны, т.к. после merge они часть истории main.
+> Извлекаем данные коммитов: автор, email, дата, файлы с added/removed.
+> `--no-merges` — не считать строки дважды; `--numstat` — точное added/removed на файл. Коммиты feature-веток видны (после merge они часть истории main).
 
 Build and run ONE git command:
 
@@ -245,12 +211,8 @@ git log --no-merges --numstat --format="COMMIT_START|%H|%an|%ae|%aI" --since="LA
 
 > **W.LOC (Weighted Lines of Code)** — взвешенный объём кода.
 >
-> Формула на файл: `file_weighted_loc = (added + removed × 0.5) × weight`
-> - `added` — добавленные строки (полный вес, это новый код)
-> - `removed × 0.5` — удалённые строки с коэфф. 0.5 (удаление требует понимания кода, но не создаёт нового)
-> - `weight` — вес типа файла из таблицы выше
->
-> Формула на коммит: `commit_weighted_loc = SUM(file_weighted_loc)` — сумма по всем файлам
+> На файл: `file_weighted_loc = (added + removed × 0.5) × weight` (removed с коэфф. 0.5 — удаление требует понимания, но не создаёт нового кода; weight из таблицы выше).
+> На коммит: `commit_weighted_loc = SUM(file_weighted_loc)`
 
 For each commit, for each file:
 
@@ -270,18 +232,10 @@ For each commit, for each file:
 
 > **Logic Density (Плотность логики)** — насколько "умный" код в коммите.
 >
-> Анализируем ТОЛЬКО добавленные строки из diff (строки начинающиеся с `+`, исключая `+++`).
-> Считаем ключевые слова: ветвления, обработку ошибок, функции, тернарники.
+> Анализируем ТОЛЬКО добавленные строки diff (начинающиеся с `+`, исключая `+++`). Считаем ключевые слова.
+> Формула: `logic_density = сумма_очков_ключевых_слов / кол-во_добавленных_строк`. Пустой коммит → density = 0.
 >
-> Формула: `logic_density = сумма_очков_ключевых_слов / кол-во_добавленных_строк`
-> - Чем больше логических конструкций на строку — тем выше плотность
-> - Пустой коммит (0 строк) → density = 0
->
-> **Score (Итоговый балл коммита):**
-> `commit_score = commit_weighted_loc × (1 + logic_density)`
-> - Множитель `(1 + logic_density)` повышает вес сложного кода
-> - Простой конфиг (density ≈ 0): score ≈ W.LOC × 1.0
-> - Сложная логика (density ≈ 0.5): score ≈ W.LOC × 1.5
+> **Score:** `commit_score = commit_weighted_loc × (1 + logic_density)` — множитель повышает вес сложного кода (конфиг density≈0 → ×1.0; логика density≈0.5 → ×1.5).
 
 For each commit with `commit_weighted_loc > 0`:
 
@@ -316,16 +270,14 @@ Note: Nesting analysis is omitted from batch for simplicity. The keyword density
 
 > **Агрегация по разработчикам.** Суммируем все коммиты каждого автора.
 >
-> - **Period** — период анализа (`FROM_DATE — TO_DATE`), одинаковый для всех строк текущего запуска
-> - **Commits** — количество коммитов разработчика
+> - **Period** — период анализа (`FROM_DATE — TO_DATE`), одинаковый для всех строк запуска
+> - **Commits** — число коммитов разработчика
 > - **Added/Removed** — сырые строки (без весов), для справки
-> - **W.LOC** — суммарный взвешенный объём кода
+> - **W.LOC** — суммарный взвешенный объём
 > - **Score** — итоговый балл = W.LOC с учётом сложности
-> - **Avg Logic Density** — средневзвешенная плотность логики:
->   `SUM(density × W.LOC) / SUM(W.LOC)` — коммиты с большим объёмом влияют сильнее
-> - **Contribution %** — доля вклада: `(score_разработчика / score_всех) × 100%`
->   Все разработчики в сумме = 100%
-> - **Complexity** — рейтинг по шкале (Low/Medium/High/Expert) на основе avg density
+> - **Avg Logic Density** — средневзвешенная: `SUM(density × W.LOC) / SUM(W.LOC)` (большие коммиты влияют сильнее)
+> - **Contribution %** — `(score_разработчика / score_всех) × 100%`, в сумме = 100%
+> - **Complexity** — рейтинг (Low/Medium/High/Expert) по avg density
 
 1. Map each commit's `author_email` to canonical name using the Author Alias Map
 2. For each developer, calculate:
@@ -399,9 +351,7 @@ Format percentages to 1 decimal place (contribution is recalculated as row_score
 
 ## Step 9: Save Report
 
-> Сохраняем подробный отчёт в файл. Каждый запуск добавляет новую секцию —
-> история накапливается. Последняя строка файла всегда содержит дату анализа
-> в HTML-комментарии — её читает Step 1 при следующем запуске.
+> Сохраняем отчёт в файл. Каждый запуск добавляет новую секцию. Последняя строка файла — дата анализа в HTML-комментарии, её читает Step 1 при следующем запуске.
 
 1. Read existing `REPORT_FILE` content (or empty string if first run)
 2. If first run (file does not exist), create the file with the header and field descriptions block first:

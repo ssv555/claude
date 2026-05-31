@@ -29,9 +29,9 @@ SESSION_JSONL=$(echo "$SESSION_JSONL" | sed 's|^/\([a-zA-Z]\)/|\1:/|')
 echo "$SESSION_JSONL" && echo "---SID---" && basename "$SESSION_JSONL" .jsonl
 ```
 
-⛔ **NEVER identify the session by modification time** (`ls -t … | head -1`). The user routinely runs 10+ Claude sessions on the SAME project at once — the project folder holds one `.jsonl` per conversation (100+ files). Newest-by-mtime grabs whichever session wrote last, usually a *different* conversation, and the archive ends up attributing another chat's tokens/content.
+⛔ **NEVER identify the session by modification time** (`ls -t … | head -1`). The user runs 10+ sessions on the SAME project at once; newest-by-mtime grabs a *different* conversation and the archive misattributes another chat's tokens/content.
 
-⚠ The `sed` is mandatory: Git Bash returns an MSYS path (`/c/Users/...`) that native `bun` cannot open (`fs.readFileSync`/`realpathSync` throw → empty output → fabricated numbers). It rewrites `/c/` → `c:/`; Linux/Mac paths (`/home/...`) don't match the single-letter rule and are left untouched.
+⚠ The `sed` is mandatory: Git Bash returns an MSYS path (`/c/Users/...`) that native `bun` cannot open → empty output → fabricated numbers. It rewrites `/c/` → `c:/`; Linux/Mac paths (`/home/...`) are left untouched.
 
 **Fallback — only if `$CLAUDE_CODE_SESSION_ID` is empty** (very old CLI): identify by content, not mtime. Pick a unique verbatim phrase from THIS conversation and `grep -lF "$ANCHOR" ~/.claude/projects/*"$(basename "$(pwd)")"/*.jsonl`; require EXACTLY one match. If you can't get a unique match, write the archive with `Токены: n/a` and no `Сессия` link rather than guess.
 
@@ -110,7 +110,7 @@ console.log(JSON.stringify(out))
 
 Replace `SESSION_JSONL_PATH` with the actual path from Step 1. Parse JSON → `out.main` is the relative path to the main session JSONL; `out.subs[]` lists subagent JSONLs (may be empty).
 
-**Critical — `fs.realpathSync` is mandatory.** On Windows, `C:\Users\<user>\.claude` is commonly a symlink to `D:\...\AI\Claude`. Without `realpath` the path.relative() call treats `C:` and `D:` as different drives and returns the absolute path, which breaks clickable links in VSCode. Always resolve the real filesystem path first, then compute the relative path from the archive directory.
+**Critical — `fs.realpathSync` is mandatory.** On Windows `C:\Users\<user>\.claude` is commonly a symlink to `D:\...\AI\Claude`; without `realpath`, path.relative() treats `C:` and `D:` as different drives and returns an absolute path, breaking clickable links in VSCode. Resolve the real path first, then compute relative from the archive directory.
 
 If the bun call fails **or prints nothing**, skip the "Сессия" block entirely — do not write absolute paths or guessed relative paths as fallback.
 

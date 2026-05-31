@@ -8,10 +8,10 @@ model: sonnet
 
 # SEO Fix — Universal Repairer
 
-Apply fixes to SEO issues. Two categories of work:
+Apply fixes to SEO issues. Two categories:
 
-- **Mechanical** — deterministic, no creativity needed (add missing meta tag, swap 302→301, regenerate sitemap, compress OG image). Applied without per-item confirmation.
-- **Content** — requires creative input (rewrite title/description, generate alt text, propose CTA copy, add trust signals). Applied **interactively, one at a time** via `AskUserQuestion`.
+- **Mechanical** — deterministic (add missing meta tag, swap 302→301, regenerate sitemap, compress OG image). Applied without per-item confirmation.
+- **Content** — creative (rewrite title/description, generate alt text, CTA copy, trust signals). Applied **interactively, one at a time** via `AskUserQuestion`.
 
 Edits **source files only** (eta templates, locale JSONs, public/sitemap.xml, public/robots.txt, image files in public/img/). Never SSH to a server, never patch the running site.
 

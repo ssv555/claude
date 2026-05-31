@@ -11,9 +11,7 @@ model: sonnet
 
 Read-only audit of SEO mechanics, real-browser rendering, and conversion potential, **or** source-only audit of texts + structure in repo files. Reports findings as a table, never edits.
 
-<!-- Project-specific configuration: ./tests/skills/seo-check.md
-     This is a global skill — production URL, public routes, locales,
-     and per-page expectations are defined per-project in the local file. -->
+<!-- Project-specific config: ./tests/skills/seo-check.md (production URL, public routes, locales, per-page expectations). -->
 
 ## Arguments — pick the route at invocation
 
@@ -219,11 +217,7 @@ If all PASS — skip Step 8 entirely.
 
 ## Source mode audit (`/seo-check text`)
 
-Triggered when invoked with first arg matching `text|texts|content|source|src|in-source`. **No HTTP, no Playwright, no dev-server.** Reads only repo source files. Use this when:
-
-- Aйдитим контент перед деплоем (вне зависимости от того, поднят ли сайт)
-- Проверяем что после рефакторинга texts/structure ничего не уехало
-- Не хочется тратить время на curl/Playwright если задача — текстовая ревизия
+Triggered when invoked with first arg matching `text|texts|content|source|src|in-source`. **No HTTP, no Playwright, no dev-server.** Reads only repo source files — for content revision / structure audit before deploy.
 
 ### Files audited
 
@@ -296,10 +290,10 @@ Print summary table identical to Step 6, then Step 7 verdict, then offer `/seo-f
 
 ### Why two modes
 
-- **Live mode** ловит то, что не видно из исходников: реальный hydration React, броузерные console errors, network failures, реальный response от Метрики, OG-preview через Playwright. Нужен **запущенный сервер** (prod или dev).
-- **Source mode** ловит то, что лучше проверять в репо: текстовые косяки, неполный sitemap, отсутствующие meta-теги в шаблоне, дубли titles между страницами, RU/EN parity, schema.org gaps. **Не требует поднятого сервера** — можно ревизировать перед коммитом.
+- **Live mode** ловит то, что не видно из исходников: hydration React, console errors, network failures, OG-preview через Playwright. Нужен **запущенный сервер** (prod или dev).
+- **Source mode** ловит косяки лучше проверяемые в репо: тексты, неполный sitemap, отсутствующие meta-теги в шаблоне, дубли titles, RU/EN parity, schema.org gaps. **Не требует сервера.**
 
-Оба mode используют один и тот же local config (`./tests/skills/seo-check.md`), один и тот же чек-набор по сути (просто Live проверяет рендеренный HTML, Source — исходники).
+Оба используют один local config (`./tests/skills/seo-check.md`); Live проверяет рендеренный HTML, Source — исходники.
 
 ## Implementation notes
 
