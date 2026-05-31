@@ -1,9 +1,9 @@
 ﻿# Backup production DB (Moscow) and restore to local dev PostgreSQL
 # Global script - runs from any project directory with .ssh/id_rsa and .env.development
 # Usage (from project root):
-#   powershell.exe -ExecutionPolicy Bypass -File %USERPROFILE%\.claude\ahk\prod-to-dev.ps1
-#   powershell.exe -ExecutionPolicy Bypass -File %USERPROFILE%\.claude\ahk\prod-to-dev.ps1 -SkipBackup
-#   powershell.exe -ExecutionPolicy Bypass -File %USERPROFILE%\.claude\ahk\prod-to-dev.ps1 -UseLatestLocal
+#   powershell.exe -ExecutionPolicy Bypass -File %USERPROFILE%\.claude\ahk\prod-db-to.ps1
+#   powershell.exe -ExecutionPolicy Bypass -File %USERPROFILE%\.claude\ahk\prod-db-to.ps1 -SkipBackup
+#   powershell.exe -ExecutionPolicy Bypass -File %USERPROFILE%\.claude\ahk\prod-db-to.ps1 -UseLatestLocal
 
 [CmdletBinding()]
 param(
@@ -27,7 +27,7 @@ $SshOpts = @("-i", $SshKey, "-p", $SshPort, "-o", "StrictHostKeyChecking=accept-
 
 # --- Helpers ---
 function Write-Step($step, $total, $msg) {
-    Write-Host "`n[prod-to-dev] " -ForegroundColor Cyan -NoNewline
+    Write-Host "`n[prod-db-to] " -ForegroundColor Cyan -NoNewline
     Write-Host "Step ${step}/${total}: ${msg}" -ForegroundColor White
 }
 
@@ -239,6 +239,6 @@ $env:PGPASSWORD = $null
 $stopwatch.Stop()
 $elapsed = $stopwatch.Elapsed.ToString('mm\:ss')
 
-Write-Host "`n[prod-to-dev] " -ForegroundColor Cyan -NoNewline
+Write-Host "`n[prod-db-to] " -ForegroundColor Cyan -NoNewline
 Write-Host "Done! " -ForegroundColor Green -NoNewline
 Write-Host "$elapsed" -ForegroundColor Gray

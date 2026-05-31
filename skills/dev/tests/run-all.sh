@@ -70,7 +70,7 @@ if [ -f "$ALLOW" ]; then
             \$j = Get-Content -Raw '$ALLOW' | ConvertFrom-Json
             \$g = @(\$j.global)
             if (\$g.Count -ge 1) { Write-Output 'GLOBAL_OK' }
-            \$dangerous = @('deploy-to-prod','changelog-to-prod','prod-to-dev','dev','sealed','skill-creator','update-config','git-push-all')
+            \$dangerous = @('deploy-to-prod','changelog-to-prod','prod-db-to','dev','sealed','skill-creator','update-config','git-push-all')
             foreach (\$d in \$dangerous) {
                 if (\$g -contains \$d) { Write-Output \"DANGER:\$d\" } else { Write-Output \"SAFE:\$d\" }
             }

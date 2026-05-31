@@ -2485,3 +2485,71 @@ echo '{"tool_input":{"command":"pwsh -NoProfile -File C:\\Users\\ssv55\\.claude\
 [2026-05-31 20:01:26] BLOCKED: ALLOWED by user: Git destructive/push/commit
   Command: cd "D:\Data\Documents\Programming\Projects\AI\Claude" && git push 2>&1 && echo "---log---" && git log --oneline -1
 
+[2026-05-31 20:09:58] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: echo "=== remote tst cleanup ==="; ssh moscow_my 'rm -f /tmp/vdole_prod.dump /tmp/restore_tst.err && echo "tst /tmp cleaned"' 2>&1
+echo "=== local .tmp cleanup (to Recycle Bin) ==="
+pwsh -NoProfile -File C:\Users\ssv55\.claude\scripts\trash.ps1 \
+  "d:\Data\Documents\Programming\Projects\WEB\VDole\.tmp\vdole_prod.dump" \
+  "d:\Data\Documents\Programming\Projects\WEB\VDole\.tmp\dump.err" \
+  "d:\Data\Documents\Programming\Projects\WEB\VDole\.tmp\scp.err" \
+  "d:\Data\Documents\Programming\Projects\WEB\VDole\.tmp\restore_ssv.err" \
+  "d:\Data\Documents\Programming\Projects\WEB\VDole\.tmp\q_expenses.ts" \
+  "d:\Data\Documents\Programming\Projects\WEB\VDole\.tmp\q2.ts" \
+  "d:\Data\Documents\Programming\Projects\WEB\VDole\.tmp\insert_cluster.ts" \
+  "d:\Data\Documents\Programming\Projects\WEB\VDole\.tmp\prod_insert.sql" 2>&1
+
+[2026-05-31 20:56:50] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "C:\Users\ssv55\.claude" && git add skills/ && git commit -m "chore(skills): trim prose water in 15 fat skill files" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>" && git push 2>&1 | tail -3 && echo "---" && git log --oneline -1
+
+[2026-05-31 21:15:02] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "C:\Users\ssv55\.claude" && git add skills/ && git commit -m "chore(skills): trim prose in 20 frequently-used skills" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>" && git push 2>&1 | tail -2 && echo "---" && git log --oneline -1
+
+[2026-05-31 21:15:25] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole\.claude\skills" && echo "=== tools-chat-validator: regex/pattern lines present? ===" && grep -cE "regex|pattern|\\\\[|\bbullet\b|72|git commit" tools-chat-validator/SKILL.md && echo "=== deploy-to-prod: prefixes + ssh + deploy script present? ===" && grep -cE "pro\b|tst\b|ru\b|ssh|00-deploy|api/health|AskUserQuestion" deploy-to-prod/SKILL.md && echo "=== frontmatter intact (all 3) ===" && for f in deploy-to-prod changelog-to-prod tools-chat-validator; do head -1 "$f/SKILL.md"; done
+
+[2026-05-31 21:25:02] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "C:\Users\ssv55\.claude" && git add memory/ && git commit -m "chore(memory): trim incident prose in 2 fat global notes" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>" && git push 2>&1 | tail -2 && echo "---" && git log --oneline -1
+
+[2026-05-31 21:39:46] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "C:\Users\ssv55\.claude" && git add codex.design.deep-styles.md && git commit -m "chore(codex): compress philosophy prose in deep-styles" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>" && git push 2>&1 | tail -2 && echo "---" && git log --oneline -1
+
+[2026-05-31 21:57:54] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: ssh -o ConnectTimeout=20 -o ServerAliveInterval=5 vdole_pro_timeweb_moscow 'sudo tee /tmp/cl_count.sh >/dev/null' <<'SCRIPT'
+#!/bin/bash
+cd /var/backups/vdole || exit 1
+for f in \
+  2026-05-14__01-00-07__db__73c4b8cb.dump.gpg \
+  2026-05-29__01-00-12__db__2a2b20cc.dump.gpg \
+  2026-05-30__23-30-21__db__6bb97903.dump.gpg \
+  2026-05-31__01-00-07__db__734dcae9.dump.gpg \
+  2026-05-31__18-02-34__db__949330ff.dump.gpg ; do
+  [ -f "$f" ] || { echo "$f  MISSING"; continue; }
+  t=$(mktemp /tmp/clv.XXXXXX.dump)
+  if gpg --batch --yes --quiet --output "$t" --decrypt "$f" 2>/dev/null; then
+    n=$(pg_restore -f - "$t" 2>/dev/null | awk '
+      /^COPY public\.changelog_entries /{fl=1; next}
+      fl && $0=="\\." {fl=0}
+      fl{c++}
+      END{print c+0}')
+    echo "$f  changelog_rows=$n"
+  else
+    echo "$f  DECRYPT_FAILED"
+  fi
+  rm -f "$t"
+done
+SCRIPT
+echo "--- running ---"
+ssh -o ConnectTimeout=20 -o ServerAliveInterval=5 vdole_pro_timeweb_moscow 'sudo bash /tmp/cl_count.sh; sudo rm -f /tmp/cl_count.sh'
+
+[2026-05-31 22:29:00] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git mv "docs/todo/p3_3d_0h_0m__replication_pro_tst_data_and_files.md" "docs/suspended/Replication/replication_pro_tst_data_and_files.md" && echo "moved" && ls docs/suspended/Replication/
+
+[2026-05-31 22:50:03] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && mv .tmp/plans docs/todo/plans && ls docs/todo/plans
+
+[2026-05-31 22:50:46] BLOCKED: DENIED by user: Move/rename (mv)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && mv docs/todo/plans docs/todo/plans_renamed_tmp 2>/dev/null; ls docs/todo/ | grep -i plan
+
+[2026-05-31 22:52:52] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole/docs/todo" && mv plans infra_plans && ls -d infra_plans/ && ls infra_plans/
+

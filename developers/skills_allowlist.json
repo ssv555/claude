@@ -1,7 +1,7 @@
 {
   "_comment": "Skills devs on moscow_my may use. Synced into /opt/claude-shared/skills/ via /dev sync-skills. Edit this file then run /dev sync-skills.",
   "_excluded_intentionally": [
-    "deploy-to-prod", "changelog-to-prod", "changelog-sync", "prod-to-dev",
+    "deploy-to-prod", "changelog-to-prod", "changelog-sync", "prod-db-to",
     "git-push", "git-push-code-review", "git-push-all",
     "dev", "dev-merge", "dev-changelog", "dev-sessions-analyze",
     "sealed", "seal", "unseal", "skill-creator", "update-config",

@@ -115,10 +115,10 @@ $!8::
     return
 }
 
-; Alt+9 - prod-to-dev database sync
+; Alt+9 - prod-db-to database sync
 $!9::
 {
-    FocusTerminalAndType("powershell.exe -ExecutionPolicy Bypass -File """ . A_ScriptDir . "\prod-to-dev.ps1""")
+    FocusTerminalAndType("powershell.exe -ExecutionPolicy Bypass -File """ . A_ScriptDir . "\prod-db-to.ps1""")
     return
 }
 
@@ -166,7 +166,7 @@ $!h::
         . "`n  Alt+6  - git reset --hard origin/main"
         . "`n  Alt+7  - push AHK scripts to git"
         . "`n  Alt+8  - bun run changelog:push-to-prod"
-        . "`n  Alt+9  - prod-to-dev (sync prod DB to local)"
+        . "`n  Alt+9  - prod-db-to (sync prod DB to local)"
         . "`n"
         . "`nDocs (Starlight):"
         . "`n  Alt+D  - bun run dev:docs"
