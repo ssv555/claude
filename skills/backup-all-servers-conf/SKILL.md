@@ -7,7 +7,7 @@ allowed-tools: Bash(bash *), Bash(*backup-all-servers-conf.sh*), Read(~/.claude/
 
 # backup-all-servers-conf
 
-Full-config snapshot для всех personal-infra серверов. Скрипт делает ВСЁ end-to-end — ты только запускаешь и пересказываешь summary пользователю.
+Скрипт делает ВСЁ end-to-end — ты только запускаешь и пересказываешь summary пользователю.
 
 ## Status block
 

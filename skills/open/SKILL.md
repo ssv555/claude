@@ -6,9 +6,7 @@ model: haiku
 context: fork
 ---
 
-Open specified file(s) in Cursor IDE editor.
-
-User provides file path(s) as arguments. Open files using Cursor command line tool.
+Open the file path(s) the user provides as arguments in the Cursor IDE editor via its command-line tool.
 
 **Command:**
 ```bash

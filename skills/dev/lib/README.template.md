@@ -1,6 +1,6 @@
 # Welcome, {{ALIAS}}
 
-Это твоя dev-среда на личном сервере `moscow_my`. Полностью изолирована — свой Linux-юзер, своя PostgreSQL-БД, свой HTTPS-стенд, свой Claude.
+Твоя изолированная dev-среда на `moscow_my`: свой Linux-юзер, PostgreSQL-БД, HTTPS-стенд, Claude.
 
 ---
 
@@ -49,8 +49,7 @@ Private key передан тебе шефом отдельно через за�
 
 ## Проверка канала (Claude → Amsterdam)
 
-Весь трафик к Anthropic/Cloudflare/Google/etc автоматически уходит через amsterdam_my (wg0).
-Проверь одной командой (под собой ИЛИ под `claude-runner` — без разницы):
+Весь трафик к Anthropic/Cloudflare/Google/etc уходит через amsterdam_my (wg0). Проверь:
 
 ```bash
 curl -sS --max-time 5 https://www.cloudflare.com/cdn-cgi/trace | grep -E "^(ip|colo|loc)="
@@ -122,7 +121,7 @@ Origin указывает на локальный bare repo `/srv/git/VDole.git`
 
 ## Daily cleanup
 
-Каждые сутки в 06:00 МСК systemd-timer убивает все висящие процессы на dev-портах (40001-49999) — защита от забытого `bun run dev`. SSH-сессии, bash, `claude` НЕ трогает.
+Каждые сутки в 06:00 МСК systemd-timer убивает висящие процессы на dev-портах (40001-49999) — защита от забытого `bun run dev`. SSH-сессии, bash, `claude` НЕ трогает.
 
 ---
 

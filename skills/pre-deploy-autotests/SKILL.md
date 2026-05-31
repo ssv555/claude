@@ -8,7 +8,7 @@ model: sonnet
 
 # Pre-Deploy Autotests — Universal Runner
 
-Run project-specific test suites with standardized progress output, pre-flight checks, and error handling.
+Run project-specific test suites with progress output, pre-flight checks, and error handling.
 
 <!-- Project-specific configuration: ./tests/skills/pre-deploy-autotests.md
      This is a global skill — the actual steps, commands, pre-flight checks,

@@ -31,7 +31,7 @@ Generate a `git add -A && git commit -m "msg" && git pull --rebase && git push` 
      }
      ```
    - If user chose "Остановить" → output "Push отменён. Исправьте замечания и вызовите /git-push-code-review снова." and STOP.
-3. Try to read `.claude/version-check.json` from the project root. This file defines project-specific cached paths and version info:
+3. Try to read `.claude/version-check.json` from the project root (project-specific cached paths and version info):
 
 ```json
 {

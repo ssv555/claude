@@ -14,7 +14,7 @@ Generate a `git add -A && git commit -m "msg" && git pull --rebase && git push` 
 ## Execution
 
 1. Run `git status` and `git diff`
-2. Try to read `.claude/version-check.json` from the project root. This file defines project-specific cached paths and version info:
+2. Try to read `.claude/version-check.json` from the project root (project-specific cached paths and version info):
 
 ```json
 {
@@ -80,7 +80,7 @@ Do NOT edit any files until user responds.
 
    If `.claude/skills/session-archive/SKILL.md` does not exist — skip this step silently.
 
-6. Output ONE short Russian preamble line (≤80 chars), then the command block. The preamble explains what the command does and orients the user — without it, a bare command floating in chat looks torn out of context.
+6. Output ONE short Russian preamble line (≤80 chars), then the command block. Without a preamble a bare command looks torn out of context.
 
 Preamble examples (pick one that fits the situation):
 - `Команда для push:`

@@ -7,12 +7,7 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*)
 
 # dev
 
-Управление dev'ами на `moscow_my`. Изолированные среды разработки —
-у каждого свой Linux-юзер, своя PostgreSQL DB, свой HTTPS dev-стенд
-`https://dev-<alias>.it-joy.ru`, свой блок портов. Claude бежит **как сам dev**
-(не setuid); OAuth-токен shared через `webdev` user (один OAuth = все devs работают).
-Push-proxy git-зеркало в GitHub через bot-аккаунт `ssv-bot` (login `ssv555ssv`)
-→ `ssv555/vdole`.
+Изолированные dev-среды на `moscow_my`: у каждого свой Linux-юзер, PostgreSQL DB, HTTPS-стенд `https://dev-<alias>.it-joy.ru`, блок портов. Claude бежит **как сам dev** (не setuid); OAuth-токен shared через `webdev` user. Push-proxy git-зеркало в GitHub через bot-аккаунт `ssv-bot` (login `ssv555ssv`) → `ssv555/vdole`.
 
 ## Status block
 
@@ -71,8 +66,7 @@ if (-not (($env:USERNAME -eq 'ssv555') -or ($env:COMPUTERNAME -eq 'PC-SKY'))) {
 4. SSH → исполняет соответствующий `lib/*.sh`
 5. Обновляет локальные метаданные (`~/.claude/developers/<alias>/`)
 
-Интерактив (full name, выбор веток при merge) — через `~/.claude/scripts/dialog.ps1`
-(AskUserQuestion не работает в subagents, dialog.ps1 — universal fallback).
+Интерактив — через `~/.claude/scripts/dialog.ps1` (AskUserQuestion не работает в subagents).
 
 ## SSH-конфигурация
 
@@ -113,7 +107,7 @@ Bootstrap триггерится автоматически при первом 
 
 ### ⚠️ Ручная подготовка ПЕРЕД `/dev add <alias>`
 
-Шеф ОБЯЗАН зарегистрировать OAuth redirect URI для нового дев-стенда во всех провайдер-консолях, ИНАЧЕ OAuth-flow у дева упадёт на проверке callback'а:
+Шеф ОБЯЗАН зарегистрировать OAuth redirect URI для нового стенда во всех провайдер-консолях, иначе OAuth-flow упадёт на проверке callback'а:
 
 - Google Cloud Console → OAuth 2.0 Client → Authorized redirect URIs → `+ https://dev-<alias>.it-joy.ru/auth/google/callback`
 - VK Dev (id.vk.com) → приложение → Redirect URIs → `+ https://dev-<alias>.it-joy.ru/auth/vk/callback`
@@ -207,7 +201,7 @@ alx → 40011, 40012, 40013, 40015  → block 40011-40020
 
 ## Daily cleanup — 06:00 MSK
 
-Защита от забытых `bun run dev` (дев ушёл спать / в отпуск / уволен):
+Защита от забытых `bun run dev`:
 
 - systemd timer `dev-services-cleanup.timer` (`OnCalendar=*-*-* 06:00:00 Persistent=true`)
 - запускает `/opt/dev-skill/dev-services-cleanup.sh` под root

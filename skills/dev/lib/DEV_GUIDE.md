@@ -1,9 +1,6 @@
 # Developer Guide — moscow_my
 
-Краткая инструкция для разработчика. Лежит в `/opt/claude-shared/DEV_GUIDE.md`
-(read-only). Из bash: `cat /opt/claude-shared/DEV_GUIDE.md`. Из claude:
-`/dev-info` или `cat ~/.claude/DEV_GUIDE.md` (симлинк работает только из
-claude CLI — твой shell-юзер не имеет прямого доступа к `~/.claude/`).
+Инструкция для разработчика в `/opt/claude-shared/DEV_GUIDE.md` (read-only). Из bash: `cat /opt/claude-shared/DEV_GUIDE.md`. Из claude: `/dev-info` или `cat ~/.claude/DEV_GUIDE.md` (симлинк работает только из claude CLI).
 
 ---
 
@@ -23,20 +20,15 @@ claude CLI — твой shell-юзер не имеет прямого досту
 
 ## RULES — обязательное принятие при входе
 
-При первом интерактивном логине ты увидишь страницу с правилами и вопрос
-«type `YES, I AGREE` to accept». До принятия — shell тебя выкинет.
+При первом интерактивном логине ты увидишь страницу с правилами и вопрос «type `YES, I AGREE` to accept». До принятия — shell тебя выкинет.
 
 - Хеш SHA-256 правил привязан к версии файла.
-- Шеф обновил RULES.md → старый flag протухает → при следующем логине ты увидишь
-  новые правила и должен принять заново.
+- Шеф обновил RULES.md → старый flag протухает → при следующем логине принимаешь заново.
 - Принятие пишется в audit-log с твоим alias, IP, временем и хешем.
 
-Если правила выводят больше одного экрана — `Space`/`PgDn` пагинатор, `q` —
-выход из less. Прочитал → введи `YES, I AGREE` точно как написано.
+Если правила больше одного экрана — `Space`/`PgDn` пагинатор, `q` — выход из less. Прочитал → введи `YES, I AGREE` точно как написано.
 
-**Ключевое правило (Rule 1):** один `git push` = один таск. Никогда не мешать
-две задачи в одном push'е — это отдельный пункт правил, нарушение ловится
-ручным review шефа.
+**Ключевое правило (Rule 1):** один `git push` = один таск. Никогда не мешать две задачи в одном push'е.
 
 ---
 
@@ -102,8 +94,7 @@ claude CLI — твой shell-юзер не имеет прямого досту
 
 ## Проверка канала Claude → Anthropic
 
-Claude обязан ходить во внешний мир ТОЛЬКО через Amsterdam (a не напрямую с moscow IP).
-Маршрутизация настроена инфраструктурно (`wg0` туннель):
+Claude ходит во внешний мир ТОЛЬКО через Amsterdam (`wg0` туннель), не напрямую с moscow IP:
 
 ```bash
 # 1. Exit IP и Cloudflare datacenter — должно быть AMS / NL
@@ -125,18 +116,14 @@ curl -sS --max-time 5 -o /dev/null -w "anthropic remote_ip=%{remote_ip} http=%{h
 
 ## Запуск dev-сервера
 
-`.env.development` лежит с правами `600 <alias>:<alias>` — ты МОЖЕШЬ его читать
-(claude и bun запущены как ты), но НЕ коммить — секреты.
+`.env.development` (`600 <alias>:<alias>`) — ты МОЖЕШЬ его читать (claude/bun бегут как ты), но НЕ коммить — секреты.
 
 ```bash
 cd ~/projects/<repo>
 bun run dev
 ```
 
-Твой dev-стенд после старта будет доступен по `https://dev-<alias>.it-joy.ru`.
-
-Если bun ушёл в фон и не убит — daily cleanup в 06:00 MSK прибьёт все процессы
-на портах 40001-49999. Это нормально, ничего не сломается.
+Стенд после старта: `https://dev-<alias>.it-joy.ru`. Забытый bun в фоне прибьёт daily cleanup в 06:00 MSK (порты 40001-49999) — это нормально.
 
 ---
 
@@ -146,10 +133,9 @@ bun run dev
 - `pre-receive` хук на bare-repo **физически блокирует** push в `main`, `master`, `prod`, `production`, `release/*`
 - `/dev-05-commit` и `/dev-07-commit-push` **отказываются** коммитить в protected и сами переключают на `dev/<alias>/<slug>`
 
-Формат твоих веток: `dev/<твой-alias>/<short-slug>`. Пример: `dev/danya/add-otp-field`.
+Формат веток: `dev/<твой-alias>/<short-slug>`. Пример: `dev/danya/add-otp-field`.
 
-После merge'а шефом твоя ветка удаляется на сервере. У тебя локально остаётся
-— почисти после `/dev-08-reset` или вручную `git branch -D dev/danya/add-otp-field`.
+После merge'а шефом ветка удаляется на сервере; локально остаётся — почисти `git branch -D dev/danya/add-otp-field`.
 
 ---
 

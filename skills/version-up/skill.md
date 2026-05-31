@@ -7,9 +7,7 @@ model: haiku
 context: fork
 ---
 
-Increment version and update date in the project's `version.ts`.
-
-**NEVER open the file in any external editor (Cursor, VS Code, etc.). Only Read + Edit tools.**
+Increment version and update date in the project's `version.ts`. **NEVER open the file in any external editor (Cursor, VS Code, etc.). Only Read + Edit tools.**
 
 1. Get current working directory with `pwd`
 2. Locate the version file. Try these paths in order, use the first that exists:

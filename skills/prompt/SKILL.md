@@ -7,8 +7,6 @@ context: fork
 
 # Prompt Optimizer Control
 
-Manage the prompt optimizer hook settings.
-
 ## Instructions
 
 1. Read the state file: `~/.claude/prompt-optimizer-state.json`

@@ -30,7 +30,7 @@ All paths use `$HOME` (bash) / `%USERPROFILE%` (CMD) — no hardcoded usernames.
 
 ### Step 1: Check all repos in parallel
 
-Run **all four** `git status --short` commands simultaneously (parallel Bash calls):
+Run **all** `git status --short` commands simultaneously (parallel Bash calls):
 
 ```bash
 git -C "$PWD" status --short

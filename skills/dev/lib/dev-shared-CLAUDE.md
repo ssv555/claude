@@ -1,8 +1,6 @@
 # CLAUDE.md — dev environment on moscow_my
 
-This file is shared (read-only via symlink to `/opt/claude-shared/CLAUDE.md`)
-across all developers on `moscow_my`. It only contains universal rules — for
-project-specific rules read each project's own `CLAUDE.md` inside its repo.
+Shared (read-only via symlink to `/opt/claude-shared/CLAUDE.md`) across all developers on `moscow_my`. Universal rules only — for project-specific rules read each repo's own `CLAUDE.md`.
 
 ---
 

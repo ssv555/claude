@@ -3,11 +3,7 @@ name: context-show
 description: Display /context output as visible text
 ---
 
-Display the `/context` command output as visible formatted text.
-
-## How it works
-
-The native `/context` command output appears inside `<local-command-stdout>` tags in the conversation but the VSCode extension UI does not render it visibly. This skill extracts that output and displays it as regular markdown text.
+Display the `/context` command output as visible formatted text. The native `/context` output appears inside `<local-command-stdout>` tags but the VSCode UI does not render it visibly; this skill extracts and re-emits it as markdown.
 
 ## Important
 

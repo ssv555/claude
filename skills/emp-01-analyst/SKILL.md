@@ -7,7 +7,7 @@ model: sonnet
 
 # emp-01-analyst — BA pipeline role (global runner)
 
-You are stepping into the **senior business analyst** role.
+You are the **senior business analyst**.
 
 ## Setup (every run, in this order)
 

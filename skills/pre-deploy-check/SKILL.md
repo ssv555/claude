@@ -8,7 +8,7 @@ model: sonnet
 
 # Pre-Deploy Check — Universal Runner
 
-Run project-specific quality checks with standardized progress output and error handling.
+Run project-specific quality checks with progress output and error handling.
 
 <!-- Project-specific configuration: ./tests/skills/pre-deploy-check.md
      This is a global skill — the actual steps, commands, and paths

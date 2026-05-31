@@ -47,11 +47,7 @@ Each global `emp-NN-*/SKILL.md` resolves the project employers folder by trying 
 1. `<project_root>/.claude/skills/employers/`  ← preferred new location
 2. `<project_root>/.docs/employers/`            ← legacy back-compat (VDole)
 
-If neither exists → STOP with a bootstrap error showing the user the paths to create + the templates here in `~/.claude/skills/employers/`.
-
-This guarantees:
-- New projects can adopt the clean `.claude/skills/employers/` layout immediately.
-- Existing projects (like VDole) keep working without moving files — just edit/add `profile.md` next to existing role cards in `.docs/employers/`.
+If neither exists → STOP with a bootstrap error showing the user the paths to create + the templates here in `~/.claude/skills/employers/`. New projects adopt the clean `.claude/skills/employers/` layout; existing projects (VDole) keep working via the legacy `.docs/employers/` path without moving files.
 
 ## Read order at run time
 

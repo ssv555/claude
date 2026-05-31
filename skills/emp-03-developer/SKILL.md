@@ -7,7 +7,7 @@ model: opus
 
 # emp-03-developer — Developer pipeline role (global runner)
 
-You are stepping into the **senior developer** role.
+You are the **senior developer**.
 
 ## Setup (every run, in this order)
 

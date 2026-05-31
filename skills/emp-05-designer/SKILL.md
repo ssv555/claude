@@ -7,7 +7,7 @@ model: sonnet
 
 # emp-05-designer — Designer pipeline role (global runner)
 
-You are stepping into the **designer** role.
+You are the **designer**.
 
 ## Setup (every run, in this order)
 

@@ -2,7 +2,7 @@
 
 Полный config-snapshot всех personal-infra серверов: nginx, LE certs (с private keys), WireGuard/AmneziaWG keys, Xray privateKey, wg-easy admin pass, systemd units, cron расписания, custom scripts, sysctl, fail2ban, sshd hardening и т.п.
 
-**Self-contained bash-script**: orchestration + SSH + tar + scp + sha256 indexing + drift detection + manifest generation в одном файле. Claude управляет только запуском и пересказом summary — содержимое snapshot'ов не читает (правило в SKILL.md).
+Self-contained bash-script (orchestration + SSH + tar + scp + sha256 indexing + drift detection + manifest generation в одном файле). Claude управляет только запуском и пересказом summary — содержимое snapshot'ов не читает (правило в SKILL.md).
 
 ## Usage
 
@@ -111,8 +111,6 @@ Event-marker snapshots (`2026-05-20_post-xray/`, и т.п.) хранятся п�
 - Per-server snapshot: ~1–3 MB (в развёрнутом виде), ~0.1–0.5 MB (в .tar.gz).
 - Все 4 сервера: ~7 MB развёрнутыми, ~1.5 MB как архивы.
 - При daily backup: за месяц ~7 MB (только текущий day) + 30 × ~1.5 MB ≈ **50 MB/месяц**.
-
-Storage держится экономно благодаря packing — развёрнутая только сегодняшняя папка.
 
 ## Troubleshooting
 
