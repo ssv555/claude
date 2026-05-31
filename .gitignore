@@ -34,5 +34,9 @@ telemetry/
 # Old skills .git (if leftover)
 skills/.git/
 
+# Skill dependencies & scratch — regenerated, never commit
+node_modules/
+skills/**/.temp-execution-*.js
+
 # Dev archives (server-side dumps, too large for git — keep on local disk only)
 developers/*/_archive/
