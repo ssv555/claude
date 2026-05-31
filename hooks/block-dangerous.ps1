@@ -126,5 +126,16 @@ foreach ($dp in $dangerousPatterns) {
     }
 }
 
+# --- Non-recursive `rm` is FORBIDDEN: it deletes past the Recycle Bin ---
+# Recursive `rm -rf|-fr|-r` is handled above (confirm dialog, bypasses the bin
+# on purpose for bulk dirs like node_modules). Any other `rm` must go through
+# trash.ps1 so the deletion lands in the Recycle Bin and stays recoverable.
+if ($command -match '(?i)\brm\b') {
+    $trash = Join-Path $env:USERPROFILE '.claude\scripts\trash.ps1'
+    [Console]::Error.WriteLine("BLOCKED: bare 'rm' is FORBIDDEN by user rules - it deletes past the Recycle Bin (unrecoverable). Delete via the trash script instead, which sends files/dirs to the Recycle Bin: pwsh -NoProfile -File `"$trash`" <path> [<path> ...]. Only bulk recursive deletes (rm -rf <dir>, e.g. node_modules) are allowed past the bin, and only via the confirmation dialog.")
+    Write-BlockLog "Bare rm (use trash.ps1 -> Recycle Bin)" $command
+    exit 2
+}
+
 # Allow everything else
 exit 0

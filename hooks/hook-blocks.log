@@ -2444,3 +2444,44 @@ PS
 pwsh -NoProfile -File /tmp/keytest.ps1
 rm -f /tmp/keytest.ps1
 
+[2026-05-31 17:58:39] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/"
+rm -f chunk1.json chunk2.json chunk3.json chunk4.json chunk5.json chunk6.json chunk7.json chunk8.json chunk_today.json cl_pro.json sync_queue.json ssv_entries.md insert_chunk.ts estimate_null_durations.ts keys_pro.txt dev_e2e_run_2026-05-28.log dev_skill_e2e_test_plan_2026-05-28.md report_md_telecast_2026-05-24.md
+rm -rf playwright/
+echo "=== ╨┐╨╛╤Б╨╗╨╡ ╨╛╤З╨╕╤Б╤В╨║╨╕ ==="; ls -la
+
+[2026-05-31 18:06:51] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: H="$HOME/.claude/hooks/block-dangerous.ps1"
+echo "=== test 1: bare 'rm file' (must BLOCK, exit 2) ==="
+echo '{"tool_input":{"command":"rm .tmp/foo.txt"}}' | pwsh -NoProfile -ExecutionPolicy Bypass -File "$H"; echo "exit=$?"
+echo ""
+echo "=== test 2: 'rm -f file' (must BLOCK, exit 2) ==="
+echo '{"tool_input":{"command":"rm -f .tmp/foo.txt"}}' | pwsh -NoProfile -ExecutionPolicy Bypass -File "$H"; echo "exit=$?"
+echo ""
+echo "=== test 3: trash.ps1 call (must ALLOW, exit 0) ==="
+echo '{"tool_input":{"command":"pwsh -NoProfile -File C:\\Users\\ssv55\\.claude\\scripts\\trash.ps1 .tmp/foo.txt"}}' | pwsh -NoProfile -ExecutionPolicy Bypass -File "$H"; echo "exit=$?"
+
+[2026-05-31 18:07:40] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: rm .tmp/foo.txt
+
+[2026-05-31 18:07:41] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: rm -f .tmp/foo.txt
+
+[2026-05-31 18:09:19] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: git mv docs/todo/p3_2d_4h_0m__db_replication_pro_tst_bidirectional.md docs/todo/p3_3d_0h_0m__replication_pro_tst_data_and_files.md
+
+[2026-05-31 18:10:14] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: rm "d:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/live_victim.txt"
+
+[2026-05-31 18:32:04] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: git rm TODO.inprogress.md
+
+[2026-05-31 18:33:54] BLOCKED: 'nul' reserved device name
+  Command: wc -l "C:\Users\ssv55\.claude\codex.md" "C:\Users\ssv55\.claude\codex_description.md" "C:\Users\ssv55\.claude\codex.design.deep-styles.md" 2>nul
+
+[2026-05-31 20:00:53] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:\Data\Documents\Programming\Projects\AI\Claude" && git add CLAUDE.md && git commit -m "chore(rules): trim water + translate RU in global CLAUDE.md" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>" && git pull --rebase && git push
+
+[2026-05-31 20:01:26] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:\Data\Documents\Programming\Projects\AI\Claude" && git push 2>&1 && echo "---log---" && git log --oneline -1
+

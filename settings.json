@@ -91,7 +91,7 @@
       }
     ]
   },
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "autoUpdatesChannel": "latest",
   "theme": "dark-daltonized"
 }
