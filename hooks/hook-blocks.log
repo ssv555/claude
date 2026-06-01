@@ -2588,3 +2588,38 @@ echo "=== clear staging cert dir ==="
 rm -rf /root/.acme.sh/vdole.pro_ecc && echo "staging cert dir removed"
 EOF
 
+[2026-06-01 22:19:10] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && \
+for i in 1 2 3; do scp -P 53847 scripts/failover/vdole-failover.sh scripts/failover/vdole-failover.service vdole_pro_timeweb_moscow:/tmp/ 2>/dev/null && break || { echo "[scp attempt $i failed]"; sleep 3; }; done && \
+for i in 1 2 3; do ssh vdole_pro_timeweb_moscow 'bash -s' <<'EOF' && break || { echo "[ssh attempt $i failed]"; sleep 3; }
+hostname | grep -qx vdole-pro || { echo "WRONG HOST ABORT"; exit 1; }
+command -v dig >/dev/null || { echo "dig MISSING on pro"; }
+sudo -n install -m755 /tmp/vdole-failover.sh /usr/local/sbin/vdole-failover.sh
+sudo -n install -m644 /tmp/vdole-failover.service /etc/systemd/system/vdole-failover.service
+sudo -n install -d -m700 /etc/vdole-failover
+sudo -n tee /etc/vdole-failover/failover.conf >/dev/null <<'CONF'
+DOMAIN=vdole.pro
+PRO_IP=45.129.128.159
+TST_IP=195.2.75.212
+MODE=logger
+CHECK_INTERVAL=30
+LOG_FILE=/var/log/vdole-failover.log
+STATE_DIR=/run/vdole-failover
+CONF
+sudo -n chmod 600 /etc/vdole-failover/failover.conf
+sudo -n touch /var/log/vdole-failover.log; sudo -n chmod 640 /var/log/vdole-failover.log
+sudo -n bash -n /usr/local/sbin/vdole-failover.sh && echo "syntax OK"
+sudo -n systemctl daemon-reload
+sudo -n systemctl enable --now vdole-failover 2>&1 | tail -1
+sleep 2; sudo -n systemctl is-active vdole-failover
+rm -f /tmp/vdole-failover.sh /tmp/vdole-failover.service
+EOF
+done
+
+[2026-06-01 22:33:25] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && \
+git mv docs/todo/p2_1d_0h_0m__vdole_pro_dns_to_timeweb_cloud.md docs/archive/todo/vdole_pro_dns_to_timeweb_cloud.md && \
+git mv docs/todo/p2_1d_0h_0m__vdole_pro_dns_to_timeweb_cloud.zone docs/archive/todo/vdole_pro_dns_to_timeweb_cloud.zone && \
+git mv docs/todo/p3_1d_0h_0m__vdole_pro_failover_not_round_robin.md docs/archive/todo/vdole_pro_failover_not_round_robin.md && \
+echo "moved" && ls docs/archive/todo/ | grep -E 'vdole_pro_(dns|failover)'
+
