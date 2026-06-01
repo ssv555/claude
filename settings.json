@@ -13,6 +13,7 @@
       "Skill",
       "Bash(grep '^DEV_SHORT_NAME=':*)",
       "Bash(grep ^DEV_SHORT_NAME=:*)",
+      "Bash(cut:*)",
       "mcp__mcp-dev-tg-chat-agent__notify_via_telegram",
       "mcp__amsterdam_grey__*",
       "mcp__amsterdam_grey_root__*",

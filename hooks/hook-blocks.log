@@ -2570,3 +2570,21 @@ Burst "--http2" 6
 [2026-06-01 01:12:08] BLOCKED: ALLOWED by user: Move/rename (mv)
   Command: mv "C:/Users/ssv55/.claude/skills/pre-deploy-check" "C:/Users/ssv55/.claude/skills/pre-deploy-check-build" && echo "dir renamed" && ls "C:/Users/ssv55/.claude/skills/" | grep pre-deploy
 
+[2026-06-01 20:06:19] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd 'd:\Data\Documents\Programming\Projects\WEB\VDoleVideoBriefs' && mv '╨╖╨░╨┐╨╕╤Б╤М-╨▓╤Б╤В╤А╨╡╤З╨╕-17-05-2026-12-06-25-╨╖╨░╨┐╨╕╤Б╤М' '2026-05-17-12-06-25-╨╖╨░╨┐╨╕╤Б╤М-╨▓╤Б╤В╤А╨╡╤З╨╕-╨╖╨░╨┐╨╕╤Б╤М' && mv '╨╖╨░╨┐╨╕╤Б╤М-╨▓╤Б╤В╤А╨╡╤З╨╕-26-04-2026-10-14-47-╨╖╨░╨┐╨╕╤Б╤М' '2026-04-26-10-14-47-╨╖╨░╨┐╨╕╤Б╤М-╨▓╤Б╤В╤А╨╡╤З╨╕-╨╖╨░╨┐╨╕╤Б╤М' && ls
+
+[2026-06-01 21:39:15] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: ssh moscow_my 'bash -s' <<'EOF'
+echo "=== live dir structure ==="
+ls -la /etc/letsencrypt/live/vdole.pro/ 2>/dev/null
+echo "=== who references this cert in nginx ==="
+grep -rl '/etc/letsencrypt/live/vdole.pro/' /etc/nginx/ 2>/dev/null
+echo "=== certbot renewal confs / timer ==="
+ls /etc/letsencrypt/renewal/ 2>/dev/null
+systemctl is-enabled certbot.timer 2>/dev/null; systemctl list-timers certbot* --all 2>/dev/null | head -3
+echo "=== other certbot-managed domains on this node ==="
+ls /etc/letsencrypt/live/ 2>/dev/null
+echo "=== clear staging cert dir ==="
+rm -rf /root/.acme.sh/vdole.pro_ecc && echo "staging cert dir removed"
+EOF
+
