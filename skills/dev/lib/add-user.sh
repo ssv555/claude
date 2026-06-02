@@ -130,8 +130,9 @@ mkdir -p "$CLAUDE_HOME"
 # Read-only chief-managed config: symlinks to /opt/claude-shared/ (root:root 755).
 ln -sfn "$SHARED_DIR/skills"     "$CLAUDE_HOME/skills"
 ln -sfn "$SHARED_DIR/CLAUDE.md"  "$CLAUDE_HOME/CLAUDE.md"
-[ -f "$SHARED_DIR/DEV_GUIDE.md" ] && ln -sfn "$SHARED_DIR/DEV_GUIDE.md" "$CLAUDE_HOME/DEV_GUIDE.md"
-[ -f "$SHARED_DIR/codex.md" ]     && ln -sfn "$SHARED_DIR/codex.md"     "$CLAUDE_HOME/codex.md"
+[ -f "$SHARED_DIR/DEV_GUIDE.md" ]    && ln -sfn "$SHARED_DIR/DEV_GUIDE.md"    "$CLAUDE_HOME/DEV_GUIDE.md"
+[ -f "$SHARED_DIR/codex.md" ]        && ln -sfn "$SHARED_DIR/codex.md"        "$CLAUDE_HOME/codex.md"
+[ -f "$SHARED_DIR/settings.json" ]   && ln -sfn "$SHARED_DIR/settings.json"   "$CLAUDE_HOME/settings.json"
 
 # Per-dev memory: real directory (NOT symlink). Seeded from chief's curated memory.
 mkdir -p "$CLAUDE_HOME/memory"

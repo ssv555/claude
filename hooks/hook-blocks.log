@@ -2623,3 +2623,15 @@ git mv docs/todo/p2_1d_0h_0m__vdole_pro_dns_to_timeweb_cloud.zone docs/archive/t
 git mv docs/todo/p3_1d_0h_0m__vdole_pro_failover_not_round_robin.md docs/archive/todo/vdole_pro_failover_not_round_robin.md && \
 echo "moved" && ls docs/archive/todo/ | grep -E 'vdole_pro_(dns|failover)'
 
+[2026-06-02 09:05:40] BLOCKED: 'nul' reserved device name
+  Command: cd /d "d:\Data\Documents\Programming\Projects\WEB\VDole" && find docs/tech/DESIGN_SYSTEM.md -printf "%s bytes\n" 2>nul & wc -l -c docs/tech/DESIGN_SYSTEM.md
+
+[2026-06-02 09:22:21] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: rm -f /tmp/dump.ps1 /tmp/fix1.ps1
+
+[2026-06-02 09:29:43] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git mv "docs/todo/general/04_investor_profiles_specification.md" "docs/archive/todo/04_investor_profiles_specification.md" && git mv "docs/todo/general/04_investor_profiles_tz.md" "docs/archive/todo/04_investor_profiles_tz.md" && git mv "docs/tech/2026.03.23 - 22.12 - Base.md" "docs/tech/2026.03.23_22.12.00__base.md" && echo "=== moved OK ===" && git status --short | grep -E "archive/todo|base\.md|22.12"
+
+[2026-06-02 09:53:45] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && echo "=== bank-account enc ALONE ===" && bun test tests/server/unit/bank-account-encryption.test.ts --env-file .env.development 2>&1 | tail -6; echo "=== restore deleted dev content blobs (test infra wiped them) ===" && git checkout -- back/data/content/ 2>&1; git status --short back/data/content/ | head
+

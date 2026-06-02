@@ -1,5 +1,7 @@
 # Codex — Engineering Principles
 
+> **TL;DR.** Compressed checklist of the engineering rules the AI must apply on every task (SOLID, DRY, KISS, correctness, security, performance, testing, review depth). Each line is a one-liner; the full explanations live in [codex_description.md](./codex_description.md) (human-only — AI does not read it).
+
 > Lines marked 👤 are for user reference only — AI must NOT read the linked file. The rule names alone are sufficient for AI to apply them.
 
 - SOLID 👤 [description](./codex_description.md#solid)

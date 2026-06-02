@@ -1,5 +1,7 @@
 # Codex — Full Descriptions (for user reference only)
 
+> **TL;DR.** Detailed human-reference explanations of every engineering principle listed as a one-liner in [codex.md](./codex.md): SOLID, DRY, clean code, correctness, concurrency, security, performance, testing, review depth and more. AI agents do NOT read this file — the rule names in `codex.md` are enough to apply them.
+
 > This file contains detailed explanations of engineering principles listed in `codex.md`.
 > AI agents should NOT read this file — it exists for human reference only.
 

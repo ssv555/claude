@@ -271,6 +271,9 @@ mkdir -p "$SHARED_DIR/skills" "$SHARED_DIR/memory"
 [ -f "$SKILL_DIR/dev-shared-CLAUDE.md" ] && install -o root -g root -m 644 "$SKILL_DIR/dev-shared-CLAUDE.md" "$SHARED_DIR/CLAUDE.md"
 [ -f "$SKILL_DIR/codex.md" ]     && install -o root -g root -m 644 "$SKILL_DIR/codex.md"     "$SHARED_DIR/codex.md"
 [ -f "$SKILL_DIR/DEV_GUIDE.md" ] && install -o root -g root -m 644 "$SKILL_DIR/DEV_GUIDE.md" "$SHARED_DIR/DEV_GUIDE.md"
+# Managed Claude Code settings: headless server has no browser/desktop → kill
+# playwright/desktop MCP, block project .mcp.json auto-enable, mute telemetry/updater.
+[ -f "$SKILL_DIR/dev-shared-settings.json" ] && install -o root -g root -m 644 "$SKILL_DIR/dev-shared-settings.json" "$SHARED_DIR/settings.json"
 
 if [ -d "$SKILL_DIR/memory" ]; then
     rm -rf "$SHARED_DIR/memory"

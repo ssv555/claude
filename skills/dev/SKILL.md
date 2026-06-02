@@ -242,6 +242,7 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
 /opt/claude-shared/                     root:root 755                    ← общая конфигурация
   skills/                               (allowlist'ом)
   CLAUDE.md                             dev-версия (только code quality + workflow)
+  settings.json                         root:root 644                    ← managed Claude Code settings (MCP off: playwright/desktop/ssh; telemetry/updater muted)
   codex.md, DEV_GUIDE.md, memory/
   RULES.md                              root:root 644                    ← обязательные правила
   RULES.version                         root:root 644                    ← SHA-256 текущего RULES.md
@@ -295,6 +296,7 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
   .claude/                              <dev>:<dev> 750                   ← дев сам owner (claude бежит как dev)
     skills    → /opt/claude-shared/skills    (read-only symlink)
     CLAUDE.md → /opt/claude-shared/CLAUDE.md
+    settings.json → /opt/claude-shared/settings.json (read-only symlink, managed MCP/telemetry off)
     codex.md, DEV_GUIDE.md               → /opt/claude-shared/... (read-only)
     memory/                             <dev>:<dev> 700                   ← per-dev, seeded из shared
     projects/                           <dev>:<dev> 700                   ← claude пишет conversation data

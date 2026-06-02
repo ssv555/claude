@@ -5,7 +5,8 @@
     "git-push", "git-push-code-review", "git-push-all",
     "dev", "dev-merge", "dev-changelog", "dev-sessions-analyze",
     "sealed", "seal", "unseal", "skill-creator", "update-config",
-    "mcp-list", "tools-chatgpt-archive", "tools-chat-validator"
+    "mcp-list", "tools-chatgpt-archive", "tools-chat-validator",
+    "seo-check", "seo-fix", "prompt"
   ],
   "global": [
     "pre-deploy-check-build",
@@ -18,7 +19,10 @@
     "dev-07-commit-push",
     "dev-08-reset",
     "dev-09-finish",
-    "dev-info"
+    "dev-info",
+    "code-reviewer",
+    "skills",
+    "pdf"
   ],
   "local_per_project": {}
 }

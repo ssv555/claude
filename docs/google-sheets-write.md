@@ -1,5 +1,7 @@
 # Google Sheets — запись из bun-скрипта
 
+> **TL;DR.** Чтение и запись любого Google Sheet из локального bun-скрипта через Service Account + `googleapis`. Один раз настраивается GCP-проект и SA-ключ, дальше: расшарить лист на email сервис-аккаунта как Editor → задать `SHEET_ID`/`RANGE`/`values` в `~/.claude/tmp/sheets-write/write-sheet.ts` → запустить. Операции: update / append / clear / get / batchUpdate.
+
 Как настроено редактирование Google Sheets из локальных скриптов через Service Account + `googleapis`. Один раз настроил GCP — дальше любая правка любого листа = одна функция.
 
 ## Архитектура
