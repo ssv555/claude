@@ -1,6 +1,6 @@
 ---
 name: dev-08-reset
-description: Sync current branch with latest main from origin (fetch + rebase). Refuses if there are uncommitted changes — commit first via /dev-05-commit. Use when user says "/dev-08-reset", "подтяни main", "обнови ветку", "ресет на main", "/d08".
+description: Sync current branch with latest origin main (fetch + rebase); refuses on uncommitted changes. Use when user says "/dev-08-reset", "подтяни main", "обнови ветку", "ресет на main".
 model: sonnet
 allowed-tools: Bash(*), Read(*)
 ---

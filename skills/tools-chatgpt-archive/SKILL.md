@@ -1,6 +1,6 @@
 ---
 name: tools-chatgpt-archive
-description: Extract content from external ChatGPT / LLM share-links and archive it into the project's .docs/ knowledge base. TRIGGER automatically when the user posts a URL matching chatgpt.com/s/, chatgpt.com/share/, chat.openai.com/share/, claude.ai/share/, or similar external shared-chat links — even without an explicit command. Also runs on explicit request ("архивируй чат", "сохрани ссылку").
+description: Extract external LLM share-links and archive into project .docs/. TRIGGER automatically on URLs matching chatgpt.com/s/, chatgpt.com/share/, chat.openai.com/share/, claude.ai/share/, or similar shared-chat links. Also on explicit request ("архивируй чат", "сохрани ссылку").
 disable-model-invocation: false
 allowed-tools: AskUserQuestion, Agent, Read, Write, Edit, Glob, Grep, Bash(ls *), Bash(cat *), Bash(grep *), Bash(mkdir *), mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_evaluate, mcp__playwright__browser_click, mcp__playwright__browser_wait_for, mcp__playwright__browser_close, mcp__playwright_iso__browser_navigate, mcp__playwright_iso__browser_snapshot, mcp__playwright_iso__browser_evaluate, mcp__playwright_iso__browser_click, mcp__playwright_iso__browser_wait_for, mcp__playwright_iso__browser_close
 model: sonnet

@@ -1,6 +1,6 @@
 ---
 name: prod-db-to
-description: Roll out the PRODUCTION database to a target. Source is ALWAYS prod (pro). The argument selects the TARGET — local dev (ssv default / laptop), the tst fallback node (moscow_my, via this PC as hub), or all (ssv+tst). One prod dump is taken via DIRECT ssh + hostname guard (NEVER the MCP connector — it is unreliable for prod and can silently hit tst), then restored to the chosen target(s). Reads per-project config from <cwd>/tests/skills/prod-db-to.md. Args: ssv | laptop | tst | all | ru | help. Use when the user says "/prod-db-to [target]", "раскатай прод-базу на …", "залей прод БД на tst/ssv".
+description: Roll out the PRODUCTION database (source always prod) to a target; arg selects target. Args: ssv | laptop | tst | all | ru | help. Use when user says "/prod-db-to [target]", "раскатай прод-базу на …", "залей прод БД на tst/ssv".
 disable-model-invocation: false
 allowed-tools: Bash, Read, Glob, Grep, AskUserQuestion
 model: sonnet

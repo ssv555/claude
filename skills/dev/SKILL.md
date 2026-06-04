@@ -1,6 +1,6 @@
 ---
 name: dev
-description: Manage developers on personal moscow_my server (Linux users + claude-runner isolation + per-dev PG database + per-dev nginx dev-stand + bare git mirror to GitHub). Chief-only skill. Use when user says "/dev", "/dev help", "/dev list", "/dev <alias>", "/dev add", "/dev del <alias>", "/dev sync-skills", "/dev bootstrap". Also entry-point docs for "/dev-merge <alias|sha>", "/dev-changelog <sha>", "/dev-sessions-analyze <alias>".
+description: Chief-only — manage isolated dev environments on moscow_my (Linux user + PG db + nginx stand + git mirror per dev). Use when user says "/dev", "/dev help", "/dev list", "/dev <alias>", "/dev add", "/dev del <alias>", "/dev sync-skills", "/dev bootstrap". Entry-point docs for "/dev-merge <alias|sha>", "/dev-changelog <sha>", "/dev-sessions-analyze <alias>".
 model: sonnet
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*)
 ---
@@ -99,7 +99,7 @@ Bootstrap триггерится автоматически при первом 
 - **Custom motd** (`/etc/update-motd.d/99-dev-welcome`) — компактный welcome-баннер на каждом login: alias, репо+ветка, статус принятия правил, restart-warn, шорткаты ключевых скилов. Дефолтный Ubuntu-motd погашен через `~/.hushlogin` (создаётся в `add-user.sh`).
 - **RULES gate** — `/opt/claude-shared/RULES.md` + `/opt/claude-shared/RULES.version` (SHA-256). Принятие через привилегированный helper `/usr/local/sbin/dev-accept-rules` (sudoers NOPASSWD для %developers). Gate `/etc/profile.d/00-rules-check.sh` блокирует интерактивный shell до приёма. Audit-log: `/opt/claude-shared/audit/rules_acceptances.log` (root 600).
 - **Workflow audit-log** — `/usr/local/sbin/dev-audit-log` (sudoers helper). Все `/dev-NN-*` скилы пишут одну строку на действие в `/opt/claude-shared/audit/<YYYY-MM>/<alias>.log` (root 600 — девы не видят чужой работы).
-- **Chief notifier** — `/usr/local/sbin/dev-notify-finish` (sudoers helper). `/dev-09-finish` зовёт его → запись в `/opt/claude-shared/audit/finished_branches.log` + TG-сообщение через существующий релэй: TOKEN/CHAT_ID из `/var/backups/.tg_config` (VDOLE_* с fallback на IAMRICH_*), путь `sudo -u www-data ssh -i /var/www/.ssh/id_backup` → amsterdam_my:53847 → `curl api.telegram.org` (fallback amsterdam_grey:53847). Тот же механизм, что у `/usr/local/bin/vdole-tg-forward.sh` и deploy-pipeline'а — никаких новых секретов / endpoint'ов / IP-allowlist'ов. Креды отсутствуют → log-only.
+- **Chief notifier** — `/usr/local/sbin/dev-notify-finish` + `/usr/local/sbin/dev-notify-start` (sudoers helpers). `/dev-09-finish` зовёт finish → запись в `/opt/claude-shared/audit/finished_branches.log` + TG (sha/commits/diff/merge-команды); `/dev-00-start` зовёт start → запись в `/opt/claude-shared/audit/started_branches.log` + TG (alias/slug/base-sha/описание). Оба шлют через существующий релэй: TOKEN/CHAT_ID из `/var/backups/.tg_config` (VDOLE_* с fallback на IAMRICH_*), путь `sudo -u www-data ssh -i /var/www/.ssh/id_backup` → amsterdam_my:53847 → `curl api.telegram.org` (fallback amsterdam_grey:53847). Тот же механизм, что у `/usr/local/bin/vdole-tg-forward.sh` и deploy-pipeline'а — никаких новых секретов / endpoint'ов / IP-allowlist'ов. Креды отсутствуют → log-only.
 
 ## `/dev add <alias> [<repo>]` — полный flow
 
@@ -220,7 +220,7 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
 - `pre-deploy-check-build`, `pre-deploy-autotests`
 - `version-up`, `session-archive`
 - `dev-info`
-- `dev-00-start` — начать задачу (pull main + новая ветка)
+- `dev-00-start` — начать задачу (pull main + новая ветка + уведомление шефа)
 - `dev-01-status` — где я (ветка, коммиты, dirty)
 - `dev-05-commit` — коммит (с branch guard, один таск = один коммит)
 - `dev-07-commit-push` — коммит + push (один таск = один push)
@@ -242,13 +242,16 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
 /opt/claude-shared/                     root:root 755                    ← общая конфигурация
   skills/                               (allowlist'ом)
   CLAUDE.md                             dev-версия (только code quality + workflow)
-  settings.json                         root:root 644                    ← managed Claude Code settings (MCP off: playwright/desktop/ssh; telemetry/updater muted)
+  settings.json                         root:root 644                    ← косметические defaults (spinner/survey), КОПИРУЮТСЯ в ~/.claude/ при add
+
+/etc/claude-code/managed-settings.json  root:root 644                    ← enforced policy (claude НЕ пишет, дев НЕ переопределит): MCP off (playwright/desktop/ssh), .mcp.json auto-enable off, telemetry/updater muted
   codex.md, DEV_GUIDE.md, memory/
   RULES.md                              root:root 644                    ← обязательные правила
   RULES.version                         root:root 644                    ← SHA-256 текущего RULES.md
   rules_acceptances/                    root:root 755                    ← <alias>__<hash>.flag (root 644)
   audit/                                root:root 750                    ← дев не читает
     rules_acceptances.log               root:root 600                    ← кто/когда/откуда принял правила
+    started_branches.log                root:root 640                    ← /dev-00-start events (для шефа/notifier)
     finished_branches.log               root:root 640                    ← /dev-09-finish events (для шефа/notifier)
     <YYYY-MM>/<alias>.log               root:root 600                    ← per-dev workflow audit
 /opt/dev-skill/                         root:root 755                    ← server-side скрипты
@@ -263,18 +266,20 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
   dev-accept-rules.sh                   (→ /usr/local/sbin/dev-accept-rules)
   dev-audit-log.sh                      (→ /usr/local/sbin/dev-audit-log)
   dev-notify-finish.sh                  (→ /usr/local/sbin/dev-notify-finish; читает /var/backups/.tg_config)
+  dev-notify-start.sh                   (→ /usr/local/sbin/dev-notify-start; читает /var/backups/.tg_config)
   dev-shared-CLAUDE.md, codex.md, DEV_GUIDE.md, memory/
   .bootstrap-ok
 
 /usr/local/sbin/dev-accept-rules        root:root 750                    ← privileged helper для приёма правил
 /usr/local/sbin/dev-audit-log           root:root 750                    ← privileged helper для workflow audit
-/usr/local/sbin/dev-notify-finish       root:root 750                    ← privileged helper для уведомления шефа
+/usr/local/sbin/dev-notify-finish       root:root 750                    ← privileged helper для уведомления шефа (финал)
+/usr/local/sbin/dev-notify-start        root:root 750                    ← privileged helper для уведомления шефа (старт)
 
 /etc/profile.d/00-rules-check.sh        root:root 755                    ← gate: блокирует shell до приёма правил
 /etc/update-motd.d/99-dev-welcome       root:root 755                    ← custom motd для девов
 
 /etc/sudoers.d/dev-accept-rules         root:root 440                    ← %developers → dev-accept-rules accept *
-/etc/sudoers.d/dev-skills-helpers       root:root 440                    ← %developers → dev-audit-log + dev-notify-finish
+/etc/sudoers.d/dev-skills-helpers       root:root 440                    ← %developers → dev-audit-log + dev-notify-finish + dev-notify-start
 
 /usr/local/bin/claude                   symlink → /opt/claude/bin/claude  ← plain symlink, БЕЗ setuid
 
@@ -296,7 +301,7 @@ Sync через `/dev sync-skills` пишет в `/opt/claude-shared/skills/` (r
   .claude/                              <dev>:<dev> 750                   ← дев сам owner (claude бежит как dev)
     skills    → /opt/claude-shared/skills    (read-only symlink)
     CLAUDE.md → /opt/claude-shared/CLAUDE.md
-    settings.json → /opt/claude-shared/settings.json (read-only symlink, managed MCP/telemetry off)
+    settings.json                       <dev>:<dev> 644                   ← per-dev КОПИЯ из shared (не симлинк — claude пишет сюда при смене effort/thinking/model/theme; read-only симлинк → EACCES)
     codex.md, DEV_GUIDE.md               → /opt/claude-shared/... (read-only)
     memory/                             <dev>:<dev> 700                   ← per-dev, seeded из shared
     projects/                           <dev>:<dev> 700                   ← claude пишет conversation data

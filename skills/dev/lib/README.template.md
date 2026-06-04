@@ -38,7 +38,7 @@ Private key передан тебе шефом отдельно через за�
 - **Claude Code** установлен глобально (`/usr/local/bin/claude`), запускается как ты сам (без setuid wrapper'а — UID = твой)
 - **RULES** (`/opt/claude-shared/RULES.md`) — обязательное принятие при первом интерактивном логине (gate показывает текст → ты вводишь `YES, I AGREE`). При апдейте правил шефом — принимаешь заново.
 - **Skills** разделяемые, read-only — общие для всех девов на сервере. Доступные тебе:
-  - Workflow: `/dev-00-start` (старт задачи), `/dev-01-status` (где я), `/dev-05-commit`, `/dev-07-commit-push`, `/dev-08-reset`, `/dev-09-finish` (финал + уведомление шефа)
+  - Workflow: `/dev-00-start` (старт задачи + уведомление шефа), `/dev-01-status` (где я), `/dev-05-commit`, `/dev-07-commit-push`, `/dev-08-reset`, `/dev-09-finish` (финал + уведомление шефа)
   - Справка / аудит: `/dev-info`
   - Качество: `/pre-deploy-check-build`, `/pre-deploy-autotests`, `/version-up`, `/session-archive`
 - **CLAUDE.md / codex.md / DEV_GUIDE.md** — read-only, симлинки на shared. Запусти `claude` и попроси `прочитай CLAUDE.md` для общего онбординга по коду

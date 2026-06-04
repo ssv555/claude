@@ -1,7 +1,7 @@
 ---
 name: emp-04-reviewer
 disable-model-invocation: true
-description: Senior code-quality reviewer pipeline role and CI/CD gate. Read-only. Checks implementation (or architectural plan) against 01_ba.md, 02_arch.md, codex.md, project profile, and CLAUDE.md in 2–3 passes (critical / warnings / BA coverage). Produces 03_review.md with verdict (PASS/NEEDS_FIX/BLOCKED) and ordered fix list. Mode A = pre-code audit of the plan, Mode B = post-code review. Supports «Автопилот» mode — `автопилот`/`autopilot`/`--autopilot`/`--auto`; marks as «autopilot chain» and cross-verifies «Принятые допущения/решения» against code (divergence = WARN). Verdict standards unchanged. Use after Architect, or standalone on existing code.
+description: Senior code-quality reviewer and CI/CD gate — read-only. Checks plan or code against BA/arch/codex/CLAUDE.md, produces 03_review.md with verdict (PASS/NEEDS_FIX/BLOCKED) and fix list. Mode A = pre-code, Mode B = post-code. Autopilot keyword `автопилот`/`autopilot`/`--autopilot`/`--auto` cross-verifies assumptions. Use after Architect, or standalone on existing code.
 model: opus
 ---
 

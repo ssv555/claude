@@ -1,6 +1,6 @@
 ---
 name: seo-fix
-description: Fix SEO issues found by /seo-check. Splits findings into mechanical (auto-fix) and content (interactive per-item with AskUserQuestion). Edits source files (templates, sitemap, robots, locales) — never patches the deployed site directly. Reads project-specific config from ./tests/skills/seo-check.md plus optional ./tests/skills/seo-fix.md
+description: Fix SEO issues found by /seo-check — mechanical fixes auto, content fixes interactive (AskUserQuestion). Edits source files (templates, sitemap, robots, locales), never the live site. Config from ./tests/skills/seo-check.md + optional seo-fix.md
 disable-model-invocation: false
 allowed-tools: Bash(bun *),Bash(curl *),Bash(magick *),Bash(convert *),Read,Write,Edit,Glob,Grep,AskUserQuestion
 model: sonnet

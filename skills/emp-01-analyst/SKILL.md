@@ -1,7 +1,7 @@
 ---
 name: emp-01-analyst
 disable-model-invocation: true
-description: Senior business analyst pipeline role. Reads docs/business/*, CLAUDE.md domain terminology, and existing business diagrams; produces a BA report (01_ba.md) with user stories, Gherkin AC, KPIs, NFR, compliance, risks, doc gaps, open questions. Does NOT read code. Supports «Автопилот» mode — add keyword `автопилот` / `autopilot` / `--autopilot` / `--auto` to the invocation to skip all user questions; open questions become documented assumptions in §9. Use when you need a business-level understanding of a task before architecture.
+description: Senior business analyst pipeline role — produces BA report (01_ba.md) with user stories, Gherkin AC, KPIs, NFR, compliance, risks. Reads docs, not code. Autopilot keyword `автопилот`/`autopilot`/`--autopilot`/`--auto` turns open questions into assumptions. Use for business understanding before architecture.
 model: sonnet
 ---
 

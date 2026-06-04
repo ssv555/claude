@@ -1,6 +1,6 @@
 ---
 name: dev-07-commit-push
-description: Stage all + commit + push to origin (bare repo → mirrors to GitHub). Same branch guard as dev-05-commit. ONE task per push — refuses to push if the branch contains commits for multiple unrelated tasks. Use when user says "/dev-07-commit-push", "запушить", "коммит и пуш", "/d07".
+description: Stage all + commit + push to origin (mirrors to GitHub). Same branch guard as dev-05-commit; one task per push. Use when user says "/dev-07-commit-push", "запушить", "коммит и пуш".
 model: sonnet
 allowed-tools: Bash(*), Read(*), Grep(*), Glob(*)
 ---

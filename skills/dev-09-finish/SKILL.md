@@ -1,6 +1,6 @@
 ---
 name: dev-09-finish
-description: Finish a task — run pre-deploy-check-build + pre-deploy-autotests, final commit + push, notify chief (audit log + optional TG webhook). End-of-task ritual; the chief gets a notification with branch + sha + line diff. Use when user says "/dev-09-finish", "закончил задачу", "готово, зови шефа", "/d09".
+description: Finish a task — run checks + autotests, final commit + push, notify chief (audit log + TG webhook with branch/sha/diff). Use when user says "/dev-09-finish", "закончил задачу", "готово, зови шефа".
 model: sonnet
 allowed-tools: Bash(*), Read(*), Grep(*), Glob(*), Skill(*)
 ---

@@ -1,7 +1,7 @@
 ---
 name: emp-05-designer
 disable-model-invocation: true
-description: "UI designer pipeline role. Reads BA report, Architect plan §14, project profile, project design codex (if any), and existing front components. Performs component-audit BEFORE generating anything new, then produces design plan (02b_design.md) — UI component map with stylization templates, responsive breakpoints, interactive states, screen-states (loading/empty/error/success), WCAG 2.1 AA matrix, i18n keys with text-expansion strategy, and a specific build list for the developer. Does NOT write runtime code. Principle 0 — documented library APIs before hacks. Supports «Автопилот» mode — `автопилот`/`autopilot`/`--autopilot`/`--auto`; open questions become documented design decisions in §8 (component-audit not skippable). Use after Architect, or standalone for design-only tasks."
+description: "UI designer pipeline role — component-audit first, then produces design plan (02b_design.md): component map, responsive breakpoints, states, WCAG 2.1 AA matrix, i18n keys, build list. Does NOT write runtime code. Autopilot keyword `автопилот`/`autopilot`/`--autopilot`/`--auto` turns open questions into design decisions. Use after Architect, or standalone for design-only tasks."
 model: sonnet
 ---
 

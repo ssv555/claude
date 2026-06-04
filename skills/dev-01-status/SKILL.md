@@ -1,6 +1,6 @@
 ---
 name: dev-01-status
-description: Show current dev state — branch, commits ahead of main, dirty files, last commit. Read-only, no side effects. Use when user says "/dev-01-status", "где я", "статус", "/d01".
+description: Show current dev state — branch, commits ahead of main, dirty files, last commit. Read-only. Use when user says "/dev-01-status", "где я", "статус".
 model: sonnet
 allowed-tools: Bash(*), Read(*)
 ---

@@ -1,6 +1,6 @@
 ---
 name: dev-merge
-description: Chief-only — review and merge a developer's branch into main. Two modes: (1) /dev-merge <alias> lists all open unmerged branches for that dev; (2) /dev-merge <sha> finds branch by HEAD sha and runs full merge pipeline (pre-deploy-check-build + autotests + merge + push + cleanup). Use when user says "/dev-merge <alias>", "/dev-merge <sha>", "слить ветку", "принять работу".
+description: Chief-only — review and merge a developer's branch into main. "/dev-merge <alias>" lists that dev's open branches; "/dev-merge <sha>" finds branch by HEAD sha and runs full merge pipeline (check-build + autotests + merge + push + cleanup). Use when user says "/dev-merge <alias>", "/dev-merge <sha>", "слить ветку", "принять работу".
 model: opus
 allowed-tools: Bash(*), Read(*), Grep(*), Glob(*), Edit(*), Write(*)
 ---

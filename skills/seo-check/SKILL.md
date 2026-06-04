@@ -1,6 +1,6 @@
 ---
 name: seo-check
-description: Audit SEO across two routes — live mode (curl + Playwright on running site, default; quick/deep/full sub-levels) or source mode (`/seo-check text` — only reads the project sources: data files, sitemap, robots, JSON-LD logic). Read-only, reports findings, never edits. Reads project config from ./tests/skills/seo-check.md
+description: Read-only SEO audit — live mode (curl + Playwright on running site; quick/deep/full) or source mode (`/seo-check text` — reads repo sources only). Reports findings, never edits. Config from ./tests/skills/seo-check.md
 argument-hint: "[text]"
 disable-model-invocation: false
 allowed-tools: Bash(bun *),Bash(curl *),Read,Glob,Grep,AskUserQuestion,mcp__playwright__browser_navigate,mcp__playwright__browser_snapshot,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_evaluate,mcp__playwright__browser_console_messages,mcp__playwright__browser_network_requests,mcp__playwright__browser_resize,mcp__playwright__browser_close,mcp__playwright__browser_wait_for

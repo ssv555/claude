@@ -38,14 +38,12 @@
 
 | # | Skill | Описание |
 |---|---|---|
-| 00 | `/dev-00-start` | Старт задачи: pull main + `git checkout -b dev/<alias>/<slug>` |
+| 00 | `/dev-00-start` | Старт задачи: pull main + `git checkout -b dev/<alias>/<slug>` + уведомление шефа |
 | 01 | `/dev-01-status` | Где я сейчас: ветка, коммиты, dirty files |
 | 05 | `/dev-05-commit` | Коммит (с branch guard). Один таск = один коммит |
 | 07 | `/dev-07-commit-push` | Коммит + push. Один таск = один push |
 | 08 | `/dev-08-reset` | Подтянуть свежий main и отрибейзить твою ветку |
 | 09 | `/dev-09-finish` | Финал: pre-deploy-check-build + autotests + push + уведомление шефа |
-
-Сокращения: `/d00 /d01 /d05 /d07 /d08 /d09`.
 
 ### Информация и проверки
 
@@ -59,15 +57,14 @@
 
 ### Встроенные в Claude (всегда работают)
 
-`/init`, `/review`, `/code-review`, `/security-review`, `/simplify`, `/skills`,
-`/context-show` — стандартные скилы Claude Code.
+`/init`, `/review`, `/code-review`, `/security-review`, `/simplify`, `/skills` — стандартные скилы Claude Code.
 
 ---
 
 ## Стандартный рабочий день
 
 ```
-1.  /dev-00-start             ← утро. Подтянуть main + создать ветку
+1.  /dev-00-start             ← утро. Подтянуть main + создать ветку + уведомить шефа
 2.  работа + Claude помогает
 3.  /dev-05-commit            ← по ходу, после каждого осмысленного шага
 4.  /dev-05-commit            ← коммитов может быть много, ПОКА все про ОДНУ задачу

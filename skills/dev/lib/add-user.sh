@@ -132,7 +132,13 @@ ln -sfn "$SHARED_DIR/skills"     "$CLAUDE_HOME/skills"
 ln -sfn "$SHARED_DIR/CLAUDE.md"  "$CLAUDE_HOME/CLAUDE.md"
 [ -f "$SHARED_DIR/DEV_GUIDE.md" ]    && ln -sfn "$SHARED_DIR/DEV_GUIDE.md"    "$CLAUDE_HOME/DEV_GUIDE.md"
 [ -f "$SHARED_DIR/codex.md" ]        && ln -sfn "$SHARED_DIR/codex.md"        "$CLAUDE_HOME/codex.md"
-[ -f "$SHARED_DIR/settings.json" ]   && ln -sfn "$SHARED_DIR/settings.json"   "$CLAUDE_HOME/settings.json"
+
+# settings.json: real per-dev copy (NOT symlink). Claude Code writes to this file
+# when the dev changes effort/thinking/model/theme — a read-only symlink to the
+# shared root file causes EACCES on every such change. Seeded from shared defaults.
+if [ -f "$SHARED_DIR/settings.json" ]; then
+    cp "$SHARED_DIR/settings.json" "$CLAUDE_HOME/settings.json"
+fi
 
 # Per-dev memory: real directory (NOT symlink). Seeded from chief's curated memory.
 mkdir -p "$CLAUDE_HOME/memory"

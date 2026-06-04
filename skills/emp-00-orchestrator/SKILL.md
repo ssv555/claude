@@ -1,7 +1,7 @@
 ---
 name: emp-00-orchestrator
 disable-model-invocation: true
-description: Dev department orchestrator. Chains BA → Architect → [Designer] → Developer → Reviewer for a non-trivial product task. Reads project profile from `.claude/skills/employers/profile.md` (or `.docs/employers/profile.md`) and the role spine from this skill folder. Supports «Автопилот» mode — add keyword `автопилот` / `autopilot` / `--autopilot` / `--auto` anywhere in the invocation to skip all interactive pauses and convert ambiguities to documented assumptions (sealed modules remain hard stop). Use when you want a full pre-implementation pipeline on a non-trivial business task. Invoke manually — not an auto-agent.
+description: Dev department orchestrator — chains BA → Architect → [Designer] → Developer → Reviewer for a non-trivial task. Autopilot keyword `автопилот`/`autopilot`/`--autopilot`/`--auto` skips pauses (sealed modules stay hard stop). Use for a full pre-implementation pipeline. Invoke manually.
 model: sonnet
 ---
 

@@ -271,9 +271,17 @@ mkdir -p "$SHARED_DIR/skills" "$SHARED_DIR/memory"
 [ -f "$SKILL_DIR/dev-shared-CLAUDE.md" ] && install -o root -g root -m 644 "$SKILL_DIR/dev-shared-CLAUDE.md" "$SHARED_DIR/CLAUDE.md"
 [ -f "$SKILL_DIR/codex.md" ]     && install -o root -g root -m 644 "$SKILL_DIR/codex.md"     "$SHARED_DIR/codex.md"
 [ -f "$SKILL_DIR/DEV_GUIDE.md" ] && install -o root -g root -m 644 "$SKILL_DIR/DEV_GUIDE.md" "$SHARED_DIR/DEV_GUIDE.md"
-# Managed Claude Code settings: headless server has no browser/desktop → kill
-# playwright/desktop MCP, block project .mcp.json auto-enable, mute telemetry/updater.
+# Shared settings.json: cosmetic defaults only, COPIED (not symlinked) into each
+# dev's ~/.claude/ so claude can write effort/thinking/model/theme there.
 [ -f "$SKILL_DIR/dev-shared-settings.json" ] && install -o root -g root -m 644 "$SKILL_DIR/dev-shared-settings.json" "$SHARED_DIR/settings.json"
+
+# Enforced policy → /etc/claude-code/managed-settings.json (root-owned, claude never
+# writes it, devs can't override): headless server has no browser/desktop → kill
+# playwright/desktop/ssh MCP, block project .mcp.json auto-enable, mute telemetry/updater.
+if [ -f "$SKILL_DIR/dev-managed-settings.json" ]; then
+    install -o root -g root -m 755 -d /etc/claude-code
+    install -o root -g root -m 644 "$SKILL_DIR/dev-managed-settings.json" /etc/claude-code/managed-settings.json
+fi
 
 if [ -d "$SKILL_DIR/memory" ]; then
     rm -rf "$SHARED_DIR/memory"
@@ -506,21 +514,29 @@ if [ -f "$NOTIFY_SRC" ]; then
     install -o root -g root -m 750 "$NOTIFY_SRC" "$NOTIFY_DST"
 fi
 
-# sudoers — %developers may invoke audit-log + finish notifier NOPASSWD.
+# /dev-00-start notifier (audit + optional TG to chief — task kickoff)
+NOTIFY_START_SRC="$SKILL_DIR/dev-notify-start.sh"
+NOTIFY_START_DST='/usr/local/sbin/dev-notify-start'
+if [ -f "$NOTIFY_START_SRC" ]; then
+    log "installing $NOTIFY_START_DST"
+    install -o root -g root -m 750 "$NOTIFY_START_SRC" "$NOTIFY_START_DST"
+fi
+
+# sudoers — %developers may invoke audit-log + start/finish notifiers NOPASSWD.
 # Helpers self-validate inputs; sudoers is just the auth grant.
 SUDOERS_DEV_SKILLS='/etc/sudoers.d/dev-skills-helpers'
-if [ ! -f "$SUDOERS_DEV_SKILLS" ]; then
-    log "installing sudoers rule $SUDOERS_DEV_SKILLS"
-    cat > "$SUDOERS_DEV_SKILLS" <<'EOF'
-# Allow developers to write to root-owned audit logs via dedicated helpers.
+SUDOERS_DEV_SKILLS_WANT='# Allow developers to write to root-owned audit logs via dedicated helpers.
 # Helpers validate inputs and use SUDO_USER for identity.
 %developers ALL=(root) NOPASSWD: /usr/local/sbin/dev-audit-log
 %developers ALL=(root) NOPASSWD: /usr/local/sbin/dev-notify-finish
-EOF
+%developers ALL=(root) NOPASSWD: /usr/local/sbin/dev-notify-start'
+if [ "$(cat "$SUDOERS_DEV_SKILLS" 2>/dev/null)" != "$SUDOERS_DEV_SKILLS_WANT" ]; then
+    log "installing sudoers rule $SUDOERS_DEV_SKILLS"
+    printf '%s\n' "$SUDOERS_DEV_SKILLS_WANT" > "$SUDOERS_DEV_SKILLS"
     chmod 0440 "$SUDOERS_DEV_SKILLS"
     visudo -cf "$SUDOERS_DEV_SKILLS" || { err "sudoers syntax error in $SUDOERS_DEV_SKILLS"; rm -f "$SUDOERS_DEV_SKILLS"; exit 1; }
 else
-    log "sudoers rule $SUDOERS_DEV_SKILLS already exists"
+    log "sudoers rule $SUDOERS_DEV_SKILLS already current"
 fi
 
 # ============================================================================

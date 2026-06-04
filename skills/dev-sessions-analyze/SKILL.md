@@ -1,6 +1,6 @@
 ---
 name: dev-sessions-analyze
-description: Chief-only — analyze a developer's Claude Code session to score their AI usage quality and project engagement. Lists all sessions sorted by date desc with topic / size / tokens / analyzed-status. Chief picks ONE; skill pulls the JSONL, splits via subagents if large, analyzes against 10 quality dimensions (prompt engineering, AI corrections, test habits, engagement, active time, etc), and writes a polite recommendation report. Use when user says "/dev-sessions-analyze <alias>", "проанализируй сессии <alias>", "оцени работу <alias>".
+description: Chief-only — score a dev's Claude Code session on AI-usage quality and engagement. Lists sessions; chief picks one; analyzes the JSONL against 10 quality dimensions and writes a recommendation report. Use when user says "/dev-sessions-analyze <alias>", "проанализируй сессии <alias>", "оцени работу <alias>".
 model: opus
 allowed-tools: Bash(*), Read(*), Write(*), Grep(*), Glob(*), Agent(*)
 ---

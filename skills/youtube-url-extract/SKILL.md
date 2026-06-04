@@ -1,7 +1,7 @@
 ---
 name: youtube-url-extract
 model: sonnet
-description: Offline extraction of YouTube videoId, playlistId, and startSec from any string — URLs, arbitrary text, mixed content. Zero network, zero dependencies. Use when the task requires pulling a YouTube identifier from a user message, a pasted URL, a log line, a description field, or any text blob that may contain one or more YouTube links. Supports all current link shapes: youtu.be/*, youtube.com/watch, /shorts, /embed, /live, /v, plus m.youtube.com, music.youtube.com, and youtube-nocookie.com. Also parses list= and t=/start=/#t= (formats: 90, 90s, 1m30s, 1h2m3s). NOT for fetching video metadata, titles, or subtitles — those require separate tooling.
+description: Offline extraction of YouTube videoId, playlistId, startSec from any string (URLs, text, logs). Zero network/deps. Supports youtu.be, watch, /shorts, /embed, /live, /v, m./music./nocookie hosts, list= and t=/start=. NOT for metadata, titles, or subtitles.
 ---
 
 # youtube-url-extract

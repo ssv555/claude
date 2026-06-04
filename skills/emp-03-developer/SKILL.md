@@ -1,7 +1,7 @@
 ---
 name: emp-03-developer
 disable-model-invocation: true
-description: Senior developer pipeline role. Implements code strictly per 02_arch.md plan. Reads BA report, architect plan, project profile, then writes code layer-by-layer (schema → data access → routes → middleware → frontend → i18n). Runs project self-gate (typecheck/lint/build/tests). Produces 04_dev.md report. Does NOT redesign architecture or expand scope. Supports «Автопилот» mode — add keyword `автопилот` / `autopilot` / `--autopilot` / `--auto` to the invocation; blockers become in-flight decisions in §4 (sealed modules and codex-incompatible plan items remain hard stops). Use after architect completes 02_arch.md.
+description: Senior developer pipeline role — implements code strictly per 02_arch.md layer-by-layer, runs self-gate (typecheck/lint/build/tests), produces 04_dev.md. Does NOT redesign or expand scope. Autopilot keyword `автопилот`/`autopilot`/`--autopilot`/`--auto` turns blockers into in-flight decisions. Use after architect completes 02_arch.md.
 model: opus
 ---
 

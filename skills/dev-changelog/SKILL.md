@@ -1,6 +1,6 @@
 ---
 name: dev-changelog
-description: Chief-only — analyze what a developer's branch changed vs main. Takes a HEAD sha (from TG notification or /dev-merge <alias> table), finds the branch, fetches the diff, and produces a structured report: Technical changes (files, routes, DB, components) + Business changes (features, fixes, user-facing impact). Use when user says "/dev-changelog <sha>", "что сделал дев", "анализ ветки".
+description: Chief-only — analyze what a dev's branch changed vs main. Takes a HEAD sha, finds the branch, diffs it, and reports technical changes (files, routes, DB, components) + business changes (features, fixes, user-facing impact). Use when user says "/dev-changelog <sha>", "что сделал дев", "анализ ветки".
 model: opus
 allowed-tools: Bash(*), Read(*), Grep(*), Glob(*)
 ---

@@ -1,6 +1,6 @@
 ---
 name: dev-00-start
-description: Start of a new task — sync main + create a fresh dev branch. Refuses if working copy is dirty. Asks for a short kebab-case slug, then runs git fetch + checkout main + pull --rebase + checkout -b dev/<alias>/<slug>. Use when user says "/dev-00-start", "начать задачу", "новая ветка", "/d00".
+description: Start a new task — sync main + create a fresh dev branch from a kebab-case slug (dev/<alias>/<slug>), notify chief (audit log + TG). Refuses if working copy is dirty. Use when user says "/dev-00-start", "начать задачу", "новая ветка".
 model: sonnet
 allowed-tools: Bash(*), Read(*)
 ---
@@ -56,7 +56,14 @@ MODEL:  sonnet
    sudo /usr/local/sbin/dev-audit-log dev-00-start "$BRANCH" "started task: $SLUG"
    ```
 
-8. **Показать результат пользователю:**
+8. **Notify chief** (audit + TG, как у `/dev-09-finish`):
+   ```bash
+   BASE_SHA=$(git rev-parse --short HEAD)
+   sudo /usr/local/sbin/dev-notify-start "$BRANCH" "$BASE_SHA" "$SLUG"
+   ```
+   Хелпер всегда пишет в `/opt/claude-shared/audit/started_branches.log` + опционально шлёт TG шефу. Падение TG не валит старт.
+
+9. **Показать результат пользователю:**
    - Ветка, на каком коммите main она основана.
    - Напомнить: **один таск = один push**. Не смешивать задачи. Если по ходу заметишь другой баг — закончи эту задачу через `/dev-09-finish`, потом `/dev-00-start` под новый slug.
 

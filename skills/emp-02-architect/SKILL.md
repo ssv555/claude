@@ -1,7 +1,7 @@
 ---
 name: emp-02-architect
 disable-model-invocation: true
-description: Senior software architect pipeline role. Reads BA report (01_ba.md), project profile, CLAUDE.md, codex.md, DB schema docs, and relevant backend/frontend code. Produces architectural plan (02_arch.md) with per-layer changes, ADRs, Mermaid diagrams, STRIDE security model, sealed-module flags, project compliance checklist, and a concrete review checklist for the reviewer. Does NOT write code. Supports «Автопилот» mode — add keyword `автопилот` / `autopilot` / `--autopilot` / `--auto` to the invocation; open technical questions become documented decisions in §11 (sealed modules remain the only hard stop). Use after BA is done, or directly with an existing BA report.
+description: Senior software architect pipeline role — produces plan (02_arch.md) with per-layer changes, ADRs, Mermaid diagrams, STRIDE model, sealed-module flags, review checklist. Does NOT write code. Autopilot keyword `автопилот`/`autopilot`/`--autopilot`/`--auto` turns open questions into decisions. Use after BA, or with an existing BA report.
 model: opus
 ---
 

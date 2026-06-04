@@ -70,7 +70,7 @@ printf '%b\n' "$rules_status"
 printf '\n'
 printf '%s\n' "${C_DIM}Quick reference:${C_RST}"
 printf '  /dev-info        — full guide\n'
-printf '  /dev-00-start    — pull main + new dev branch (start of day)\n'
+printf '  /dev-00-start    — pull main + new dev branch + notify chief (start of day)\n'
 printf '  /dev-01-status   — where am I (branch, commits, dirty files)\n'
 printf '  /dev-05-commit   — commit (one task = one commit)\n'
 printf '  /dev-07-commit-push — commit + push\n'

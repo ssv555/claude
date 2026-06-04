@@ -1,6 +1,6 @@
 ---
 name: dev-05-commit
-description: Stage all + commit with a branch guard. If on a protected branch (main/master/prod/production/release/*) or detached HEAD — automatically creates dev/<alias>/<auto-slug> and switches to it. AI writes the commit message. ONE task per commit; multiple unrelated changes must be split. Use when user says "/dev-05-commit", "коммит", "закоммить", "/d05".
+description: Stage all + commit with a branch guard (auto-switches off protected branches to dev/<alias>/<slug>). One task per commit. Use when user says "/dev-05-commit", "коммит", "закоммить".
 model: sonnet
 allowed-tools: Bash(*), Read(*), Grep(*), Glob(*)
 ---

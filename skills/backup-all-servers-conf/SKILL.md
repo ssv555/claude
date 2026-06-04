@@ -1,6 +1,6 @@
 ---
 name: backup-all-servers-conf
-description: Full config snapshot of all personal infra servers (moscow_my, amsterdam_my, amsterdam_grey, vdole_pro). Uses self-contained bash script — Claude orchestrates and reports, does NOT browse snapshot contents or read secrets. Use when user says "забэкапь все сервера", "обнови бэкапы серверов", "/backup-all-servers-conf".
+description: Config snapshot of all personal infra servers (moscow_my, amsterdam_my, amsterdam_grey, vdole_pro) via self-contained bash script; Claude orchestrates and reports only. Use when user says "забэкапь все сервера", "обнови бэкапы серверов", "/backup-all-servers-conf".
 model: haiku
 allowed-tools: Bash(bash *), Bash(*backup-all-servers-conf.sh*), Read(~/.claude/skills/backup-all-servers-conf/*)
 ---

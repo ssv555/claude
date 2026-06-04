@@ -2635,3 +2635,82 @@ echo "moved" && ls docs/archive/todo/ | grep -E 'vdole_pro_(dns|failover)'
 [2026-06-02 09:53:45] BLOCKED: ALLOWED by user: Git destructive/push/commit
   Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && echo "=== bank-account enc ALONE ===" && bun test tests/server/unit/bank-account-encryption.test.ts --env-file .env.development 2>&1 | tail -6; echo "=== restore deleted dev content blobs (test infra wiped them) ===" && git checkout -- back/data/content/ 2>&1; git status --short back/data/content/ | head
 
+[2026-06-02 11:45:25] BLOCKED: ALLOWED by user: PowerShell Move-Item
+  Command: pwsh -NoProfile -Command "
+\$src = 'D:\\\$RECYCLE.BIN\S-1-5-21-391513410-946069458-654256799-1001\\\$RCMNLUA.tmp'
+\$dst = 'D:\Data\Documents\Programming\Projects\WEB\VDole\.tmp'
+Move-Item -LiteralPath \$src -Destination \$dst -Force
+Write-Output 'moved'
+Get-ChildItem -LiteralPath \$dst -Force | Select-Object Name,Length | Format-Table -AutoSize | Out-String | Write-Output
+"
+
+[2026-06-02 11:45:47] BLOCKED: ALLOWED by user: PowerShell Move-Item
+  Command: cat > /tmp/restore_tmp.ps1 << 'EOF'
+$src = 'D:\$RECYCLE.BIN\S-1-5-21-391513410-946069458-654256799-1001\$RCMNLUA.tmp'
+$dst = 'D:\Data\Documents\Programming\Projects\WEB\VDole\.tmp'
+if (Test-Path -LiteralPath $src) {
+  Move-Item -LiteralPath $src -Destination $dst -Force
+  Write-Output 'MOVED OK'
+} else {
+  Write-Output ('SRC MISSING: ' + $src)
+}
+if (Test-Path -LiteralPath $dst) {
+  Get-ChildItem -LiteralPath $dst -Force | Select-Object Name,Length | Format-Table -AutoSize | Out-String | Write-Output
+}
+EOF
+pwsh -NoProfile -File /tmp/restore_tmp.ps1
+
+[2026-06-02 11:47:04] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: rm -f /tmp/clean_tmp.ps1 /tmp/restore_tmp.ps1
+
+[2026-06-02 11:48:20] BLOCKED: 'nul' reserved device name
+  Command: cd /d d:\Data\Documents\Programming\Projects\WEB\VDole && dir back\src\db\schema\expense* back\src\db\expense* 2>nul & dir back\src\routes\expense* 2>nul
+
+[2026-06-03 12:09:36] BLOCKED: 'nul' reserved device name
+  Command: curl -sS -o NUL -w "pro HTTP %{http_code} time %{time_total}s\n" --max-time 8 https://vdole.pro/api/health; curl -sS --max-time 8 https://vdole.pro/api/health
+
+[2026-06-03 16:22:22] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/spc"
+mv -f awg-work-spc-pc.conf awg-work-spc-phone.conf awg-work-spc-phone.png "D:/Data/Backup/Ubuntu-Servers/moscow_my/awg/spc/"
+ls -l "D:/Data/Backup/Ubuntu-Servers/moscow_my/awg/spc/"
+rmdir "d:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/spc" 2>/dev/null; echo done
+
+[2026-06-03 16:24:44] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: pwsh -NoProfile -File C:\Users\ssv55\.claude\scripts\trash.ps1 "d:\Data\Documents\Programming\Projects\WEB\VDole\.tmp\awg-postup.sh" "d:\Data\Documents\Programming\Projects\WEB\VDole\.tmp\awg-postdown.sh" 2>&1; rmdir "d:\Data\Documents\Programming\Projects\WEB\VDole\.tmp\spc" 2>$null; echo done
+
+[2026-06-03 20:51:44] BLOCKED: Elevated privileges (-Verb RunAs)
+  Command: TMP="$HOME/.claude/.tmp_wg_nldall.txt"
+rm -f "$TMP"
+pwsh -NoProfile -Command "Start-Process -FilePath 'C:\Program Files\WireGuard\wg.exe' -ArgumentList 'show','nld-all' -Verb RunAs -Wait -RedirectStandardOutput '$HOME\.claude\.tmp_wg_nldall.txt' -WindowStyle Hidden" 2>&1
+sleep 1
+echo "===== wg show nld-all ====="
+cat "$TMP" 2>/dev/null | grep -iE "endpoint|latest handshake|allowed ips|transfer|persistent" || echo "(╨╜╨╡╤В ╨▓╤Л╨▓╨╛╨┤╨░ тАФ UAC ╨╛╤В╨║╨╗╨╛╨╜╤С╨╜ ╨╕╨╗╨╕ ╨┐╤Г╤Б╤В╨╛)"
+
+[2026-06-03 21:10:28] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: WG="/c/Program Files/WireGuard/wg.exe"
+"$WG" genkey > /tmp/_k1 2>/tmp/_e1; echo "genkey exit=$? err=$(cat /tmp/_e1)"
+priv=$(cat /tmp/_k1); echo "priv len=${#priv}"
+pub=$(echo "$priv" | "$WG" pubkey 2>/tmp/_e2); echo "pubkey exit=$? len=${#pub} err=$(cat /tmp/_e2)"
+echo "sample pub=$pub"
+rm -f /tmp/_k1 /tmp/_e1 /tmp/_e2
+
+[2026-06-03 22:45:16] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: ssh amsterdam_grey_root '
+echo "=== stop+disable wg-easy services ==="
+systemctl disable --now wg-easy.service wg-easy-hidden-peer.service 2>&1 | grep -iE "removed|stopped" | head
+echo "=== remove container ==="
+docker rm -f wg-easy 2>&1
+echo "=== 27018 ╨╖╨░╨║╤А╤Л╤В? (╨╢╨┤╤С╨╝ ╨┐╤Г╤Б╤В╨╛) ==="
+ss -lun | grep 27018 || echo "27018 CLOSED"
+echo "=== awg0-╤В╤А╨░╨╜╨╖╨╕╤В ╤Ж╨╡╨╗? ==="
+awg show awg0 | grep -E "interface|listening|latest handshake" | head
+echo "=== ╨║╨░╨║ docker ╤Г╤Б╤В╨░╨╜╨╛╨▓╨╗╨╡╨╜ (╨┤╨╗╤П purge) ==="
+dpkg -l 2>/dev/null | grep -iE "docker|containerd" | awk "{print \$2, \$3}"
+which docker; ls /etc/docker 2>/dev/null
+echo "=== ╨╝╨╡╤Б╤В╨╛ ╨┐╨╛╨┤ /var/lib/docker ==="
+du -sh /var/lib/docker 2>/dev/null
+'
+echo
+echo "######## MOSCOW: ╤В╤А╨░╨╜╨╖╨╕╤В/╨▓╤Л╤Е╨╛╨┤ ╨╜╨╡ ╨┐╨╛╤Б╤В╤А╨░╨┤╨░╨╗? ########"
+ssh moscow_my 'echo -n "exit: "; curl -s --max-time 8 https://api.ipify.org; echo; echo "active=$(cat /run/active-exit)"'
+
