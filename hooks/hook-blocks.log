@@ -2714,3 +2714,15 @@ echo
 echo "######## MOSCOW: ╤В╤А╨░╨╜╨╖╨╕╤В/╨▓╤Л╤Е╨╛╨┤ ╨╜╨╡ ╨┐╨╛╤Б╤В╤А╨░╨┤╨░╨╗? ########"
 ssh moscow_my 'echo -n "exit: "; curl -s --max-time 8 https://api.ipify.org; echo; echo "active=$(cat /run/active-exit)"'
 
+[2026-06-04 09:41:41] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git fetch moscow dev/spc/i18n-cleanup-orphans 2>&1 && git checkout -B review/spc/i18n-cleanup-orphans moscow/dev/spc/i18n-cleanup-orphans 2>&1
+
+[2026-06-04 09:49:03] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:\Data\Documents\Programming\Projects\WEB\VDole" && git branch -D review/spc/i18n-cleanup-orphans 2>&1
+
+[2026-06-04 09:54:34] BLOCKED: 'nul' reserved device name
+  Command: curl -s -o NUL -w "%{http_code}" --max-time 5 https://vdole.pro/docs; echo ""
+
+[2026-06-04 10:06:07] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: pwsh -NoProfile -File C:/Users/ssv55/.claude/scripts/trash.ps1 "d:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/dev-session-cf12b026.jsonl"; ssh moscow_my "rm -f /tmp/dev-session-cf12b026.jsonl" 2>&1
+

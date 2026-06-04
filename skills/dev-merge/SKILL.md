@@ -119,6 +119,16 @@ if (-not (($env:USERNAME -eq 'ssv555') -or ($env:COMPUTERNAME -eq 'PC-SKY'))) {
     git push origin main
     ```
 
+10b. **Sync bare-репо из GitHub (ОБЯЗАТЕЛЬНО).**
+    Зеркало одностороннее (bare→GitHub), а шеф пушит merge напрямую в GitHub (`origin`),
+    поэтому bare-main НЕ обновляется сам и отстаёт. Девы клонируют/делают `/dev-00-start`
+    от bare → стартуют от устаревшего main. После каждого push в GitHub фаст-форвардни bare:
+    ```bash
+    ssh moscow_my "sudo -u git-mirror git -C /srv/git/VDole.git fetch origin main:main 2>&1 | tail -5"
+    ```
+    Запускать под `git-mirror` (владелец bare-репо) — чтобы объекты не стали root-owned.
+    Должен быть fast-forward (девы в `main` не пушат — pre-receive блокирует); не-ff → стоп, разобраться.
+
 11. **Очистка:**
     - `git branch -D review/<alias>/<slug>` (локальная review-ветка шефа).
     - На moscow_my удалить ветку + триггернуть mirror:
