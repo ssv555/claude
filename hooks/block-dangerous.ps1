@@ -46,6 +46,16 @@ try {
 
 if (-not $command) { exit 0 }
 
+# Remote SSH commands run on another host (e.g. Alpine) where the Windows
+# Recycle Bin does not exist - the `rm` guards below are local-FS-only and must
+# NOT fire for `ssh host '... rm ...'`. Exempt ONLY when the WHOLE Bash command
+# is an ssh invocation (starts with `ssh <arg>`). Deliberately NOT matching
+# `ssh` later in a chain: `rm secret && ssh host echo` starts with a LOCAL rm
+# that must stay guarded - matching the trailing `ssh` would silently delete it
+# past the bin (data-loss regression). Only the rm patterns are exempted (see
+# $RemoteSafe), never git/Remove-Item/mv/del/etc.
+$isRemoteSsh = $command -match '(?i)^\s*ssh\s+\S'
+
 function Write-BlockLog($reason, $blockedCommand) {
     try {
         $logFile = Join-Path $PSScriptRoot 'hook-blocks.log'
@@ -93,7 +103,7 @@ if ($command -match '(?i)-Verb\s+RunAs' -and $command -notmatch $elevationAllow)
 
 $dangerousPatterns = @(
     @{ Pattern = '(?i)\bgit\s+(commit|push|reset\s+--hard|checkout\s+[\.\-]|restore\s+[\.\-]|clean\s+-[fd]|branch\s+-[dD])'; Reason = 'Git destructive/push/commit' },
-    @{ Pattern = '(?i)\brm\s+-(rf|fr|r)\b'; Reason = 'Recursive delete (rm -rf)' },
+    @{ Pattern = '(?i)\brm\s+-(rf|fr|r)\b'; Reason = 'Recursive delete (rm -rf)'; RemoteSafe = $true },
     @{ Pattern = '(?i)\bdel\s+/'; Reason = 'Windows delete (del)' },
     @{ Pattern = '(?i)\brmdir\b'; Reason = 'Remove directory (rmdir)' },
     @{ Pattern = '(?i)\bRemove-Item\b'; Reason = 'PowerShell Remove-Item' },
@@ -103,6 +113,7 @@ $dangerousPatterns = @(
 )
 
 foreach ($dp in $dangerousPatterns) {
+    if ($isRemoteSsh -and $dp.RemoteSafe) { continue }
     if ($command -match $dp.Pattern) {
         try {
             Add-Type -AssemblyName System.Windows.Forms -ErrorAction SilentlyContinue
@@ -135,7 +146,7 @@ foreach ($dp in $dangerousPatterns) {
 # Recursive `rm -rf|-fr|-r` is handled above (confirm dialog, bypasses the bin
 # on purpose for bulk dirs like node_modules). Any other `rm` must go through
 # trash.ps1 so the deletion lands in the Recycle Bin and stays recoverable.
-if ($command -match '(?i)\brm\b') {
+if (-not $isRemoteSsh -and $command -match '(?i)\brm\b') {
     $trash = Join-Path $env:USERPROFILE '.claude\scripts\trash.ps1'
     [Console]::Error.WriteLine("BLOCKED: bare 'rm' is FORBIDDEN by user rules - it deletes past the Recycle Bin (unrecoverable). Delete via the trash script instead, which sends files/dirs to the Recycle Bin: pwsh -NoProfile -File `"$trash`" <path> [<path> ...]. Only bulk recursive deletes (rm -rf <dir>, e.g. node_modules) are allowed past the bin, and only via the confirmation dialog.")
     Write-BlockLog "Bare rm (use trash.ps1 -> Recycle Bin)" $command
