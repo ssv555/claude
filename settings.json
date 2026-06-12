@@ -27,7 +27,12 @@
       "Read(//d/Data/Backup/Ubuntu-Servers/INFRA/**)",
       "Read(//d/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/**)",
       "Read(//d/Data/Backup/Ubuntu-Servers/moscow_my/awg/**)",
-      "Read(//d/Data/Documents/Programming/Projects/**)"
+      "Read(//d/Data/Documents/Programming/Projects/**)",
+      "mcp__playwright_vivaldi__browser_navigate",
+      "mcp__playwright_vivaldi__browser_wait_for",
+      "mcp__playwright_vivaldi__browser_evaluate",
+      "mcp__playwright_vivaldi__browser_close",
+      "Read(//d/Data/Tools/AntiDPI/zapret-win-bundle/blockcheck/**)"
     ],
     "deny": [
       "Read(**/.env)",
@@ -94,5 +99,6 @@
   },
   "effortLevel": "high",
   "autoUpdatesChannel": "latest",
+  "skipWorkflowUsageWarning": true,
   "theme": "dark-daltonized"
 }

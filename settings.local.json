@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__playwright_vivaldi__browser_navigate"
+    ]
+  }
+}

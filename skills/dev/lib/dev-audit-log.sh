@@ -53,7 +53,9 @@ chown root:root "$LOG_DIR"
 chmod 750 "$LOG_DIR"
 
 TS=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
-IP="${SSH_CLIENT%% *}"
+# SSH_CLIENT is stripped by sudo (not in env_keep); default to '' so nounset doesn't abort.
+IP="${SSH_CLIENT:-}"
+IP="${IP%% *}"
 [ -z "$IP" ] && IP='-'
 
 # Append-only write

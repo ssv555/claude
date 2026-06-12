@@ -273,7 +273,25 @@ create/edit/delete **only inside INFRA/**; never touch anything higher up the tr
 script copies in `Ubuntu-Servers\moscow_my\awg\` — those hold working copies with the
 client's private keys; the user syncs them himself.
 
-Versioning is SVN, initialised and managed by the user.
+### SVN repository
+
+The whole `Ubuntu-Servers\` tree is a **Subversion working copy** (own SVN server on
+the user's `pc-sky` box), not git:
+
+- **URL:** `https://pc-sky/svn/Backup/Ubuntu-Servers` (repo root `https://pc-sky/svn/Backup`).
+- **Scope:** versions the entire `Ubuntu-Servers\` tree, not just `INFRA\` — but Claude's
+  edit rights stay confined to `INFRA\` (see access rules above).
+- **Ignore policy:** `svn:global-ignores` set on the WC root keeps the repo **text-only** —
+  scripts, configs, keys/certs in PEM/text form, systemd units, `.md`/`.json`/`.sql`/etc.
+  All binaries are excluded: archives (`*.gz/tgz/tar/zip/7z/...`), images, fonts, `*.so`,
+  `*.db`, `*.der/p12/pfx`, plus regenerable junk (`node_modules`, `dist`, caches, `.idea`,
+  logs, `*.bak`, `*~`). Rationale: binary blobs in SVN bloat every revision (no deltas) and
+  kill `diff`/`blame`. **Do not add binaries** — extend `svn:global-ignores` instead.
+- **SVN CLI:** `svn.exe` available via scoop (`C:\Users\ssv55\scoop\shims\svn.exe`, SlikSvn 1.14.5). Claude can commit directly: `svn commit "<path>" -m "message"`. TortoiseSVN GUI also works as fallback. Previously thought CLI was absent — outdated, ignore any such notes.
+- **Commits:** SVN commit goes to the user's own server. Don't `svn commit` unprompted;
+  on explicit request use `svn add --force .` (respects ignores) then `svn commit`.
+
+Otherwise SVN is initialised and managed by the user.
 
 ### VPN exit check — `check-vpn.cmd`
 

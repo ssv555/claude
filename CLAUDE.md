@@ -136,6 +136,16 @@ If while working on a task you notice other things that "should" be changed — 
 ### Why
 The user has repeatedly gotten angry at unrequested changes, unilateral decisions in disputed matters, and "helpful" side-edits. He explicitly demanded this rule be global. Initiative without permission has caused more harm than value in this collaboration. When in doubt, the answer is ALWAYS to present a list and ask.
 
+## NON-REGRESSION — НЕ ЛОМАТЬ НИЧЕГО ДРУГОГО — UNIVERSAL
+
+**Anything you write or edit — code, script, config, hook, regex, route, rule — MUST NOT break anything that already works.**
+
+- A change that fixes X but breaks Y is a DEFECT, not a fix. Before submitting, ask: "what else touches this file / route / port / interface / shared helper / pattern — and does it still work after my change?"
+- **Guards, hooks, and shared scripts are the most dangerous.** An over-broad regex or rule silently breaks unrelated commands later (a `-Verb RunAs` block that also kills a legit `route add`; a pattern that over-matches). Scope every pattern as NARROWLY as the requirement — never broader.
+- When a side effect can't be verified locally, name it explicitly and say how to check. Never assume "probably fine".
+- "Works for the one case I tested" ≠ "works". Regressions that surface days later — «выходят боком / через жопу» — are the COSTLIEST failure mode and the user has called them out repeatedly. Treat each as critical.
+- Touching a shared/guard file: re-read what ELSE depends on it before editing. If unsure whether your edit breaks another caller — STOP and ask.
+
 ## GOAL-DRIVEN EXECUTION — UNIVERSAL
 
 **Define success criteria. Loop until verified.**

@@ -2726,3 +2726,272 @@ ssh moscow_my 'echo -n "exit: "; curl -s --max-time 8 https://api.ipify.org; ech
 [2026-06-04 10:06:07] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
   Command: pwsh -NoProfile -File C:/Users/ssv55/.claude/scripts/trash.ps1 "d:/Data/Documents/Programming/Projects/WEB/VDole/.tmp/dev-session-cf12b026.jsonl"; ssh moscow_my "rm -f /tmp/dev-session-cf12b026.jsonl" 2>&1
 
+[2026-06-06 10:46:51] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: ssh -o ConnectTimeout=12 -o BatchMode=yes moscow_my bash -s <<'OUTER'
+cat > /tmp/ap.sh <<'EOF'
+#!/bin/sh
+echo 'akN5MJpmHC'
+EOF
+chmod 700 /tmp/ap.sh
+echo "=== ╨┐╨╛╨┐╤Л╤В╨║╨░ password-╨╗╨╛╨│╨╕╨╜╨░ ╨╜╨░ ╤Д╨╕╨╜╤Б╨║╤Г╤О ╨╜╨╛╨┤╤Г ==="
+SSH_ASKPASS=/tmp/ap.sh SSH_ASKPASS_REQUIRE=force setsid -w ssh \
+  -o StrictHostKeyChecking=accept-new -o ConnectTimeout=12 \
+  -o PreferredAuthentications=password -o PubkeyAuthentication=no \
+  root@38.244.205.115 'echo "CONNECTED: $(hostname)"; echo "egress-IP: $(curl -s -m5 https://api.ipify.org)"; . /etc/os-release; echo "OS: $PRETTY_NAME"; echo "uptime: $(uptime -p)"; echo "cores: $(nproc), RAM: $(free -m | awk "/Mem:/{print \$2\"MB\"}")"; echo "wg/awg: $(command -v wg awg awg-quick 2>/dev/null | tr "\n" " " || echo none)"; echo "docker: $(command -v docker || echo none)"; echo "ssh-port: $(grep -hiE "^Port " /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null | tr "\n" " ")"' 2>&1
+rc=$?
+rm -f /tmp/ap.sh
+echo "=== exit code: $rc ==="
+OUTER
+
+[2026-06-06 22:13:04] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: KP="D:/Data/Backup/Ubuntu-Servers/INFRA/exit-factory/keys/exit_ed25519"
+TMPOUT=$(mktemp)
+ssh -i "$KP" -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=12 root@38.244.205.115 'bash -s' > "$TMPOUT" 2>&1 <<'NODE'
+set -e
+cd /etc/amnezia/amneziawg
+PC_PRIV=$(awg genkey); PC_PUB=$(echo "$PC_PRIV"|awg pubkey); PSK=$(awg genpsk)
+NODE_PUB=$(awg show awgex1 public-key)
+# persist peer ╨▓ ╨║╨╛╨╜╤Д╨╕╨│ (╨╡╤Б╨╗╨╕ ╨╡╤Й╤С ╨╜╨╡╤В)
+grep -q "$PC_PUB" awgex1.conf || cat >> awgex1.conf <<P
+
+[Peer]
+# direct-PC reserve (10.43.0.3)
+PublicKey = $PC_PUB
+PresharedKey = $PSK
+AllowedIPs = 10.43.0.3/32
+P
+# ╨┐╤А╨╕╨╝╨╡╨╜╨╕╤В╤М ╨▓╨╢╨╕╨▓╤Г╤О
+umask 077; echo "$PSK" > /tmp/pc.psk
+awg set awgex1 peer "$PC_PUB" preshared-key /tmp/pc.psk allowed-ips 10.43.0.3/32
+: > /tmp/pc.psk
+echo "PC_PRIV=$PC_PRIV"
+echo "NODE_PUB=$NODE_PUB"
+echo "PSK=$PSK"
+echo "OK peer added: $(awg show awgex1 allowed-ips | grep 10.43.0.3 || echo MISSING)"
+NODE
+cat "$TMPOUT" | grep -vE 'PC_PRIV|PSK='   # ╨╜╨╡ ╤Б╨▓╨╡╤В╨╕╨╝ ╨┐╤А╨╕╨▓╨░╤В╤Л ╨▓ ╤З╨░╤В-╨╗╨╛╨│╨╡
+PC_PRIV=$(sed -n 's/^PC_PRIV=//p' "$TMPOUT")
+NODE_PUB=$(sed -n 's/^NODE_PUB=//p' "$TMPOUT")
+PSK=$(sed -n 's/^PSK=//p' "$TMPOUT")
+rm -f "$TMPOUT" 2>/dev/null
+CONF="D:/Data/Backup/Ubuntu-Servers/INFRA/exit-factory/keys/fin-direct-pc.conf"
+cat > "$CONF" <<EOF
+[Interface]
+PrivateKey = $PC_PRIV
+Address = 10.43.0.3/32
+DNS = 1.1.1.1
+Jc = 4
+Jmin = 50
+Jmax = 1000
+S1 = 30
+S2 = 90
+H1 = 477029378
+H2 = 867655449
+H3 = 743276069
+H4 = 992647276
+
+[Peer]
+PublicKey = $NODE_PUB
+PresharedKey = $PSK
+Endpoint = 38.244.205.115:53847
+AllowedIPs = 0.0.0.0/0
+PersistentKeepalive = 25
+EOF
+echo "=== ╨║╨╛╨╜╤Д╨╕╨│ ╤Б╨╛╤Е╤А╨░╨╜╤С╨╜: $CONF ==="
+[ -n "$PC_PRIV" ] && [ -n "$NODE_PUB" ] && [ -n "$PSK" ] && echo "  ╨▓╤Б╨╡ ╨┐╨╛╨╗╤П ╨╖╨░╨┐╨╛╨╗╨╜╨╡╨╜╤Л тЬЕ" || echo "  тЪа ╨┐╤Г╤Б╤В╤Л╨╡ ╨┐╨╛╨╗╤П!"
+
+[2026-06-07 15:58:51] BLOCKED: Elevated privileges (-Verb RunAs)
+  Command: pwsh -NoProfile -Command "Start-Process route -ArgumentList 'add 195.2.75.212 mask 255.255.255.255 192.168.1.1 if 4' -Verb RunAs -Wait" 2>&1 | head
+sleep 1
+echo "=== route check ==="
+pwsh -NoProfile -Command "Find-NetRoute -RemoteIPAddress 195.2.75.212 | Select-Object -First 1 InterfaceAlias,NextHop | Format-List" 2>&1 | grep -iE "Interface|NextHop"
+
+[2026-06-07 16:03:59] BLOCKED: Elevated privileges (-Verb RunAs)
+  Command: pwsh -NoProfile -Command "Start-Process route -ArgumentList 'add 195.2.75.212 mask 255.255.255.255 192.168.1.1 if 4' -Verb RunAs -Wait" 2>&1 | head
+sleep 1
+echo "=== route check ==="
+pwsh -NoProfile -Command "Find-NetRoute -RemoteIPAddress 195.2.75.212 | Select-Object -First 1 InterfaceAlias,NextHop | Format-List" 2>&1 | grep -iE "Interface|NextHop"
+
+[2026-06-07 16:46:23] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: pwsh -NoProfile -File C:/Users/ssv55/AppData/Local/Temp/trash_stub.ps1 2>$null; pwsh -NoProfile -Command "Remove-Item 'C:/Users/ssv55/AppData/Local/Temp/addpath.ps1' -Force"
+
+[2026-06-07 16:46:43] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: pwsh -NoProfile -Command "Remove-Item 'C:/Users/ssv55/AppData/Local/Temp/addpath.ps1' -Force -ErrorAction SilentlyContinue; Test-Path 'C:/Users/ssv55/AppData/Local/Temp/addpath.ps1'"
+
+[2026-06-07 16:48:19] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: pwsh -NoProfile -Command "Remove-Item 'C:/Users/ssv55/AppData/Local/Temp/checkpath.ps1' -Force -ErrorAction SilentlyContinue"
+
+[2026-06-07 17:59:04] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: pwsh -NoProfile -Command "Remove-Item 'C:/Users/ssv55/AppData/Local/Temp/diag.ps1','C:/Users/ssv55/AppData/Local/Temp/diag2.ps1','C:/Users/ssv55/AppData/Local/Temp/diag3.ps1' -Force -ErrorAction SilentlyContinue"
+
+[2026-06-07 18:07:37] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: pwsh -NoProfile -Command "Remove-Item 'C:/Users/ssv55/AppData/Local/Temp/verify_dpich.ps1' -Force -ErrorAction SilentlyContinue"
+
+[2026-06-07 19:54:33] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: FKEY="D:/Data/Backup/Ubuntu-Servers/INFRA/exit-factory/keys/exit_ed25519"
+MKEY="D:/Data/Backup/Ubuntu-Servers/moscow_my/keys-client/root/id_ed25519"
+CANON="D:/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/scripts/awggrey-routes.sh"
+B64=$(base64 -w0 "$CANON")
+timeout 100 ssh -o ConnectTimeout=12 -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new \
+  -o ProxyCommand="ssh -i $FKEY -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -W %h:%p -p 22 root@38.244.205.115" \
+  -i "$MKEY" -p 53847 root@195.2.75.212 'bash -s' <<EOF 2>&1 | head -60
+set -e
+mkdir -p /root/awg-backups
+TS=\$(date +%Y%m%d-%H%M%S)
+cp /usr/local/bin/awggrey-routes.sh /root/awg-backups/awggrey-routes.sh.bak-\$TS
+echo "backup: awggrey-routes.sh.bak-\$TS"
+echo '$B64' | base64 -d > /tmp/awggrey-routes.new
+bash -n /tmp/awggrey-routes.new && echo "syntax OK"
+install -m 0755 /tmp/awggrey-routes.new /usr/local/bin/awggrey-routes.sh
+echo "INSTALLED:"; md5sum /usr/local/bin/awggrey-routes.sh
+echo "=== repoint transit -> awgex1 ==="
+/usr/local/sbin/exit-switch.sh awgex1
+echo "=== table 200 (╨┤╨╛╨╗╨╢╨╜╨╛ ╤Б╤В╨░╤В╤М awgex1) ==="
+ip route show table 200
+echo "=== client route 10.7.0.20 -> 8.8.8.8 ==="
+ip route get 8.8.8.8 from 10.7.0.20 iif wg-keenetic 2>&1 | head -2
+echo "=== GUARD TEST: ╤А╤Г╤З╨╜╨╛╨╣ awggrey-routes.sh load (╨┤╨╛╨╗╨╢╨╡╨╜ ╨б╨Ъ╨Ш╨Я╨╜╤Г╤В╤М) ==="
+/usr/local/bin/awggrey-routes.sh load
+echo "=== table 200 ╨┐╨╛╤Б╨╗╨╡ guard-╤В╨╡╤Б╤В╨░ (╨┤╨╛╨╗╨╢╨╜╨╛ ╨╛╤Б╤В╨░╤В╤М╤Б╤П awgex1) ==="
+ip route show table 200
+echo "=== active-exit ==="; cat /run/active-exit
+rm -f /tmp/awggrey-routes.new
+EOF
+echo "[done]"
+
+[2026-06-07 22:46:05] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: pwsh -NoProfile -Command "Remove-Item 'C:/Users/ssv55/AppData/Local/Temp/path_probe.ps1','C:/Users/ssv55/AppData/Local/Temp/who.ps1','C:/Users/ssv55/AppData/Local/Temp/rmpath.ps1' -Force -ErrorAction SilentlyContinue"
+
+[2026-06-07 23:00:58] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: pwsh -NoProfile -Command "Remove-Item 'C:/Users/ssv55/AppData/Local/Temp/releases.ps1','C:/Users/ssv55/AppData/Local/Temp/fetch_antidpi.ps1','C:/Users/ssv55/AppData/Local/Temp/inspect.ps1' -Force -ErrorAction SilentlyContinue"
+
+[2026-06-07 23:04:17] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: FKEY="D:/Data/Backup/Ubuntu-Servers/INFRA/exit-factory/keys/exit_ed25519"
+MKEY="D:/Data/Backup/Ubuntu-Servers/moscow_my/keys-client/root/id_ed25519"
+SVC="D:/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/scripts/exit-failover.service"
+B64=$(base64 -w0 "$SVC")
+timeout 60 ssh -o ConnectTimeout=12 -o IdentitiesOnly=yes \
+  -o ProxyCommand="ssh -i $FKEY -o IdentitiesOnly=yes -W %h:%p -p 22 root@38.244.205.115" \
+  -i "$MKEY" -p 53847 root@195.2.75.212 "bash -s" <<EOF 2>&1 | head -25
+set -e
+echo "=== 1) ╨┤╨╡╨┐╨╗╨╛╨╣ exit-failover.service (Description grey->my->fin->koz) ==="
+TS=\$(date +%Y%m%d-%H%M%S)
+cp /etc/systemd/system/exit-failover.service /root/awg-backups/exit-failover.service.bak-\$TS && echo "backup ok"
+printf '%s' '$B64' | base64 -d > /tmp/ef.service
+install -m 644 /tmp/ef.service /etc/systemd/system/exit-failover.service
+systemctl daemon-reload
+echo -n "Description ╤Б╨╡╨╣╤З╨░╤Б: "; systemctl show exit-failover -p Description --value
+echo "=== 2) ╨┐╨╡╤А╨╡╨╜╨╛╤Б ╨░╤А╤В╨╡╤Д╨░╨║╤В╨╛╨▓ awgex1 ╨▓ /root/awg-backups ==="
+cd /etc/amnezia/amneziawg
+ls -la awgex1.conf awgex1-node.key 2>/dev/null
+mv awgex1.conf awgex1-node.key /root/awg-backups/ 2>/dev/null && echo "╨┐╨╡╤А╨╡╨╜╨╡╤Б╨╡╨╜╨╛"
+ls | grep -i awgex1 || echo "awgex1.* ╤Г╨▒╤А╨░╨╜╤Л ╨╕╨╖ ╨░╨║╤В╨╕╨▓╨╜╨╛╨╣ ╨┐╨░╨┐╨║╨╕ тЬУ"
+echo "=== ╤Б╨╡╤А╨▓╨╕╤Б ╨╢╨╕╨▓, ╨▓╤Л╤Е╨╛╨┤ ╤Ж╨╡╨╗ ==="; systemctl is-active exit-failover; cat /run/active-exit
+EOF
+
+[2026-06-07 23:08:05] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: FKEY="D:/Data/Backup/Ubuntu-Servers/INFRA/exit-factory/keys/exit_ed25519"
+MKEY="D:/Data/Backup/Ubuntu-Servers/moscow_my/keys-client/root/id_ed25519"
+timeout 50 ssh -o ConnectTimeout=12 -o IdentitiesOnly=yes \
+  -o ProxyCommand="ssh -i $FKEY -o IdentitiesOnly=yes -W %h:%p -p 22 root@38.244.205.115" \
+  -i "$MKEY" -p 53847 root@195.2.75.212 'cd /etc/amnezia/amneziawg && mv awgex1.conf /root/awg-backups/awgex1.conf.removed-20260607 && echo "╨┐╨╡╤А╨╡╨╜╨╡╤Б╨╡╨╜╨╛" ; ls /etc/amnezia/amneziawg/ | grep -i "^awgex1" && echo "╨Ю╨б╨в╨Р╨Ы╨Ю╨б╨м(!)" || echo "awgex1.* ╤Г╨▒╤А╨░╨╜ ╨╕╨╖ ╨░╨║╤В╨╕╨▓╨╜╨╛╨╣ ╨┐╨░╨┐╨║╨╕ тЬУ" ; ls -la /root/awg-backups/ | grep awgex1' 2>&1 | head -10
+
+[2026-06-07 23:12:47] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: pwsh -NoProfile -Command "Remove-Item 'C:/Users/ssv55/AppData/Local/Temp/winbundle.ps1','C:/Users/ssv55/AppData/Local/Temp/fetch_winbundle.ps1' -Force -ErrorAction SilentlyContinue"
+
+[2026-06-08 02:03:21] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: pwsh -NoProfile -Command "
+Compress-Archive -Path 'D:\Data\Backup\.tmp\after_fix\*' -DestinationPath 'D:\Data\Backup\.tmp\after_fix.zip' -Force
+\$z = Get-Item 'D:\Data\Backup\.tmp\after_fix.zip'
+Write-Host ('after_fix.zip: {0} KB' -f [math]::Round(\$z.Length/1KB,1))
+# quick diff: which repo files changed before->after
+\$b = Get-ChildItem -Recurse -File 'D:\Data\Backup\.tmp\before_fix\repo'
+\$bmap = @{}; foreach(\$f in \$b){ \$rel = \$f.FullName.Substring((\$f.FullName.IndexOf('\repo\')+6)); \$bmap[\$rel] = (Get-FileHash \$f.FullName -Algorithm MD5).Hash }
+\$a = Get-ChildItem -Recurse -File 'D:\Data\Backup\.tmp\after_fix\repo'
+\$amap = @{}; foreach(\$f in \$a){ \$rel = \$f.FullName.Substring((\$f.FullName.IndexOf('\repo\')+6)); \$amap[\$rel] = (Get-FileHash \$f.FullName -Algorithm MD5).Hash }
+Write-Host '--- CHANGED ---'; foreach(\$k in \$amap.Keys){ if(\$bmap.ContainsKey(\$k) -and \$bmap[\$k] -ne \$amap[\$k]){ Write-Host \$k } }
+Write-Host '--- REMOVED (before-only) ---'; \$rm=0; foreach(\$k in \$bmap.Keys){ if(-not \$amap.ContainsKey(\$k)){ \$rm++ } }; Write-Host (\$rm.ToString() + ' files (stale-dup dir)')
+" 2>&1 | head -40
+
+[2026-06-08 17:55:15] BLOCKED: 'nul' reserved device name
+  Command: curl -s --max-time 8 -o NUL -w "%{http_code} %{time_total}s\n" https://pq.hosting/companies
+
+[2026-06-08 18:58:12] BLOCKED: 'nul' reserved device name
+  Command: cd /d "d:\Data\Documents\Programming\Projects\WEB\InfraMon" && dir /b && echo --- && git rev-parse --is-inside-work-tree 2>nul && echo --- && gh --version 2>nul && echo --- && gh auth status 2>nul
+
+[2026-06-08 19:37:35] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: curl -s --max-time 3 http://127.0.0.1:9222/json/close 2>/dev/null >/dev/null; taskkill //F //IM vivaldi.exe //FI "WINDOWTITLE eq about:blank*" 2>/dev/null; pwsh -NoProfile -Command "Get-Process vivaldi -ErrorAction SilentlyContinue | Where-Object { \$_.Path -like '*viv-debug*' }" 2>/dev/null; rm -f "$TEMP/cgpt.html" "$TEMP/stream.txt" 2>/dev/null; echo cleaned
+
+[2026-06-08 19:54:33] BLOCKED: 'nul' reserved device name
+  Command: ls "D:\Data\Backup\Ubuntu-Servers\INFRA\docs" 2>nul; echo "---keenetic doc head---"; ls "D:\Data\Backup\Ubuntu-Servers\INFRA\servers\moscow_my\docs"
+
+[2026-06-09 23:35:25] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd /d/Data/Backup/Ubuntu-Servers && mkdir -p kvo && mv swe_sto_ssv kvo/ && echo "===MOVED===" && ls -la kvo/swe_sto_ssv/keys-client/root/
+
+[2026-06-11 06:54:12] BLOCKED: 'nul' reserved device name
+  Command: cd /d "D:\Data\Tools\AntiDPI\zapret-win-bundle\blockcheck" 2>nul & dir /b *.log 2>nul
+
+[2026-06-11 21:50:43] BLOCKED: ALLOWED by user: PowerShell Move-Item
+  Command: pwsh -NoProfile -Command "Move-Item -LiteralPath 'C:/Users/ssv55/.claude/tmp/cidr-optimize.ts' -Destination 'C:/Users/ssv55/.claude/scripts/cidr-optimize.ts' -Force; Test-Path 'C:/Users/ssv55/.claude/scripts/cidr-optimize.ts'"
+
+[2026-06-11 22:37:01] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: ssh -o BatchMode=yes -o ConnectTimeout=10 swe_sto_ssv 'sh -c "
+rm -f /tmp/lpids
+for p in 443 444 30443 30444; do
+  setsid sh -c \"while true; do echo LMAP-\$p | nc -l -p \$p >/dev/null 2>&1; done\" </dev/null >/dev/null 2>&1 &
+  echo \$! >> /tmp/lpids
+done
+sleep 1
+echo started pids: \$(cat /tmp/lpids | tr \"\n\" \" \")
+netstat -tln 2>/dev/null | grep -E \":(443|444|30443|30444) \" "' 2>&1
+
+[2026-06-11 22:50:08] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: pwsh -NoProfile -Command "
+\$zip='D:\Data\Downloads\awg.zip'; \$dst='C:\Users\ssv55\.claude\tmp\awg-extract'
+if (Test-Path \$dst) { Remove-Item \$dst -Recurse -Force }
+Expand-Archive -LiteralPath \$zip -DestinationPath \$dst -Force
+\$res = Get-ChildItem \$dst -Recurse -File -Filter *.conf | ForEach-Object {
+  \$c = Get-Content \$_.FullName -Raw
+  \$ai = if (\$c -match '(?m)^AllowedIPs\s*=\s*(.+)$') { (\$Matches[1] -split ',').Count } else { 0 }
+  [pscustomobject]@{
+    Name=\$_.Name
+    Addr=if(\$c -match '(?m)^Address\s*=\s*(.+)$'){\$Matches[1].Trim()}else{''}
+    EndpointHost=if(\$c -match '(?m)^Endpoint\s*=\s*(.+)$'){(\$Matches[1].Trim() -replace ':\d+$','')}else{''}
+    AllowedCnt=\$ai
+    HasMarker=(\$c -match '88\.212\.201\.216')
+    Awg=(\$c -match '(?m)^Jc\s*=')
+  }
+}
+\$res | Format-Table -Auto | Out-String
+"
+
+[2026-06-11 23:02:22] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: pwsh -NoProfile -Command "
+\$old='D:\Data\Downloads\msc-ams-my-pc-sky-full.conf'; \$new='D:\Data\Downloads\msc-ams-my-pc-sky-full-opt.conf'
+if (Test-Path \$new) { Remove-Item \$new -Force }
+Rename-Item -LiteralPath \$old -NewName 'msc-ams-my-pc-sky-full-opt.conf'
+\$v = Get-Content \$new -Raw
+Write-Output ('file: ' + \$new)
+Write-Output ('AllowedIPs entries: ' + ((\$v -match '(?m)^AllowedIPs\s*=\s*(.+)\$') ? (\$Matches[1] -split ',').Count : 0))
+"
+
+[2026-06-12 08:19:55] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" || exit 1
+git add -A
+git commit -m "feat(awg): /traffic report + /block_user/unblock_user + daily 09:00" -m "Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>" 2>&1 | tail -5
+echo "=== push (retry) ==="
+for i in 1 2 3; do git pull --rebase 2>&1 | tail -2 && git push 2>&1 | tail -3 && { echo "PUSH OK"; break; } || { echo "[attempt $i/3 failed]"; sleep 3; }; done
+
+[2026-06-12 08:34:37] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "D:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" || exit 1
+npm run build 2>&1 | tail -4; echo "build exit=${PIPESTATUS[0]}"
+git add -A
+git commit -m "feat(bot): global bot.catch error boundary -> errorLog" -m "Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>" 2>&1 | tail -3
+for i in 1 2 3; do git pull --rebase 2>&1 | tail -1 && git push 2>&1 | tail -2 && { echo "PUSH OK"; break; } || { echo "[push $i/3 failed]"; sleep 3; }; done
+
+[2026-06-12 12:56:58] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: ssh -o BatchMode=yes -o ConnectTimeout=10 swe_sto_ssv 'sh -c "
+rm -f /tmp/c.pem /tmp/k.pem /tmp/ss*.log /tmp/spids /tmp/udp30443 /tmp/udppid /tmp/hit443 /tmp/lpid443 2>/dev/null
+pkill -9 openssl 2>/dev/null; pkill -9 nc 2>/dev/null
+echo cleaned; netstat -tln 2>/dev/null | grep -vE \":22 |Active|Proto\" || echo only_ssh_listening"' 2>&1
+

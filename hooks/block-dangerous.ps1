@@ -76,8 +76,13 @@ if ($command -match '(?i)(?<![a-z])nul(?![a-z])') {
     exit 2
 }
 
-# Block elevated privileges
-if ($command -match '(?i)-Verb\s+RunAs') {
+# Block elevated privileges.
+# NARROW EXCEPTION: elevating `route` (Windows routing table: route add/delete/change)
+# is allowed - it needs admin but touches NO files, so it can't repeat the .env-delete
+# incident this guard was built for. Everything else elevated stays blocked.
+# Keep this whitelist as tight as possible (one binary, networking-only).
+$elevationAllow = '(?i)Start-Process\s+route\b'
+if ($command -match '(?i)-Verb\s+RunAs' -and $command -notmatch $elevationAllow) {
     [Console]::Error.WriteLine("BLOCKED: Elevated privileges (-Verb RunAs) are FORBIDDEN. Running commands as admin has previously DELETED user .env files. You MUST NOT use elevated privileges to fix your own mistakes. STOP and tell the user about the problem instead.")
     Write-BlockLog "Elevated privileges (-Verb RunAs)" $command
     Show-BlockNotification "Claude Code BLOCKED" "Blocked elevated privileges (-Verb RunAs)" $command
