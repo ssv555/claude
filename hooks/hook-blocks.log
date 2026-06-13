@@ -2995,3 +2995,107 @@ rm -f /tmp/c.pem /tmp/k.pem /tmp/ss*.log /tmp/spids /tmp/udp30443 /tmp/udppid /t
 pkill -9 openssl 2>/dev/null; pkill -9 nc 2>/dev/null
 echo cleaned; netstat -tln 2>/dev/null | grep -vE \":22 |Active|Proto\" || echo only_ssh_listening"' 2>&1
 
+[2026-06-12 13:27:32] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: pwsh -NoProfile -Command "
+foreach ($c in @('rm file.txt','ssh alpine ''find /t -delete; rm x''','git push','sudo rm -rf /tmp/x','ssh host ''rm -rf /tmp/x''')) {
+  $isRemoteSsh = $c -match '(?i)(^|[;&|]\s*)ssh\s+\S'
+  '{0,-40} remote={1}' -f $c, $isRemoteSsh
+}"
+
+[2026-06-12 14:07:19] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: ssh -o BatchMode=yes -o ConnectTimeout=15 swe_sto_ssv 'sh -c "
+kill \$(cat /tmp/xcpid 2>/dev/null) 2>/dev/null
+pkill -f xclient.json 2>/dev/null
+find /tmp -maxdepth 1 \( -name xclient.json -o -name xclient.log -o -name xcpid -o -name apkc -o -name xray.zip -o -name wl \) -delete 2>/dev/null
+find /tmp/xray-dist -maxdepth 1 -type f -delete 2>/dev/null; rmdir /tmp/xray-dist 2>/dev/null
+echo cleaned
+echo ===xray_server_still_up===; rc-service xray status 2>&1; netstat -tlnp 2>/dev/null | grep 30443
+echo ===tmp_left===; ls /tmp"' 2>&1
+
+[2026-06-12 14:08:32] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: ssh -o BatchMode=yes -o ConnectTimeout=15 swe_sto_ssv 'sh -c "
+pkill -f xclient 2>/dev/null
+find /tmp -maxdepth 1 \( -name \"xclient*\" -o -name xcpid -o -name apkc -o -name xray.zip -o -name wl \) -delete 2>/dev/null
+find /tmp/xray-dist -type f -delete 2>/dev/null; rmdir /tmp/xray-dist 2>/dev/null
+echo cleaned
+rc-service xray status 2>&1
+netstat -tlnp 2>/dev/null | grep 30443 || echo NO_LISTENER
+echo tmp_left:; ls /tmp"' 2>&1
+
+[2026-06-12 14:12:18] BLOCKED: ALLOWED by user: Remove directory (rmdir)
+  Command: ssh -o BatchMode=yes -o ConnectTimeout=15 swe_sto_ssv 'sh -c "
+find /tmp -maxdepth 1 \( -name \"xclient*\" -o -name xcpid -o -name apkc -o -name xray.zip -o -name wl \) -delete 2>/dev/null
+find /tmp/xray-dist -type f -delete 2>/dev/null; rmdir /tmp/xray-dist 2>/dev/null
+echo ===xray_status===; rc-service xray status 2>&1
+echo ===listener===; netstat -tlnp 2>/dev/null | grep 30443 || echo NO_LISTENER
+echo ===any_stray_xray_procs===; ps 2>/dev/null | grep xray | grep -v grep
+echo ===tmp===; ls /tmp"' 2>&1
+
+[2026-06-12 14:28:39] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: cd /tmp; rm -f kn_cookie.txt kn_hdr.txt
+# Step 1: get challenge + realm + cookie
+curl -s --max-time 6 -c kn_cookie.txt -D kn_hdr.txt "http://192.168.1.1/auth" -o /dev/null -w "HTTP %{http_code}\n"
+echo "--- headers ---"
+grep -iE "X-NDM-Realm|X-NDM-Challenge|Set-Cookie" kn_hdr.txt
+
+[2026-06-12 20:24:21] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: F=/d/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/docs/exit_failover.md
+sed -i 's/kozтЖТ/kvo-resтЖТ/g' "$F"
+S=/d/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/scripts
+mv "$S/wg-koz.conf.template" "$S/wg-kvo-res.conf.template"
+echo "=== FINAL word-koz (╨╛╨╢╨╕╨┤╨░╨╡╨╝ ╨Я╨г╨б╨в╨Ю) ==="
+rg -nw 'koz' /d/Data/Backup/Ubuntu-Servers/INFRA --glob '!**/snapshots/**' --glob '!*.pem' --glob '!*.crt' 2>/dev/null
+echo "=== koz-substring (╨╛╨╢╨╕╨┤╨░╨╡╨╝ ╨в╨Ю╨Ы╨м╨Ъ╨Ю kozodoi + volodiakoz) ==="
+rg -no 'kozodoi\.work\.gd|volodiakoz|\bkoz\b' /d/Data/Backup/Ubuntu-Servers/INFRA --glob '!**/snapshots/**' --glob '!*.pem' --glob '!*.crt' --glob '!*.png' 2>/dev/null | sort | uniq -c
+echo "=== ╤Д╨░╨╣╨╗╤Л ╤Б koz ╨▓ ╨╕╨╝╨╡╨╜╨╕ (╨╛╨╢╨╕╨┤╨░╨╡╨╝ ╨Я╨г╨б╨в╨Ю) ==="
+find /d/Data/Backup/Ubuntu-Servers/INFRA -name '*koz*' -not -path '*/snapshots/*' 2>/dev/null
+
+[2026-06-12 22:02:07] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: KEY=/d/Data/Backup/Ubuntu-Servers/moscow_my/keys-client/root/id_ed25519
+ssh -i "$KEY" -p 53847 -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new -o BatchMode=yes root@195.2.75.212 'bash -s' <<'REMOTE'
+set -e
+TS=$(date +%Y%m%d-%H%M%S)
+mkdir -p /root/awg-backups
+cp -a /usr/local/sbin/exit-failover.sh /root/awg-backups/exit-failover.sh.bak-$TS
+cp -a /usr/local/sbin/exit-switch.sh   /root/awg-backups/exit-switch.sh.bak-$TS
+if [ -f /etc/wireguard/wg-koz.conf ]; then
+  cp -a /etc/wireguard/wg-koz.conf /root/awg-backups/wg-koz.conf.bak-$TS
+  systemctl disable --now wg-quick@wg-koz
+  mv /etc/wireguard/wg-koz.conf /etc/wireguard/wg-kvo-res.conf
+  systemctl enable --now wg-quick@wg-kvo-res
+fi
+sed -i -E 's/\bwg-koz\b/wg-kvo-res/g; s/\bkoz\b/kvo-res/g' /usr/local/sbin/exit-failover.sh /usr/local/sbin/exit-switch.sh
+bash -n /usr/local/sbin/exit-failover.sh
+bash -n /usr/local/sbin/exit-switch.sh
+systemctl daemon-reload
+systemctl restart exit-failover.service
+echo "=== MUTATION OK (backups: /root/awg-backups/*.bak-$TS) ==="
+set +e
+echo "### iface wg-kvo-res:";  ip -br link show wg-kvo-res || echo "  MISSING!"
+echo "### enabled/active:";    echo "$(systemctl is-enabled wg-quick@wg-kvo-res) / $(systemctl is-active wg-quick@wg-kvo-res)"
+echo "### wg handshake:";      wg show wg-kvo-res 2>/dev/null | sed -n '1,6p'
+echo "### exit-failover svc:"; systemctl is-active exit-failover
+echo "### pin (expect fin):";  grep -E 'AUTO_SELECT|CURRENT' /etc/exit-failover.conf
+echo "### old wg-koz gone?:";  ip -br link show wg-koz 2>/dev/null && echo "  STILL PRESENT!" || echo "  absent ok"
+echo "### residual koz in scripts:"; grep -nEi '\bkoz\b|wg-koz' /usr/local/sbin/exit-failover.sh /usr/local/sbin/exit-switch.sh || echo "  clean"
+echo "### EXITS line:";        grep -n 'kvo-res' /usr/local/sbin/exit-failover.sh
+REMOTE
+
+[2026-06-12 22:30:55] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: scp -o BatchMode=yes /d/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/scripts/exit-failover.sh moscow_my:/tmp/exit-failover.sh.new 2>&1
+scp -o BatchMode=yes /d/Data/Backup/Ubuntu-Servers/INFRA/servers/moscow_my/scripts/exit-switch.sh moscow_my:/tmp/exit-switch.sh.new 2>&1
+ssh -o BatchMode=yes -o ConnectTimeout=25 moscow_my 'bash -c "
+set -e
+echo ===SYNTAX===; bash -n /tmp/exit-failover.sh.new && echo failover_ok; bash -n /tmp/exit-switch.sh.new && echo switch_ok
+echo ===BACKUP===; mkdir -p /root/exit-backups; cp /usr/local/sbin/exit-failover.sh /root/exit-backups/exit-failover.sh.bak-\$(date +%Y%m%d-%H%M%S); cp /usr/local/sbin/exit-switch.sh /root/exit-backups/exit-switch.sh.bak-\$(date +%Y%m%d-%H%M%S); echo backed_up
+echo ===INSTALL===; install -m755 /tmp/exit-failover.sh.new /usr/local/sbin/exit-failover.sh; install -m755 /tmp/exit-switch.sh.new /usr/local/sbin/exit-switch.sh; echo installed
+echo ===ENABLE_BOOT===; systemctl enable awg-quick@awg_ex_swe 2>&1 | tail -1
+echo ===RESTART===; systemctl restart exit-failover; sleep 3
+echo ===SVC===; systemctl is-active exit-failover
+echo ===ACTIVE_EXIT(stays fin)===; cat /run/active-exit
+echo ===SWE_HS===; awg show awg_ex_swe latest-handshakes 2>&1
+echo ===EXITS_LIVE===; grep -A6 \"EXITS=\" /usr/local/sbin/exit-failover.sh | head -7
+echo ===JOURNAL===; journalctl -u exit-failover -n 5 --no-pager 2>&1 | tail -5
+rm -f /tmp/exit-failover.sh.new /tmp/exit-switch.sh.new
+"' 2>&1
+

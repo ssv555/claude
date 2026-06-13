@@ -32,7 +32,9 @@
       "mcp__playwright_vivaldi__browser_wait_for",
       "mcp__playwright_vivaldi__browser_evaluate",
       "mcp__playwright_vivaldi__browser_close",
-      "Read(//d/Data/Tools/AntiDPI/zapret-win-bundle/blockcheck/**)"
+      "Read(//d/Data/Tools/AntiDPI/zapret-win-bundle/blockcheck/**)",
+      "Read(//c/Users/ssv55/.claude/**)",
+      "Read(//d/Data/Documents/Programming/Projects/AI/Claude/**)"
     ],
     "deny": [
       "Read(**/.env)",
@@ -72,7 +74,9 @@
       "d:\\Data\\Documents\\Programming\\Projects\\MCP\\mcp-dev-tg-chat-agent",
       "C:\\Users\\ssv55\\.claude\\hooks",
       "D:\\Data\\Documents\\Programming\\Projects\\Telegram\\Cinema\\.idea",
-      "D:\\Data\\Documents\\Programming\\Projects\\Telegram\\pythonProject\\.idea"
+      "D:\\Data\\Documents\\Programming\\Projects\\Telegram\\pythonProject\\.idea",
+      "C:\\Users\\ssv55\\.claude",
+      "D:\\Data\\Documents\\Programming\\Projects\\AI\\Claude"
     ]
   },
   "hooks": {
@@ -100,5 +104,6 @@
   "effortLevel": "high",
   "autoUpdatesChannel": "latest",
   "skipWorkflowUsageWarning": true,
-  "theme": "dark-daltonized"
+  "theme": "dark-daltonized",
+  "model": "opus[1m]"
 }

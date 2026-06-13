@@ -209,6 +209,15 @@ If `pwsh` is genuinely missing on a machine (rare in 2026), STOP and tell the us
 
 Причина (cp866-garbage, сломанный парсинг `$env:`), примеры ✅/❌ и инцидент → [CLAUDE_deep.md](CLAUDE_deep.md).
 
+## shadcn/ui — ЗАПРЕЩЁН без явного разрешения — UNIVERSAL
+
+NEVER scaffold, install, init, or add components from **shadcn/ui** (`shadcn` CLI, `shadcn@latest init/add`, `components.json`, `@/components/ui/*`) in ANY project without the user's explicit, case-by-case permission. This includes its default companions pulled by its init (`tw-animate-css`, Base UI/Radix wiring it generates, `class-variance-authority`+`clsx`+`tailwind-merge` scaffolding).
+
+- Default answer is NO. If a task seems to call for shadcn/ui, STOP and ask first.
+- Practice showed it's more hassle than savings — extra files/deps/config churn for little gain.
+- Allowed only after the user says so for that specific case.
+- For UI: prefer plain Tailwind components, or propose an alternative kit and let the user pick — never reach for shadcn/ui by default.
+
 ## No duplication of rules
 NEVER duplicate rules across CLAUDE.md, CLAUDE.local.md, and memory files. Each rule lives in exactly ONE place. Memory is only for things NOT already in CLAUDE.md files.
 
@@ -362,7 +371,8 @@ To write to a new sheet: user shares the sheet to the SA email (from docs) as Ed
 
 At the end of a task or session, clean up temp files in `.tmp/`, `tmp/`, `.playwright-mcp/`, and debug scripts in the project root.
 
-1. File created this session for debug/checks → delete it the same session after the task, silently.
+0. **`.tmp/`** → clean up at task end; delete only with user confirmation (never silent). Overrides #1.
+1. File created this session for debug/checks (outside `.tmp/`) → delete it the same session after the task, silently.
 2. File created earlier and the topic is closed (final doc in `docs/`, artifact committed, problem solved) → print a "cleanup candidates" list, ask "delete?".
 3. Configs with private keys (`*.conf` with `PrivateKey`, `wg-*`, `*.pem`, `*.key`) → separate confirmation, even if the topic is closed.
 4. Group > 5 files or > 1 MB → always ask, never delete without confirmation.

@@ -6,7 +6,9 @@ type: feedback
 
 **Что это:** глобальный MCP-сервер `playwright_vivaldi`, цепляется через CDP к живому Vivaldi пользователя. Профиль `D:\Data\Tools\Vivaldi\ssv555@yandex.ru` содержит ВСЕ авторизации админок, личной почты, банкинга, DNS-панелей и т.д.
 
-**Когда запускать Vivaldi:** только по явной команде «запускай Vivaldi» / «через Vivaldi» / «делай в живом браузере». Команда: `"C:\Program Files\Vivaldi\Application\vivaldi.exe" --user-data-dir="D:\Data\Tools\Vivaldi\ssv555@yandex.ru" --remote-debugging-port=9222` через `Bash` с `run_in_background: true`.
+**ДЕФОЛТ ДЛЯ BROWSER-АВТОМАТИЗАЦИИ — ВСЕГДА Google Chrome (`mcp__Claude_in_Chrome__*`).** Vivaldi разрешён ТОЛЬКО для конкретного проекта, где пользователь это явно разрешил, — НЕ глобально. Инцидент 2026-06-12: Claude применил Vivaldi вне того проекта и перезапустил закрытый браузер — пользователь жёстко запретил.
+
+**Когда запускать Vivaldi:** только по явной команде «запускай Vivaldi» / «через Vivaldi» / «делай в живом браузере» в рамках разрешённого проекта. Команда: `"C:\Program Files\Vivaldi\Application\vivaldi.exe" --user-data-dir="D:\Data\Tools\Vivaldi\ssv555@yandex.ru" --remote-debugging-port=9222` через `Bash` с `run_in_background: true`.
 
 **Правила использования (нерушимые):**
 1. **Per-task разрешение.** Использовать MCP-тулы `mcp__playwright_vivaldi__*` ТОЛЬКО с явным «да, через Vivaldi» на каждый случай. Никогда автономно, ни на чтение, ни на запись.

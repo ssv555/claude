@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "mcp__playwright_vivaldi__browser_navigate"
+      "mcp__playwright_vivaldi__browser_navigate",
+      "mcp__Claude_in_Chrome__javascript_tool"
     ]
   }
 }
