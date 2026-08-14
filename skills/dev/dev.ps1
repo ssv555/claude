@@ -53,17 +53,57 @@ function Assert-Chief {
     }
 }
 
+# ---- Resilient transport (wg0->Amsterdam tunnel flaps: ~40% of single connects drop) ----
+# Retry on transient ssh/scp failures with visible per-attempt errors and backoff.
+# Use ONLY for idempotent / side-effect ops — NOT for exit-code probes (id -u, list-users).
+
+function Invoke-SshR {
+    # ssh command on $SSH_HOST with retries. Returns captured output; throws after $Tries.
+    param([string]$RemoteCmd, [int]$Tries = 4)
+    for ($a = 1; $a -le $Tries; $a++) {
+        $out = & ssh $SSH_HOST $RemoteCmd 2>&1
+        if ($LASTEXITCODE -eq 0) { return $out }
+        Write-Host "[ssh attempt $a/$Tries failed — error below:]" -ForegroundColor Yellow
+        Write-Host ($out -join "`n") -ForegroundColor DarkYellow
+        if ($a -lt $Tries) { Start-Sleep -Seconds (2 * $a) }
+    }
+    throw "ssh failed after $Tries attempts: $RemoteCmd"
+}
+
+function Invoke-ScpUpR {
+    # scp local -> remote on $SSH_HOST with retries. Throws after $Tries.
+    param([string]$LocalPath, [string]$RemotePath, [int]$Tries = 4)
+    for ($a = 1; $a -le $Tries; $a++) {
+        & scp -q $LocalPath "${SSH_HOST}:$RemotePath"
+        if ($LASTEXITCODE -eq 0) { return }
+        Write-Host "[scp attempt $a/$Tries failed: $LocalPath -> $RemotePath]" -ForegroundColor Yellow
+        if ($a -lt $Tries) { Start-Sleep -Seconds (2 * $a) }
+    }
+    throw "scp failed after $Tries attempts: $LocalPath -> $RemotePath"
+}
+
 function Sync-LibToServer {
-    # Copy lib/*.sh + .c + systemd units to /opt/dev-skill/ on the server.
+    # Copy lib/*.sh + systemd units to /opt/dev-skill/ on the server.
+    # Uses tar+scp instead of scp -r (scp -r breaks on OpenSSH 10.0+ SFTP-mode with directories).
     Write-Host "[sync] uploading lib/ to ${SSH_HOST}:${SERVER_SKILL_DIR}/ ..." -ForegroundColor DarkGray
-    & ssh $SSH_HOST "sudo mkdir -p $SERVER_SKILL_DIR && sudo chown `$(id -u):`$(id -g) $SERVER_SKILL_DIR"
-    if ($LASTEXITCODE -ne 0) { throw "Failed to create $SERVER_SKILL_DIR on server" }
+    Invoke-SshR "sudo mkdir -p $SERVER_SKILL_DIR && sudo chown `$(id -u):`$(id -g) $SERVER_SKILL_DIR" | Out-Null
 
-    & scp -qr "$LIB_DIR/." "${SSH_HOST}:${SERVER_SKILL_DIR}/"
-    if ($LASTEXITCODE -ne 0) { throw "scp of lib/ failed" }
+    $tarPath = [IO.Path]::Combine([IO.Path]::GetTempPath(), 'dev-lib-sync.tar.gz')
+    $libParent = Split-Path $LIB_DIR -Parent
+    $libName   = Split-Path $LIB_DIR -Leaf
+    # Use Windows native tar (C:\Windows\System32\tar.exe) — Git's GNU tar misparses
+    # Windows drive letters (C:\...) as remote hosts.
+    & "$env:SystemRoot\system32\tar.exe" -czf $tarPath -C $libParent $libName
+    if ($LASTEXITCODE -ne 0) { throw "tar of lib/ failed" }
 
-    & ssh $SSH_HOST "sudo chown -R root:root $SERVER_SKILL_DIR && sudo chmod 755 $SERVER_SKILL_DIR/*.sh"
-    if ($LASTEXITCODE -ne 0) { throw "Failed to chown/chmod $SERVER_SKILL_DIR/" }
+    try {
+        Invoke-ScpUpR -LocalPath $tarPath -RemotePath '/tmp/dev-lib-sync.tar.gz'
+    } finally {
+        Remove-Item $tarPath -Force -ErrorAction SilentlyContinue
+    }
+
+    # Extract flat + fix perms in one SSH call (reduce connection count)
+    Invoke-SshR "sudo tar xzf /tmp/dev-lib-sync.tar.gz -C $SERVER_SKILL_DIR --strip-components=1 && sudo rm /tmp/dev-lib-sync.tar.gz && sudo chown -R root:root $SERVER_SKILL_DIR && sudo chmod 755 $SERVER_SKILL_DIR/*.sh" | Out-Null
 }
 
 function Sync-EnvTemplate {
@@ -79,10 +119,8 @@ function Sync-EnvTemplate {
         throw "env template not found locally: $local — regenerate via _infra\scripts\dev\make-env-outstaffers.ps1"
     }
     Write-Host "[env-template] uploading $local -> ${SSH_HOST}:${SERVER_SKILL_DIR}/.env.development ..." -ForegroundColor DarkGray
-    & scp -q $local "${SSH_HOST}:/tmp/env-template-upload"
-    if ($LASTEXITCODE -ne 0) { throw "scp of env template failed" }
-    & ssh $SSH_HOST "sudo mv /tmp/env-template-upload $SERVER_SKILL_DIR/.env.development && sudo chown root:root $SERVER_SKILL_DIR/.env.development && sudo chmod 600 $SERVER_SKILL_DIR/.env.development"
-    if ($LASTEXITCODE -ne 0) { throw "Failed to install env template" }
+    Invoke-ScpUpR -LocalPath $local -RemotePath '/tmp/env-template-upload'
+    Invoke-SshR "sudo mv /tmp/env-template-upload $SERVER_SKILL_DIR/.env.development && sudo chown root:root $SERVER_SKILL_DIR/.env.development && sudo chmod 600 $SERVER_SKILL_DIR/.env.development" | Out-Null
 }
 
 function Ensure-Bootstrap {
@@ -133,7 +171,7 @@ function Format-Bytes {
 function Get-NextPortBlock {
     # Scan moscow_my nginx confs for occupied port bases (40001, 40011, ...) and
     # return the next free 10-port block in range 40000..49991.
-    $occupied = & ssh $SSH_HOST "grep -hoE 'proxy_pass http://127\\.0\\.0\\.1:[0-9]+' /etc/nginx/conf.d/dev-*.it-joy.ru.conf 2>/dev/null | grep -oE '[0-9]+$' | sort -un"
+    $occupied = Invoke-SshR "grep -hoE 'proxy_pass http://127\\.0\\.0\\.1:[0-9]+' /etc/nginx/conf.d/dev-*.it-joy.ru.conf 2>/dev/null | grep -oE '[0-9]+$' | sort -un"
     $used = @{}
     foreach ($p in $occupied -split "`n") {
         if ($p -match '^\d+$') { $used[[int]$p] = $true }
@@ -173,20 +211,37 @@ server {
     $stubFile = [IO.Path]::GetTempFileName()
     [IO.File]::WriteAllText($stubFile, $stub, (New-Object Text.UTF8Encoding $false))
 
-    & ssh $SSH_HOST "sudo mkdir -p $remoteWebroot && sudo chown root:nginx $remoteWebroot && sudo chmod 750 $remoteWebroot"
-    & scp -q $stubFile "${SSH_HOST}:/tmp/dev-$Alias-stub.conf"
-    Remove-Item $stubFile -Force
-    & ssh $SSH_HOST "sudo cp /tmp/dev-$Alias-stub.conf $remoteConf && sudo rm /tmp/dev-$Alias-stub.conf && sudo nginx -t && sudo systemctl reload nginx"
-    if ($LASTEXITCODE -ne 0) { throw "nginx stub install failed" }
+    Invoke-SshR "sudo mkdir -p $remoteWebroot && sudo chown root:nginx $remoteWebroot && sudo chmod 750 $remoteWebroot" | Out-Null
+    try {
+        Invoke-ScpUpR -LocalPath $stubFile -RemotePath "/tmp/dev-$Alias-stub.conf"
+    } finally {
+        Remove-Item $stubFile -Force -ErrorAction SilentlyContinue
+    }
+    Invoke-SshR "sudo cp /tmp/dev-$Alias-stub.conf $remoteConf && sudo rm /tmp/dev-$Alias-stub.conf && sudo nginx -t && sudo systemctl reload nginx" | Out-Null
 
     # 2. Copy error pages from existing dev.it-joy.ru webroot if available
     & ssh $SSH_HOST "test -f /var/www/dev.it-joy.ru/404.html && sudo cp -n /var/www/dev.it-joy.ru/404.html /var/www/dev.it-joy.ru/50x.html $remoteWebroot/ 2>/dev/null; true"
 
-    # 3. Issue Let's Encrypt cert via webroot
+    # 3. Issue Let's Encrypt cert via webroot.
+    # Do NOT trust certbot's exit code here: the `| tail -5` pipe makes $LASTEXITCODE
+    # the pager's (always 0), so a failed challenge (e.g. missing DNS A-record) slips
+    # through and step 4 installs an HTTPS conf pointing at a non-existent cert →
+    # `nginx -t` then fails server-wide. Instead, verify the cert file actually exists.
     Write-Host "[certbot] issuing cert for dev-$Alias.it-joy.ru" -ForegroundColor DarkGray
     & ssh $SSH_HOST "sudo certbot certonly --webroot -w $remoteWebroot -d dev-$Alias.it-joy.ru --non-interactive --agree-tos -m ssv555ssv@gmail.com 2>&1 | tail -5"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "[certbot] failed — keeping HTTP stub (DNS for dev-$Alias.it-joy.ru must point to moscow_my)" -ForegroundColor Yellow
+
+    # Confirm the cert landed. Retry only on ssh connect failure (255), not on a clean
+    # "file absent" (exit 1) — the latter is the genuine no-cert verdict.
+    $certOk = $false
+    for ($a = 1; $a -le 3; $a++) {
+        & ssh $SSH_HOST "sudo test -f /etc/letsencrypt/live/dev-$Alias.it-joy.ru/fullchain.pem"
+        $c = $LASTEXITCODE
+        if ($c -eq 0) { $certOk = $true; break }
+        if ($c -eq 1) { break }
+        Start-Sleep -Seconds (2 * $a)
+    }
+    if (-not $certOk) {
+        Write-Host "[certbot] no cert issued — keeping HTTP stub. dev-$Alias.it-joy.ru needs a DNS A-record -> moscow_my; re-issue cert + HTTPS conf once DNS resolves." -ForegroundColor Yellow
         return
     }
 
@@ -197,10 +252,12 @@ server {
     $rendered = $tpl.Replace('{{ALIAS}}', $Alias).Replace('{{PORT_API}}', "$api").Replace('{{PORT_HMR}}', "$hmr")
     $renderedFile = [IO.Path]::GetTempFileName()
     [IO.File]::WriteAllText($renderedFile, $rendered, (New-Object Text.UTF8Encoding $false))
-    & scp -q $renderedFile "${SSH_HOST}:/tmp/dev-$Alias.conf"
-    Remove-Item $renderedFile -Force
-    & ssh $SSH_HOST "sudo cp /tmp/dev-$Alias.conf $remoteConf && sudo rm /tmp/dev-$Alias.conf && sudo nginx -t && sudo systemctl reload nginx"
-    if ($LASTEXITCODE -ne 0) { throw "nginx full conf install failed" }
+    try {
+        Invoke-ScpUpR -LocalPath $renderedFile -RemotePath "/tmp/dev-$Alias.conf"
+    } finally {
+        Remove-Item $renderedFile -Force -ErrorAction SilentlyContinue
+    }
+    Invoke-SshR "sudo cp /tmp/dev-$Alias.conf $remoteConf && sudo rm /tmp/dev-$Alias.conf && sudo nginx -t && sudo systemctl reload nginx" | Out-Null
     Write-Host "[nginx] dev-$Alias.it-joy.ru ready" -ForegroundColor Green
 }
 
@@ -319,13 +376,7 @@ function Cmd-Add {
         throw "Invalid repo name: '$repo'"
     }
 
-    # Confirmation via dialog.ps1 (simple YesNo MessageBox)
-    $confirmMsg = "Create dev '$alias' ($fullName <$email>) + clone $repo?"
-    $confirm = & $DIALOG_PS1 -Mode simple -Title "Create dev" -Message $confirmMsg -Buttons YesNo -Icon Question -Agent 'dev skill'
-    if ($confirm -ne 'Yes') {
-        Write-Host "Cancelled." -ForegroundColor DarkGray
-        return
-    }
+    # No confirmation dialog — chief explicitly typed `/dev add <alias> ...`, intent is already given.
 
     # 1. Generate SSH keypair on PC
     $keyDir = Join-Path $KEYS_CLIENT_ROOT $alias
@@ -370,17 +421,30 @@ function Cmd-Add {
     #     so chief's GitHub-direct commits aren't in bare → devs would clone stale main).
     if ($repo) {
         Write-Host "[bare-sync] fetching latest $repo from GitHub into bare repo" -ForegroundColor DarkGray
-        & ssh $SSH_HOST "sudo -u git-mirror git -C /srv/git/VDole.git fetch origin main:main 2>&1 | tail -5"
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "[bare-sync] WARN: fetch failed — bare may be stale. Dev's clone may miss recent chief commits." -ForegroundColor Yellow
+        try {
+            Invoke-SshR "sudo -u git-mirror git -C /srv/git/VDole.git fetch origin main:main 2>&1 | tail -5" | ForEach-Object { Write-Host $_ }
+        } catch {
+            Write-Host "[bare-sync] WARN: fetch failed after retries — bare may be stale. Dev's clone may miss recent chief commits." -ForegroundColor Yellow
         }
     }
 
-    # 2d. Create user on server (uploads pubkey via stdin)
+    # 2d. Create user on server (uploads pubkey via stdin).
+    # add-user.sh is NOT idempotent (refuses if user exists) — retry ONLY on ssh
+    # exit 255 (connection dropped before the script ran). A non-255 exit means the
+    # script itself ran and failed → do not retry (would hit "user already exists").
     Write-Host "[server] creating user $alias ..." -ForegroundColor DarkGray
     $pubKeyEscaped = $pubKey.Trim().Replace("'", "'\''")
-    & ssh $SSH_HOST "sudo bash $SERVER_SKILL_DIR/add-user.sh '$alias' '$($fullName.Replace("'","'\''"))' '$email' '$pubKeyEscaped' '$repo' '$portBase'"
-    if ($LASTEXITCODE -ne 0) { throw "add-user.sh failed" }
+    $addCmd = "sudo bash $SERVER_SKILL_DIR/add-user.sh '$alias' '$($fullName.Replace("'","'\''"))' '$email' '$pubKeyEscaped' '$repo' '$portBase'"
+    $addOk = $false
+    for ($a = 1; $a -le 4; $a++) {
+        & ssh $SSH_HOST $addCmd
+        $code = $LASTEXITCODE
+        if ($code -eq 0) { $addOk = $true; break }
+        if ($code -ne 255) { throw "add-user.sh failed (exit $code)" }
+        Write-Host "[add-user] ssh connection failed (255) — attempt $a/4, retrying" -ForegroundColor Yellow
+        if ($a -lt 4) { Start-Sleep -Seconds (2 * $a) }
+    }
+    if (-not $addOk) { throw "add-user.sh: ssh connection failed after 4 attempts" }
 
     # 3. Sync skills to /opt/claude-shared/ (if first dev or allowlist changed)
     Sync-Skills -Alias 'all'
@@ -544,13 +608,13 @@ function Sync-Skills {
     $skillsRoot = Join-Path $env:USERPROFILE '.claude\skills'
 
     Write-Host "[sync-skills] uploading $(($globalSkills | Measure-Object).Count) global skills to /opt/claude-shared/skills/ ..." -ForegroundColor DarkGray
-    & ssh $SSH_HOST "sudo mkdir -p /opt/claude-shared/skills && sudo chown `$(id -u):`$(id -g) /opt/claude-shared/skills"
+    Invoke-SshR "sudo mkdir -p /opt/claude-shared/skills && sudo chown `$(id -u):`$(id -g) /opt/claude-shared/skills" | Out-Null
 
     # Prune skills not in allowlist (renamed/removed entries). Server-side bash
     # script lives in lib/sync-skills-prune.sh — already synced via Sync-LibToServer.
     Write-Host "[sync-skills] pruning stale skills on server ..." -ForegroundColor DarkGray
     $allowedJoined = ($globalSkills -join ' ')
-    & ssh $SSH_HOST "sudo bash $SERVER_SKILL_DIR/sync-skills-prune.sh $allowedJoined"
+    Invoke-SshR "sudo bash $SERVER_SKILL_DIR/sync-skills-prune.sh $allowedJoined" | Out-Null
 
     foreach ($s in $globalSkills) {
         $local = Join-Path $skillsRoot $s
@@ -562,13 +626,27 @@ function Sync-Skills {
         $resolved = (Resolve-Path $local).Path
 
         Write-Host "  $s" -ForegroundColor DarkGray
-        & ssh $SSH_HOST "sudo rm -rf /opt/claude-shared/skills/$s"
-        & scp -q -r $resolved "${SSH_HOST}:/opt/claude-shared/skills/$s"
-        if ($LASTEXITCODE -ne 0) { Write-Host "    [warn] scp failed for $s" -ForegroundColor Yellow }
+        # tar+scp+extract — scp -r is broken on OpenSSH 10 SFTP mode (uploads nothing).
+        # Tar locally, ship one file, unpack server-side into a fresh tmp dir, then swap
+        # into place. Only `rm -rf` the live skill AFTER a successful upload+extract, so a
+        # transient failure can't wipe the shared skill for existing devs.
+        $skTar    = [IO.Path]::Combine([IO.Path]::GetTempPath(), 'dev-skill-upload.tar.gz')
+        $skParent = Split-Path $resolved -Parent
+        $skName   = Split-Path $resolved -Leaf
+        & "$env:SystemRoot\system32\tar.exe" -czf $skTar -C $skParent $skName
+        if ($LASTEXITCODE -ne 0) { Write-Host "    [warn] tar failed for $s" -ForegroundColor Yellow; continue }
+        try {
+            Invoke-ScpUpR -LocalPath $skTar -RemotePath '/tmp/dev-skill-upload.tar.gz'
+            Invoke-SshR "set -e; sudo rm -rf /tmp/dev-skill-x && sudo mkdir -p /tmp/dev-skill-x && sudo tar xzf /tmp/dev-skill-upload.tar.gz -C /tmp/dev-skill-x && sudo rm -rf /opt/claude-shared/skills/$s && sudo mv /tmp/dev-skill-x/$skName /opt/claude-shared/skills/$s && sudo rm -rf /tmp/dev-skill-x /tmp/dev-skill-upload.tar.gz" | Out-Null
+        } catch {
+            Write-Host "    [warn] upload failed for ${s}: $_" -ForegroundColor Yellow
+        } finally {
+            Remove-Item $skTar -Force -ErrorAction SilentlyContinue
+        }
     }
 
     # Lock down
-    & ssh $SSH_HOST "sudo chown -R root:root /opt/claude-shared/skills && sudo chmod -R u=rwX,go=rX /opt/claude-shared/skills"
+    Invoke-SshR "sudo chown -R root:root /opt/claude-shared/skills && sudo chmod -R u=rwX,go=rX /opt/claude-shared/skills" | Out-Null
     Write-Host "[sync-skills] done" -ForegroundColor Green
 }
 

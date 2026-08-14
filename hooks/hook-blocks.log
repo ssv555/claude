@@ -3099,3 +3099,238 @@ echo ===JOURNAL===; journalctl -u exit-failover -n 5 --no-pager 2>&1 | tail -5
 rm -f /tmp/exit-failover.sh.new /tmp/exit-switch.sh.new
 "' 2>&1
 
+[2026-06-14 11:25:55] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDoleVideoBriefs/" && mkdir "2026-06-14-10-02-12-╨╖╨░╨┐╨╕╤Б╤М-╨▓╤Б╤В╤А╨╡╤З╨╕-╨╖╨░╨┐╨╕╤Б╤М" && mv "╨Ч╨░╨┐╨╕╤Б╤М_╨▓╤Б╤В╤А╨╡╤З╨╕_14_06_2026_10_02_12_╨╖╨░╨┐╨╕╤Б╤М.webm" "2026-06-14-10-02-12-╨╖╨░╨┐╨╕╤Б╤М-╨▓╤Б╤В╤А╨╡╤З╨╕-╨╖╨░╨┐╨╕╤Б╤М/input.webm" && ls -la "2026-06-14-10-02-12-╨╖╨░╨┐╨╕╤Б╤М-╨▓╤Б╤В╤А╨╡╤З╨╕-╨╖╨░╨┐╨╕╤Б╤М/"
+
+[2026-06-17 07:59:54] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && rm -rf dist && bun run build >/dev/null 2>&1 && echo "built" && echo "=== grep localhost:3001 in dist ===" && (grep -rl "localhost:3001" dist/assets/*.js && echo "FOUND" || echo "CLEAN") && echo "=== context (what BASE compiled to) ===" && grep -o "PROD[^;]*localhost:3001\|\"\"[^;]*localhost:3001\|localhost:3001" dist/assets/*.js | head -3
+
+[2026-06-17 08:07:28] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && bun run build >/dev/null 2>&1 && echo "build ok" && tar -czf .tmp/inframon-deploy.tgz package.json bun.lock tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts eslint.config.js .prettierrc.json .prettierignore index.html src server dist deploy && scp -i "D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\ssv\id_ed25519" -P 53847 -o BatchMode=yes .tmp/inframon-deploy.tgz ssv@195.2.75.212:/tmp/inframon-deploy.tgz 2>&1 && echo "scp OK" && \
+ssh -i "D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\ssv\id_ed25519" -p 53847 -o BatchMode=yes ssv@195.2.75.212 'sudo bash -s' <<'EOF'
+set -e
+APP=/opt/inframon
+rm -rf "$APP/dist"
+tar -xzf /tmp/inframon-deploy.tgz -C "$APP" server dist
+chown -R inframon:inframon "$APP"
+systemctl restart inframon
+sleep 3
+echo "active=$(systemctl is-active inframon)"
+EOF
+echo "=== content-types over HTTPS ===" 
+curl -s --max-time 8 -o /dev/null -w "/           -> %{content_type}\n" https://server.it-joy.ru/
+curl -s --max-time 8 -o /dev/null -w "/assets js  -> %{content_type}\n" https://server.it-joy.ru/assets/index-zGvPtBC6.js
+curl -s --max-time 8 -o /dev/null -w "/assets css -> %{content_type}\n" https://server.it-joy.ru/assets/index-CgPSzsap.css
+
+[2026-06-17 08:49:34] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && rm -rf dist && bun run build >/dev/null 2>&1 && echo "build ok" && tar -czf .tmp/inframon-deploy.tgz package.json bun.lock tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts eslint.config.js .prettierrc.json .prettierignore index.html src server dist deploy && scp -i "D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\ssv\id_ed25519" -P 53847 -o BatchMode=yes .tmp/inframon-deploy.tgz ssv@195.2.75.212:/tmp/inframon-deploy.tgz 2>&1 && echo "scp OK"
+
+[2026-06-17 08:51:05] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && J=.tmp/cookies.txt; rm -f $J
+echo "=== login (expect 200 + cookie) ==="; curl -s -c $J -o /dev/null -w "%{http_code}\n" --max-time 10 -X POST -H 'content-type: application/json' -H 'x-requested-with: inframon' -d '{"email":"ssv555ssv@gmail.com","password":"8594e9ad7505b39d39978bff"}' https://server.it-joy.ru/api/auth/login
+echo "=== cookie set? ==="; grep -o 'inframon_session' $J | head -1
+echo "=== /api/auth/me with cookie (200) ==="; curl -s -b $J --max-time 10 https://server.it-joy.ru/api/auth/me
+echo; echo "=== /api/state with cookie (200, live) ==="; curl -s -b $J --max-time 25 https://server.it-joy.ru/api/state | grep -o '"activeExit":"[^"]*"'
+echo "=== /api/state WITHOUT cookie (expect 401) ==="; curl -s -o /dev/null -w "%{http_code}\n" --max-time 10 https://server.it-joy.ru/api/state
+echo "=== mutation with cookie but NO x-requested-with (expect 403 CSRF) ==="; curl -s -o /dev/null -w "%{http_code}\n" -b $J --max-time 10 -X POST https://server.it-joy.ru/api/exit/auto
+echo "=== logout (200) ==="; curl -s -b $J -c $J -o /dev/null -w "%{http_code}\n" --max-time 10 -X POST -H 'x-requested-with: inframon' https://server.it-joy.ru/api/auth/logout
+echo "=== me after logout (expect 401) ==="; curl -s -b $J -o /dev/null -w "%{http_code}\n" --max-time 10 https://server.it-joy.ru/api/auth/me
+rm -f $J
+
+[2026-06-17 08:52:01] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: pwsh -NoProfile -File "C:/Users/ssv55/.claude/scripts/trash.ps1" "D:/Data/Documents/Programming/Projects/WEB/InfraMon/.tmp/cookies.txt" "D:/Data/Documents/Programming/Projects/WEB/InfraMon/.tmp/srv.log" "D:/Data/Documents/Programming/Projects/WEB/InfraMon/.tmp/server.log" "D:/Data/Documents/Programming/Projects/WEB/InfraMon/.tmp/inframon-deploy.tgz" 2>&1 | tail -5
+echo "--- moscow /tmp ---"
+ssh -i "D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\ssv\id_ed25519" -p 53847 -o BatchMode=yes ssv@195.2.75.212 'rm -f /tmp/inframon-deploy.tgz /tmp/inframon-bun.log && echo "moscow tmp cleaned"'
+
+[2026-06-17 09:16:54] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && bun run lint >/dev/null 2>&1 && echo "lint ok" && rm -rf dist && bun run build >/dev/null 2>&1 && echo "build ok" && tar -czf .tmp/inframon-deploy.tgz package.json bun.lock tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts eslint.config.js .prettierrc.json .prettierignore index.html src server dist deploy && scp -i "D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\ssv\id_ed25519" -P 53847 -o BatchMode=yes .tmp/inframon-deploy.tgz ssv@195.2.75.212:/tmp/inframon-deploy.tgz 2>&1 && echo "scp OK" && \
+ssh -i "D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\ssv\id_ed25519" -p 53847 -o BatchMode=yes ssv@195.2.75.212 'sudo bash -s' <<'EOF'
+set -e
+APP=/opt/inframon
+rm -rf "$APP/dist"
+tar -xzf /tmp/inframon-deploy.tgz -C "$APP" dist
+chown -R inframon:inframon "$APP/dist"
+systemctl restart inframon
+sleep 2
+echo "active=$(systemctl is-active inframon)"
+curl -s -o /dev/null -w "page %{http_code} %{content_type}\n" --max-time 5 http://127.0.0.1:3001/
+EOF
+
+[2026-06-17 10:06:16] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && bun run lint 2>&1 | tail -6 && rm -rf dist && bun run build 2>&1 | tail -3 && tar -czf .tmp/inframon-deploy.tgz package.json bun.lock tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts eslint.config.js .prettierrc.json .prettierignore index.html src server dist deploy && scp -i "D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\ssv\id_ed25519" -P 53847 -o BatchMode=yes .tmp/inframon-deploy.tgz ssv@195.2.75.212:/tmp/inframon-deploy.tgz 2>&1 && echo "scp OK" && \
+ssh -i "D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\ssv\id_ed25519" -p 53847 -o BatchMode=yes ssv@195.2.75.212 'sudo bash -c "APP=/opt/inframon; rm -rf \$APP/dist; tar -xzf /tmp/inframon-deploy.tgz -C \$APP dist; chown -R inframon:inframon \$APP/dist; systemctl restart inframon; sleep 2; echo active=\$(systemctl is-active inframon)"'
+
+[2026-06-17 12:19:44] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && bun run lint 2>&1 | tail -8 && rm -rf dist && bun run build 2>&1 | tail -3
+
+[2026-06-17 12:20:29] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && tar -czf .tmp/inframon-deploy.tgz package.json bun.lock tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts eslint.config.js .prettierrc.json .prettierignore index.html src server dist deploy && scp -i "D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\ssv\id_ed25519" -P 53847 -o BatchMode=yes .tmp/inframon-deploy.tgz ssv@195.2.75.212:/tmp/inframon-deploy.tgz 2>&1 && echo "scp OK" && \
+ssh -i "D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\ssv\id_ed25519" -p 53847 -o BatchMode=yes ssv@195.2.75.212 'sudo bash -c "APP=/opt/inframon; rm -rf \$APP/dist; tar -xzf /tmp/inframon-deploy.tgz -C \$APP server dist; chown -R inframon:inframon \$APP; systemctl restart inframon; sleep 3; echo active=\$(systemctl is-active inframon)"'
+echo "=== verify mode (login + state) ==="
+J=.tmp/c3.txt
+curl -s -c $J -o /dev/null --max-time 10 -X POST -H 'content-type: application/json' -H 'x-requested-with: inframon' -d '{"email":"ssv555ssv@gmail.com","password":"8594e9ad7505b39d39978bff"}' https://server.it-joy.ru/api/auth/login
+curl -s -b $J --max-time 25 https://server.it-joy.ru/api/state | grep -o '"activeExit":"[^"]*"\|"mode":"[^"]*"\|"pinnedTo":[^,]*'
+
+[2026-06-17 12:35:57] BLOCKED: ALLOWED by user: Recursive delete (rm -rf)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && bun run lint 2>&1 | tail -5 && rm -rf dist && bun run build 2>&1 | tail -3 && tar -czf .tmp/inframon-deploy.tgz package.json bun.lock tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts eslint.config.js .prettierrc.json .prettierignore index.html src server dist deploy && scp -i "D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\ssv\id_ed25519" -P 53847 -o BatchMode=yes .tmp/inframon-deploy.tgz ssv@195.2.75.212:/tmp/inframon-deploy.tgz 2>&1 && echo "scp OK" && \
+ssh -i "D:\Data\Backup\Ubuntu-Servers\moscow_my\keys-client\ssv\id_ed25519" -p 53847 -o BatchMode=yes ssv@195.2.75.212 'sudo bash -c "APP=/opt/inframon; rm -rf \$APP/dist; tar -xzf /tmp/inframon-deploy.tgz -C \$APP server dist; chown -R inframon:inframon \$APP; systemctl restart inframon; sleep 2; echo active=\$(systemctl is-active inframon)"'
+
+[2026-06-18 23:47:34] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git add -A && git commit -m "feat(ci): strict pre-deploy gate + 5 autotest suites" 2>&1 | tail -8
+
+[2026-06-18 23:47:47] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/Telegram/ai_sky_net_bot" && git pull --rebase 2>&1 | tail -5 && echo "--- PUSH ---" && git push 2>&1 | tail -8
+
+[2026-06-19 15:17:09] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon/ops/moscow"; rc=0; for f in exit-lib.sh moscow-routing-init.sh exit-orchestrator.sh awg-remove-peer.sh awg-pin-sync.sh cf-set-refresh.sh; do if bash -n "$f" 2>err.txt; then echo "OK  $f"; else echo "FAIL $f"; cat err.txt; rc=1; fi; done; rm -f err.txt; echo "---"; echo "syntax rc=$rc"
+
+[2026-06-19 18:31:21] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon/ops/moscow" || exit 1
+echo "=== bash -n (syntax) ==="
+for f in exit-lib.sh exit-orchestrator.sh moscow-routing-init.sh; do
+  if bash -n "$f" 2>err.tmp; then echo "OK   $f"; else echo "FAIL $f"; cat err.tmp; fi
+done
+rm -f err.tmp
+echo "=== shellcheck (if installed) ==="
+if command -v shellcheck >/dev/null 2>&1; then
+  shellcheck -S warning exit-lib.sh exit-orchestrator.sh moscow-routing-init.sh || true
+else
+  echo "shellcheck not installed тАФ skipped (bash -n is the available syntax gate)"
+fi
+
+[2026-06-20 19:30:15] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && git add server/ src/ deploy/ package.json && echo "--- staged ---" && git status --short | grep -E '^[MADR]' && echo "--- committing ---" && git commit -m "InfraMon: 3-tier dashboard, Reality+IPv6, journals, deploy scripts" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>" 2>&1 | tail -4
+
+[2026-06-20 19:35:50] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && for i in 1 2 3; do echo "[push attempt $i/3]"; git push origin main 2>&1 | tail -4 && break; echo "[attempt $i failed тАФ retry in 3s]"; sleep 3; done; echo "=== final state ==="; git log --oneline -1 origin/main 2>/dev/null; git status -sb | head -1
+
+[2026-06-20 20:58:46] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && git add src/api.ts src/pages/DashboardPage.tsx server/ssh.ts && git commit -m "InfraMon: dashboard resilient to flaky net + faster probe timeout" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>" 2>&1 | tail -3 && for i in 1 2 3; do echo "[push $i/3]"; git push origin main 2>&1 | tail -2 && break; sleep 3; done
+
+[2026-06-21 00:20:22] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && git add src/components/ServerTierTable.tsx src/api.ts src/pages/DashboardPage.tsx && git commit -m "InfraMon: align server tables (table-fixed), quieter timeouts/toasts" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>" 2>&1 | tail -2 && for i in 1 2 3; do echo "[push $i]"; git push origin main 2>&1 | tail -2 && break; sleep 3; done
+
+[2026-06-21 13:30:39] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: pwsh -NoProfile -Command "
+\$LIB_DIR = 'C:\Users\ssv55\.claude\skills\dev\lib'
+\$SSH_HOST = 'moscow_my'
+\$SERVER_SKILL_DIR = '/opt/dev-skill'
+\$tarPath = [IO.Path]::Combine([IO.Path]::GetTempPath(), 'dev-lib-sync.tar.gz')
+\$libParent = Split-Path \$LIB_DIR -Parent
+\$libName = Split-Path \$LIB_DIR -Leaf
+Write-Host \"tar: \$tarPath, parent: \$libParent, name: \$libName\"
+& tar -czf \$tarPath -C \$libParent \$libName
+Write-Host \"tar exit: \$LASTEXITCODE\"
+& scp -q \$tarPath \"${SSH_HOST}:/tmp/dev-lib-sync.tar.gz\"
+Write-Host \"scp exit: \$LASTEXITCODE\"
+Remove-Item \$tarPath -Force
+& ssh \$SSH_HOST \"tar xzf /tmp/dev-lib-sync.tar.gz -C \$SERVER_SKILL_DIR --strip-components=1 && rm /tmp/dev-lib-sync.tar.gz && echo extracted-ok\"
+Write-Host \"extract exit: \$LASTEXITCODE\"
+"
+
+[2026-06-21 13:34:43] BLOCKED: ALLOWED by user: PowerShell Remove-Item
+  Command: pwsh -NoProfile -Command "
+\$LIB_DIR = 'C:\Users\ssv55\.claude\skills\dev\lib'
+\$SSH_HOST = 'moscow_my'
+\$SERVER_SKILL_DIR = '/opt/dev-skill'
+\$tarPath = [IO.Path]::Combine([IO.Path]::GetTempPath(), 'dev-lib-sync.tar.gz')
+\$libParent = Split-Path \$LIB_DIR -Parent
+\$libName = Split-Path \$LIB_DIR -Leaf
+& \"\$env:SystemRoot\system32\tar.exe\" -czf \$tarPath -C \$libParent \$libName
+Write-Host \"tar exit: \$LASTEXITCODE, size: \$((Get-Item \$tarPath).Length)\"
+& scp -q \$tarPath \"${SSH_HOST}:/tmp/dev-lib-sync.tar.gz\"
+Write-Host \"scp exit: \$LASTEXITCODE\"
+Remove-Item \$tarPath -Force
+& ssh \$SSH_HOST \"sudo tar xzf /tmp/dev-lib-sync.tar.gz -C \$SERVER_SKILL_DIR --strip-components=1 && sudo rm /tmp/dev-lib-sync.tar.gz && echo extracted-ok\"
+Write-Host \"extract exit: \$LASTEXITCODE\"
+"
+
+[2026-06-21 16:17:44] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: cat > /tmp/dev-grey-stub.conf <<'EOF'
+server {
+    listen 80;
+    server_name dev-grey.it-joy.ru;
+    root /var/www/dev-grey.it-joy.ru;
+    location /.well-known/acme-challenge/ { root /var/www/dev-grey.it-joy.ru; }
+    location / { return 404; }
+}
+EOF
+scp -o ConnectionAttempts=8 -q /tmp/dev-grey-stub.conf "moscow_my:/tmp/dev-grey-stub.conf" 2>&1
+ssh -o ConnectionAttempts=8 moscow_my "
+sudo cp /tmp/dev-grey-stub.conf /etc/nginx/conf.d/dev-grey.it-joy.ru.conf &&
+sudo rm /tmp/dev-grey-stub.conf &&
+sudo nginx -t 2>&1 &&
+sudo systemctl reload nginx &&
+echo 'NGINX-FIXED-AND-RELOADED'
+" 2>&1
+rm -f /tmp/dev-grey-stub.conf
+
+[2026-06-21 16:18:09] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: cat > /tmp/dev-grey-stub.conf <<'EOF'
+server {
+    listen 80;
+    server_name dev-grey.it-joy.ru;
+    root /var/www/dev-grey.it-joy.ru;
+    location /.well-known/acme-challenge/ { root /var/www/dev-grey.it-joy.ru; }
+    location / { return 404; }
+}
+EOF
+scp -o ConnectionAttempts=8 -q /tmp/dev-grey-stub.conf "moscow_my:/tmp/dev-grey-stub.conf" 2>&1
+ssh -o ConnectionAttempts=8 moscow_my "
+sudo cp /tmp/dev-grey-stub.conf /etc/nginx/conf.d/dev-grey.it-joy.ru.conf &&
+sudo rm /tmp/dev-grey-stub.conf &&
+sudo nginx -t 2>&1 &&
+sudo systemctl reload nginx &&
+echo 'NGINX-FIXED-AND-RELOADED'
+" 2>&1
+
+[2026-06-22 11:31:46] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: B64=$(tr -d '\r' < "d:/Data/Documents/Programming/Projects/WEB/InfraMon/.tmp/kvo-drill.sh" | base64 -w0)
+REMOTE="
+set -e
+echo '$B64' | base64 -d | sudo -n tee /tmp/kvo-drill.sh >/dev/null
+sudo -n chmod +x /tmp/kvo-drill.sh
+sh -n /tmp/kvo-drill.sh || { echo SYNTAX_FAIL; exit 3; }
+sudo -n rm -f /tmp/kvo-drill.log
+# deadman: guaranteed restore at 240s even if the drill process dies
+sudo -n systemctl stop kvo-drill-deadman.timer 2>/dev/null || true
+sudo -n systemd-run --on-active=240 --unit=kvo-drill-deadman /bin/sh -c 'ip link set awggrey up; ip link set awg_ex_fin up' >/dev/null 2>&1
+# launch detached (survives SSH drop)
+sudo -n setsid sh /tmp/kvo-drill.sh >/dev/null 2>&1 </dev/null &
+sleep 1
+echo LAUNCHED
+"
+for i in $(seq 1 15); do
+  out=$(ssh -o BatchMode=yes -o ConnectTimeout=10 moscow_my "$REMOTE" 2>&1)
+  rc=$?
+  if [ $rc -eq 0 ] && echo "$out" | grep -q LAUNCHED; then echo "$out"; echo "=== drill launched (attempt $i) ==="; break; fi
+  echo "[$i] rc=$rc (retry)"; [ $i -lt 15 ] && sleep 1
+done
+
+[2026-06-22 11:34:38] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && git add server/registry.ts && git commit -m "InfraMon: re-add kvo TAIL exits (kvoru/kvose) to uplinks+bindings" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>" 2>&1 | tail -2 && for i in 1 2 3; do echo "[push $i]"; git pull --rebase 2>&1 | tail -1 && git push origin main 2>&1 | tail -2 && break; sleep 3; done
+
+[2026-06-22 12:06:36] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && git add deploy/inframon-speed-probe.sh deploy/inframon-speed.service deploy/inframon-speed.timer && git commit -m "InfraMon: speed probe systemd timer (per-exit download Mbps)" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>" 2>&1 | tail -2 && for i in 1 2 3; do echo "[push $i]"; git push origin main 2>&1 | tail -2 && break; sleep 3; done
+
+[2026-06-22 13:22:53] BLOCKED: Bare rm (use trash.ps1 -> Recycle Bin)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && mkdir -p .tmp && rm -f .tmp/grey_xray_ro .tmp/grey_xray_ro.pub && ssh-keygen -t ed25519 -N "" -C "inframon@moscow-grey-xray-ro" -f .tmp/grey_xray_ro >/dev/null 2>&1 && echo "PUB:" && cat .tmp/grey_xray_ro.pub && echo "priv bytes: $(wc -c < .tmp/grey_xray_ro)"
+
+[2026-06-22 17:41:04] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && git add docs/deploy.md docs/archive/ui_redesign_3tier_reality_speed.md CLAUDE.md && git commit -m "InfraMon docs: deploy.md + CLAUDE.md status, archive redesign plan" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>" 2>&1 | tail -2 && for i in 1 2 3; do echo "[push $i]"; git push origin main 2>&1 | tail -2 && break; sleep 3; done
+
+[2026-06-22 17:44:02] BLOCKED: ALLOWED by user: Git destructive/push/commit
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/InfraMon" && git add CLAUDE.md && git commit -m "InfraMon: keep dev-safe git rule in CLAUDE.md (self-commit grant in memory)" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>" 2>&1 | tail -1 && for i in 1 2 3; do git push origin main 2>&1 | tail -1 && break; sleep 3; done
+
+[2026-06-23 19:56:03] BLOCKED: ALLOWED by user: Windows delete (del)
+  Command: ssh moscow_my 'set +e
+echo "=== orphan files owned by old UID 1002 (was spc) ==="; sudo find / -uid 1002 2>/dev/null | head
+echo "=== spc anywhere on FS (excl pg_tblspc) ==="; sudo find / -iname "*spc*" 2>/dev/null | grep -v pg_tblspc | head
+echo "=== leftover dev-del / tmp archives ==="; sudo ls -d /tmp/dev-del-* 2>/dev/null; sudo find /tmp -maxdepth 2 -iname "*spc*" 2>/dev/null
+echo "=== passwd/group/sudoers residue ==="; grep -i spc /etc/passwd /etc/group /etc/sudoers.d/* 2>/dev/null
+echo "=== awg runtime sanity (peer count) ==="; sudo awg show awg-clients peers | wc -l
+echo "=== done ==="'
+
+[2026-06-26 19:17:22] BLOCKED: ALLOWED by user: Move/rename (mv)
+  Command: cd "d:/Data/Documents/Programming/Projects/WEB/VDole" && git mv docs/todo/p3_0d_2h_0m__i18n_parser_false_positives.md docs/archive/todo/i18n_parser_false_positives.md && echo "moved" && ls docs/archive/todo/i18n_parser_false_positives.md
+

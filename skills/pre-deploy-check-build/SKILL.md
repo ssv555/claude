@@ -2,7 +2,7 @@
 name: pre-deploy-check-build
 description: Run all error checks (typecheck, lint, build) before deploy. Reads project-specific steps from ./tests/skills/pre-deploy-check.md
 disable-model-invocation: false
-allowed-tools: Bash(bun *),Read
+allowed-tools: Bash(bun *),Bash(npm *),Bash(npx *),Bash(bash *),Bash(node *),Read
 model: sonnet
 ---
 

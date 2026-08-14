@@ -1,9 +1,0 @@
-﻿{
-    "full_name":  "spc",
-    "ssh_key_fp":  "SHA256:k+D/SQeIMM+UN9U4SCNS1pNESCIFf8sBZDHt4/MD9Sw",
-    "alias":  "spc",
-    "created_at":  "2026-05-28T21:08:29+03:00",
-    "email":  "spc@moscow.my",
-    "ssh_key_path":  "D:\\Data\\Backup\\Ubuntu-Servers\\moscow_my\\keys-client\\spc\\id_ed25519",
-    "status":  "active"
-}

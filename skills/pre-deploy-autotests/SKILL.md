@@ -2,7 +2,7 @@
 name: pre-deploy-autotests
 description: Run ALL autotests (unit, integration, e2e). Reads project-specific steps from ./tests/skills/pre-deploy-autotests.md
 disable-model-invocation: false
-allowed-tools: AskUserQuestion,Bash(bun *),Bash(bunx *),Bash(powershell.exe *),Bash("$LOCALAPPDATA/Programs/Cursor/*"),Read,mcp__playwright__browser_navigate,mcp__playwright__browser_snapshot
+allowed-tools: AskUserQuestion,Bash(bun *),Bash(bunx *),Bash(npm *),Bash(npx *),Bash(bash *),Bash(node *),Bash(powershell.exe *),Bash("$LOCALAPPDATA/Programs/Cursor/*"),Read,mcp__playwright__browser_navigate,mcp__playwright__browser_snapshot
 model: sonnet
 ---
 
