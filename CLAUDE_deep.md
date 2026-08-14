@@ -276,7 +276,7 @@ client's private keys; the user syncs them himself.
 ### SVN repository
 
 The whole `Ubuntu-Servers\` tree is a **Subversion working copy** (own SVN server on
-the user's `pc-sky` box), not git:
+the user's `PC` box), not git:
 
 - **URL:** `https://pc-sky/svn/Backup/Ubuntu-Servers` (repo root `https://pc-sky/svn/Backup`).
 - **Scope:** versions the entire `Ubuntu-Servers\` tree, not just `INFRA\` — but Claude's

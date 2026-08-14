@@ -7,7 +7,7 @@ allowed-tools: Bash(*), Read(*), Grep(*), Glob(*), Edit(*), Write(*)
 
 # dev-merge
 
-Принять ветку разработчика. **Только шеф (ssv555 / PC-SKY).**
+Принять ветку разработчика. **Только шеф (ssv555 / PC).**
 
 ## Status block
 

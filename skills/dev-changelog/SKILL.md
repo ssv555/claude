@@ -7,7 +7,7 @@ allowed-tools: Bash(*), Read(*), Grep(*), Glob(*)
 
 # dev-changelog
 
-Анализ изменений dev-ветки относительно `main`. **Только шеф (ssv555 / PC-SKY).**
+Анализ изменений dev-ветки относительно `main`. **Только шеф (ssv555 / PC).**
 
 ## Status block
 

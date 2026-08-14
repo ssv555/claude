@@ -7,7 +7,7 @@ allowed-tools: Bash(*), Read(*), Write(*), Grep(*), Glob(*), Agent(*)
 
 # dev-sessions-analyze
 
-Анализ Claude Code сессий разработчика. **Только шеф (ssv555 / PC-SKY).**
+Анализ Claude Code сессий разработчика. **Только шеф (ssv555 / PC).**
 
 ## Status block
 
