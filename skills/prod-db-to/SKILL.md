@@ -1,12 +1,12 @@
 ---
 name: prod-db-to
-description: Roll out the PRODUCTION database (source always prod) to a target; arg selects target. Args: ssv | laptop | tst | all | ru | help. Use when user says "/prod-db-to [target]", "раскатай прод-базу на …", "залей прод БД на tst/ssv".
+description: Roll out the PRODUCTION database (source always prod) to a target; arg selects target. Args: ssv | laptop | reserv | all | ru | help. Use when user says "/prod-db-to [target]", "раскатай прод-базу на …", "залей прод БД на reserv/ssv".
 disable-model-invocation: false
 allowed-tools: Bash, Read, Glob, Grep, AskUserQuestion
 model: sonnet
 ---
 
-# prod-db-to — roll the production DB out to dev / tst
+# prod-db-to — roll the production DB out to dev / reserv
 
 The **source is ALWAYS production** (`pro`). The argument selects the **target**. One prod dump
 is taken and restored to the chosen target(s).
@@ -15,12 +15,12 @@ is taken and restored to the chosen target(s).
 
 1. **Direct ssh + hostname guard for prod. NEVER the MCP connector.** The MCP server for prod
    (`vdole_pro_timeweb_moscow`) is unreliable — on 2026-05-31 a command sent "to prod" through MCP
-   actually executed on **tst** (`hostname` returned the moscow box). Root cause unknown. So every
+   actually executed on **reserv** (`hostname` returned the moscow box). Root cause unknown. So every
    prod read/write goes through a plain `ssh <alias>` and is preceded by a `hostname` check that
    must equal the configured guard, else **abort**.
-2. **Nodes never ssh each other.** Project rule «no cross-host ssh между нодами» — `pro` and `tst`
+2. **Nodes never ssh each other.** Project rule «no cross-host ssh между нодами» — `pro` and `reserv`
    must not ssh directly. All server→server data movement routes **through THIS PC as the hub**:
-   dump prod → this PC → upload to tst.
+   dump prod → this PC → upload to reserv.
 
 **CRITICAL: execute steps strictly in order. Do NOT run steps in parallel.**
 
@@ -30,20 +30,20 @@ is taken and restored to the chosen target(s).
 |---|---|---|
 | `ssv` (default) | this desktop's local PG | dump prod → restore local (`.env.development`) |
 | `laptop` | this laptop's local PG | dump prod → restore local (`.env.laptop`) |
-| `tst` | moscow_my fallback node | dump prod → upload dump from this PC → restore on tst |
-| `all` | ssv + tst | dump prod **once** → restore ssv → upload same dump → restore tst |
+| `reserv` | moscow_my fallback node | dump prod → upload dump from this PC → restore on reserv |
+| `all` | ssv + reserv | dump prod **once** → restore ssv → upload same dump → restore reserv |
 | `ru` | future prod (vdole.ru) | not configured → report and stop |
 | `help` | — | print this table + the flow, do nothing else |
 
 `ssv` / `laptop` are labels for "the local machine you are running on" — you cannot restore into a
-machine you are not physically on. `tst` overwrites tst's **independent** DB (destructive — that is
-the point: make tst match prod).
+machine you are not physically on. `reserv` overwrites reserv's **independent** DB (destructive — that is
+the point: make reserv match prod).
 
 ## Step 0 — resolve config + target
 
 1. Read `<cwd>/tests/skills/prod-db-to.md` (project root). Required fields:
    - **source** (`pro`): `ssh_alias`, `hostname_guard`, `db`, `dump_cmd`
-   - **targets**: map for `ssv` / `laptop` / `tst` / `all` / `ru`
+   - **targets**: map for `ssv` / `laptop` / `reserv` / `all` / `ru`
    - **restore**: `flags`, `local_pg_bin` (detect dynamically), `dump_local_dir`
    - **tables_count**: tables to count after restore
    - **cleanup**: local + remote dump removal
@@ -51,12 +51,12 @@ the point: make tst match prod).
    Missing file → STOP, ask: «Не нашёл `tests/skills/prod-db-to.md` — нужен project-конфиг. Создать?»
 
 2. Resolve target:
-   - Arg passed (`/prod-db-to tst`) → use it.
+   - Arg passed (`/prod-db-to reserv`) → use it.
    - `help` → print the Targets table + flow, STOP.
-   - No arg → `AskUserQuestion` (options in fixed order: `ssv` default / `laptop` / `tst` / `all` / `ru`).
+   - No arg → `AskUserQuestion` (options in fixed order: `ssv` default / `laptop` / `reserv` / `all` / `ru`).
    - `ru` → «target `ru` пока не настроен» → STOP.
-   - If the target includes `tst` (i.e. `tst` or `all`) — make sure the user understands it
-     **overwrites tst's independent DB**; in the no-arg path say so in the question.
+   - If the target includes `reserv` (i.e. `reserv` or `all`) — make sure the user understands it
+     **overwrites reserv's independent DB**; in the no-arg path say so in the question.
 
 ## Step 1 — dump prod (direct ssh + hostname guard + retry)
 
@@ -83,33 +83,33 @@ ssh <pro.ssh_alias> 'test "$(hostname)" = <pro.hostname_guard> && <pro.dump_cmd>
    whoever runs the restore — robust regardless of the owner-role name on each node.
 4. Verify `tables_count` and the presence of expected rows.
 
-## Step 3 — restore to tst (target `tst`, and the second half of `all`)
+## Step 3 — restore to reserv (target `reserv`, and the second half of `all`)
 
-1. Upload the **same** dump from this PC to tst (hub routing, retry 3×):
+1. Upload the **same** dump from this PC to reserv (hub routing, retry 3×):
    ```bash
-   scp <dump> <tst.ssh_alias>:<tst.remote_tmp>/vdole_prod.dump
+   scp <dump> <reserv.ssh_alias>:<reserv.remote_tmp>/vdole_prod.dump
    ```
-2. Restore on tst, guarding the hostname and reading the tst DATABASE_URL **server-side**
+2. Restore on reserv, guarding the hostname and reading the reserv DATABASE_URL **server-side**
    (never print it to chat):
    ```bash
-   ssh <tst.ssh_alias> bash -s <<'REMOTE'
-   test "$(hostname)" = <tst.hostname_guard> || { echo "GUARD FAIL: $(hostname)"; exit 1; }
-   DBURL=$(sudo grep -m1 '^DATABASE_URL=' <tst.env_file_on_server> | cut -d= -f2-)
+   ssh <reserv.ssh_alias> bash -s <<'REMOTE'
+   test "$(hostname)" = <reserv.hostname_guard> || { echo "GUARD FAIL: $(hostname)"; exit 1; }
+   DBURL=$(sudo grep -m1 '^DATABASE_URL=' <reserv.env_file_on_server> | cut -d= -f2-)
    [ -n "$DBURL" ] || { echo "no DATABASE_URL"; exit 1; }
-   pg_restore -d "$DBURL" --clean --if-exists --no-owner --no-privileges <tst.remote_tmp>/vdole_prod.dump 2>/tmp/restore_tst.err
+   pg_restore -d "$DBURL" --clean --if-exists --no-owner --no-privileges <reserv.remote_tmp>/vdole_prod.dump 2>/tmp/restore_reserv.err
    echo "pg_restore exit=$?"
-   grep -iE 'error|fatal' /tmp/restore_tst.err | grep -viE 'does not exist|already exists' | head -20
+   grep -iE 'error|fatal' /tmp/restore_reserv.err | grep -viE 'does not exist|already exists' | head -20
    REMOTE
    ```
    Do NOT use `set -e` around `pg_restore` — it returns non-zero on benign `DROP … IF EXISTS`
    warnings; capture the exit code and show only non-ignorable errors.
-3. Verify `tables_count` on tst.
+3. Verify `tables_count` on reserv.
 
 ## Step 4 — cleanup (the dump holds prod PII — never leave it lying around)
 
 - Local dump → Recycle Bin via `trash.ps1`:
   `pwsh -NoProfile -File C:\Users\ssv55\.claude\scripts\trash.ps1 <cwd>\<dump_local_dir>\vdole_prod.dump`
-- Remote tst dump → secure delete on the server: `ssh <tst.ssh_alias> 'shred -u <tst.remote_tmp>/vdole_prod.dump'`
+- Remote reserv dump → secure delete on the server: `ssh <reserv.ssh_alias> 'shred -u <reserv.remote_tmp>/vdole_prod.dump'`
   (use `shred`/`unlink`, NOT `rm` — the local block-dangerous hook scans the command string for `rm`).
 
 ## Step 5 — report
@@ -120,16 +120,16 @@ ssh <pro.ssh_alias> 'test "$(hostname)" = <pro.hostname_guard> && <pro.dump_cmd>
 | Узел | users | expenses | … |
 |------|-------|----------|---|
 | ssv  | n     | n        |   |
-| tst  | n     | n        |   |
+| reserv  | n     | n        |   |
 
-Дамп удалён (локально → корзина, tst → shred).
+Дамп удалён (локально → корзина, reserv → shred).
 ```
 
 ## Rules
 
 - **NEVER** the MCP connector for prod — direct `ssh` only, with a `hostname` guard before any read/write.
-- **NEVER** ssh node→node (pro↔tst). Route every byte through this PC.
+- **NEVER** ssh node→node (pro↔reserv). Route every byte through this PC.
 - **ALWAYS** `--no-owner --no-privileges` on restore.
 - Dump files live only in `<cwd>/<dump_local_dir>` (`.tmp/`); delete after (trash local, shred remote).
-- `tst` / `all` overwrite tst's independent DB — destructive, intentional; confirm in the no-arg path.
+- `reserv` / `all` overwrite reserv's independent DB — destructive, intentional; confirm in the no-arg path.
 - NEVER use `$env:PGPASSWORD`; pass the connection string directly in `-d` and never echo it to chat.
